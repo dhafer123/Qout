@@ -1,0 +1,93 @@
+# Local infrastructure for Qout: PostgreSQL, Redis, RustFS (S3-compatible storage).
+# Usage (repo root):  docker compose up -d   ·   docker compose down   ·   docker compose down -v (reset data)
+# Values come from .env (see .env.example); defaults below match .env.example.
+# Ports bind to 127.0.0.1 only.
+
+name: qout
+
+services:
+  postgres:
+    image: postgres:16.15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-qout}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: ${POSTGRES_DB:-qout}
+      POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:-qout_test}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - qout-pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:7.4.12-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - qout-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rustfs:
+    image: rustfs/rustfs:1.0.5
+    restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
+    environment:
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:-qout-dev-access-key}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:-qout-dev-secret-key}
+    ports:
+      - "127.0.0.1:${S3_PORT:-9000}:9000"
+      - "127.0.0.1:${S3_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - qout-s3data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  # One-shot job: creates the uploads bucket if it doesn't exist, then exits 0.
+  s3-init:
+    image: amazon/aws-cli:2.40.0
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:-qout-dev-access-key}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:-qout-dev-secret-key}
+      AWS_DEFAULT_REGION: ${S3_REGION:-us-east-1}
+      S3_BUCKET: ${S3_BUCKET:-qout-uploads}
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        aws configure set default.s3.addressing_style path
+        if aws --endpoint-url http://rustfs:9000 s3api head-bucket --bucket "$$S3_BUCKET" 2>/dev/null; then
+          echo "bucket $$S3_BUCKET already exists"
+        else
+          aws --endpoint-url http://rustfs:9000 s3api create-bucket --bucket "$$S3_BUCKET"
+          echo "bucket $$S3_BUCKET created"
+        fi
+    restart: "no"
+
+volumes:
+  qout-pgdata:
+  qout-redisdata:
+  qout-s3data:
