@@ -1,0 +1,102 @@
+# App CI: format, analyze, test and build the Flutter app.
+# Runs only when something under app/ (or this workflow) changes.
+
+name: App CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - ".github/workflows/app-ci.yml"
+  pull_request:
+    paths:
+      - "app/**"
+      - ".github/workflows/app-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Format, analyze, test, build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@v6.2.0
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+          cache-dependency-path: |
+            app/android/**/*.gradle.kts
+            app/android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2.23.0
+        with:
+          channel: stable
+          # Keep in sync with the local SDK (see TASKS.md, T06).
+          flutter-version: "3.38.9"
+          cache: true
+          pub-cache: true
+
+      - name: Install dependencies
+        run: flutter pub get --enforce-lockfile
+
+      # Generated files (*.freezed.dart) are committed; fail if they are stale.
+      - name: Check generated code is up to date
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          if [ -n "$(git status --porcelain -- .)" ]; then
+            git status --short -- .
+            git diff -- .
+            echo "::error::Generated code is stale: run build_runner and commit the result."
+            exit 1
+          fi
+
+      - name: Format
+        run: dart format --set-exit-if-changed .
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test --coverage
+
+      # Informational only: no coverage gate for the app.
+      - name: Coverage summary
+        run: |
+          awk -F: '
+            /^SF:/ { generated = ($2 ~ /\.(freezed|g)\.dart$/) }
+            /^LF:/ && !generated { total += $2 }
+            /^LH:/ && !generated { hit += $2 }
+            END { printf "App line coverage: %d/%d (%.1f %%)\n", hit, total, total ? 100 * hit / total : 0 }
+          ' coverage/lcov.info | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Build debug APK (dev)
+        run: flutter build apk --debug --flavor dev
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: qout-dev-debug-apk
+          path: app/build/app/outputs/flutter-apk/app-dev-debug.apk
+          if-no-files-found: error
+          retention-days: 7
