@@ -25,10 +25,11 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - [x] Acceptance run (2026-11-11, Docker Engine 29.9.3 / Compose v5.7.0 in WSL 2 Ubuntu 24.04): postgres, redis, rustfs healthy; s3-init exited 0 and created `qout-uploads`; `qout` and `qout_test` exist (owner `qout`); after `down` + `up` data persisted (Redis key, test DB) and bucket init reported "already exists".
 
 ### T03 · Backend skeleton
-- [ ] uv project, FastAPI app factory, `core/config.py` (pydantic-settings), structured JSON logging, request-id middleware
-- [ ] `GET /health` (app) and `GET /health/ready` (checks DB + Redis)
-- [ ] ruff, mypy strict, pytest config, coverage config
+- [x] uv project, FastAPI app factory, `core/config.py` (pydantic-settings), structured JSON logging, request-id middleware
+- [x] `GET /health` (app) and `GET /health/ready` (checks DB + Redis)
+- [x] ruff, mypy strict, pytest config, coverage config
 - Tests: **U** config loading; **I** `/health` and `/health/ready` (ready returns 503 when DB is down — simulate).
+- Done: 50 tests (unit + integration), coverage 100 %. Outages simulated for real: DB/Redis on a closed port (refused) and a silent TCP server (hung, hits the per-check timeout). Logging uses a stdlib JSON formatter (no structlog). App factory lives in `app/factory.py`; `app/main.py` only builds the app.
 
 ### T04 · Database layer
 - [ ] Async SQLAlchemy engine/session, Alembic configured for async, base model (id, created_at, updated_at)
@@ -219,3 +220,4 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - (add decisions here as tasks are done)
 - 2026-11-11 (T01): added `.gitattributes` forcing LF line endings (Windows + WSL + shell hooks). Solo workflow: work is pushed directly to `main` (no PRs) unless decided otherwise. Shared `.claude/settings.json` is tracked; `.claude/settings.local.json` is ignored.
 - 2026-11-11 (T02): MinIO replaced by RustFS 1.0.5 (MinIO archived, images unpublished), see ADR 0002. Bucket created by a one-shot `amazon/aws-cli` container. Containers run on Docker Engine inside WSL 2, not Docker Desktop. Workflow changed to direct commits on `main` (CLAUDE.md updated).
+- 2026-11-11 (T03): backend runs in WSL with uv; virtualenv kept on the Linux side via `UV_PROJECT_ENVIRONMENT` (repo stays on `C:`). Integration tests fail fast with a clear message when the compose stack is down.
