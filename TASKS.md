@@ -19,9 +19,10 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Done: hook verified with a throwaway commit containing `Co-Authored-By: Claude` and `Generated with Claude Code` lines; both were stripped.
 
 ### T02 · Local infrastructure
-- [ ] `docker-compose.yml`: Postgres 16, Redis 7, MinIO (+ bucket init), named volumes, healthchecks
-- [ ] Separate test database (`qout_test`) created on startup
+- [x] `docker-compose.yml`: Postgres 16, Redis 7, RustFS (+ bucket init), named volumes, healthchecks (MinIO replaced, see ADR 0002)
+- [x] Separate test database (`qout_test`) created on startup
 - Acceptance: `docker compose up -d` → all services healthy.
+- [ ] Acceptance run: **pending**. No container runtime on the dev machine yet (Docker Engine in WSL 2 to be installed). Validated statically only: YAML, pinned images, healthchecks, localhost ports, env defaults match `.env.example`, init script syntax.
 
 ### T03 · Backend skeleton
 - [ ] uv project, FastAPI app factory, `core/config.py` (pydantic-settings), structured JSON logging, request-id middleware
@@ -217,3 +218,4 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 ## Notes / decisions log
 - (add decisions here as tasks are done)
 - 2026-11-11 (T01): added `.gitattributes` forcing LF line endings (Windows + WSL + shell hooks). Solo workflow: work is pushed directly to `main` (no PRs) unless decided otherwise. Shared `.claude/settings.json` is tracked; `.claude/settings.local.json` is ignored.
+- 2026-11-11 (T02): MinIO replaced by RustFS 1.0.5 (MinIO archived, images unpublished), see ADR 0002. Bucket created by a one-shot `amazon/aws-cli` container. Containers run on Docker Engine inside WSL 2, not Docker Desktop. Workflow changed to direct commits on `main` (CLAUDE.md updated).
