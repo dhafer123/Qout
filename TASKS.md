@@ -38,8 +38,9 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Done: 71 tests, coverage 100 %. UUID primary keys (`gen_random_uuid()`); `created_at`/`updated_at` set by Postgres (`now()` on insert, `clock_timestamp()` on update). Migrations tested by round-trip, per-revision stairway and a model drift check. Empty baseline revision; real tables start in T12. Hand-written async factories (`tests/factories.py`), no factory_boy. Test-only models live in a `testing` schema with their own metadata. New env vars: `DATABASE_POOL_SIZE`, `DATABASE_MAX_OVERFLOW`.
 
 ### T05 · Backend CI
-- [ ] `.github/workflows/backend-ci.yml`: on PR + push, path filter `backend/**`; Postgres + Redis service containers; uv cache; ruff, mypy, pytest with coverage gate
-- Acceptance: a PR touching `backend/` runs the job and passes; a PR touching only `app/` skips it.
+- [x] `.github/workflows/backend-ci.yml`: on PR + push, path filter `backend/**`; Postgres + Redis service containers; uv cache; ruff, mypy, pytest with coverage gate
+- Acceptance (adapted to direct pushes on `main`): a push touching `backend/` runs the job and passes; a push touching only `app/` or docs skips it.
+- Done: green run in ~35 s (71 tests, coverage 100 %). Triggers: push to `main` + PRs (path filter `backend/**` and the workflow file) + manual `workflow_dispatch`. Service containers use the compose image versions; `qout_test` is the default DB there because service containers can't run the init script. uv 0.13.7 pinned, `UV_LOCKED=1`, coverage gate from `pyproject.toml`. The ≥ 95 % gate for `modules/scoring` is added in T09 when the module exists. CI badge in README.
 
 ### T06 · Flutter skeleton
 - [x] Flutter app (package `tn.qout.app` — confirmed), Riverpod, go_router, very_good_analysis, freezed, flavors/env config (dev, staging, prod API URLs)
@@ -62,6 +63,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Tests: **U** every golden file validates against the schema.
 
 ### T09 · Nutri-Score engine (Python)
+- [ ] CI: add the ≥ 95 % coverage gate for `modules/scoring` (from T05)
 - [ ] `modules/scoring/`: pure functions; input dataclass (nutrients + category); output (grade, total, per-component points, engine_version)
 - [ ] Separate point tables per category, taken from `docs/specs/` only
 - [ ] Returns `InsufficientData` (listing missing fields) instead of guessing
@@ -226,3 +228,4 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - 2026-11-11 (T03): backend runs in WSL with uv; virtualenv kept on the Linux side via `UV_PROJECT_ENVIRONMENT` (repo stays on `C:`). Integration tests fail fast with a clear message when the compose stack is down.
 - 2026-11-11 (T04): the API does not run migrations on startup; `alembic upgrade head` is an explicit step (CD step in T32). Fixed: the integration conftest hook had marked unit tests as `integration` too.
 - 2026-11-11 (T06): stayed on Flutter 3.38.9. Follow-up when Flutter is upgraded: move to Riverpod 3 (blocked by the freezed/analyzer constraint on Dart 3.10). Seed color `#2E7D32` is a placeholder until the visual identity exists.
+- 2026-11-11 (T05): first push-triggered run was stuck in `queued` by a GitHub Actions outage; re-run via `workflow_dispatch` once it recovered.
