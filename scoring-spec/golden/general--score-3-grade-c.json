@@ -1,0 +1,33 @@
+{
+  "id": "general--score-3-grade-c",
+  "description": "Sugars just above 10 g get 3 points; score 3 is the bottom of grade C.",
+  "source": "Q&A Table 5 (sugars) + grade table",
+  "category": "general",
+  "input": {
+    "energy_kj": 0,
+    "saturated_fat_g": 0,
+    "sugars_g": 10.5,
+    "salt_g": 0,
+    "fibre_g": 0,
+    "protein_g": 0,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 0,
+      "sugars": 3,
+      "saturated_fat": 0,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 0,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 3,
+    "positive_total": 0,
+    "protein_counted": true,
+    "score": 3,
+    "grade": "C"
+  }
+}

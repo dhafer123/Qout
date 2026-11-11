@@ -1,0 +1,33 @@
+{
+  "id": "general--n-10-protein-counted",
+  "description": "N = 10 (< 11): protein points are subtracted.",
+  "source": "Q&A p. 28 (calculation rule) + Tables 5-6",
+  "category": "general",
+  "input": {
+    "energy_kj": 0,
+    "saturated_fat_g": 0,
+    "sugars_g": 0,
+    "salt_g": 2.01,
+    "fibre_g": 0,
+    "protein_g": 12.5,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 0,
+      "sugars": 0,
+      "saturated_fat": 0,
+      "salt": 10
+    },
+    "positive": {
+      "protein": 5,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 10,
+    "positive_total": 5,
+    "protein_counted": true,
+    "score": 5,
+    "grade": "C"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "beverage--milk-like-negative-score",
+  "description": "A negative beverage score is still B: only water can be A.",
+  "source": "Q&A Tables 9-10 + grade table",
+  "category": "beverage",
+  "input": {
+    "energy_kj": 195,
+    "saturated_fat_g": 1.0,
+    "sugars_g": 4.8,
+    "salt_g": 0.1,
+    "fibre_g": 0,
+    "protein_g": 3.4,
+    "fvl_percent": 0,
+    "non_nutritive_sweeteners": false
+  },
+  "expected": {
+    "negative": {
+      "energy": 3,
+      "sugars": 3,
+      "saturated_fat": 0,
+      "salt": 0,
+      "non_nutritive_sweeteners": 0
+    },
+    "positive": {
+      "protein": 7,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 6,
+    "positive_total": 7,
+    "protein_counted": true,
+    "score": -1,
+    "grade": "B"
+  }
+}

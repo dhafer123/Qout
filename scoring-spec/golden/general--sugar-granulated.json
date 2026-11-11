@@ -1,0 +1,33 @@
+{
+  "id": "general--sugar-granulated",
+  "description": "Official example 'Sugar granulated' from the Santé publique France calculator.",
+  "source": "calculator: General foods row 5 (official result)",
+  "category": "general",
+  "input": {
+    "energy_kj": 1700,
+    "saturated_fat_g": 0,
+    "sugars_g": 100,
+    "salt_g": 0,
+    "fibre_g": 0,
+    "protein_g": 0,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 5,
+      "sugars": 15,
+      "saturated_fat": 0,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 0,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 20,
+    "positive_total": 0,
+    "protein_counted": false,
+    "score": 20,
+    "grade": "E"
+  }
+}

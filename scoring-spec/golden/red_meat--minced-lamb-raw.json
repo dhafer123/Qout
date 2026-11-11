@@ -1,0 +1,33 @@
+{
+  "id": "red_meat--minced-lamb-raw",
+  "description": "Official example 'Minced lamb raw' from the Santé publique France calculator.",
+  "source": "calculator: Red meat row 5 (official result)",
+  "category": "red_meat",
+  "input": {
+    "energy_kj": 908,
+    "saturated_fat_g": 7.1,
+    "sugars_g": 0,
+    "salt_g": 0.1725,
+    "fibre_g": 0,
+    "protein_g": 19.3,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 2,
+      "sugars": 0,
+      "saturated_fat": 7,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 2,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 9,
+    "positive_total": 2,
+    "protein_counted": true,
+    "score": 7,
+    "grade": "C"
+  }
+}

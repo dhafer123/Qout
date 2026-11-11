@@ -1,0 +1,10 @@
+{
+  "id": "water--plain-water",
+  "description": "Water without any addition is always A (official calculator example).",
+  "source": "calculator: Beverages row 6 (official result)",
+  "category": "water",
+  "input": {},
+  "expected": {
+    "grade": "A"
+  }
+}

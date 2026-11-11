@@ -1,0 +1,20 @@
+{
+  "id": "fats_oils_nuts_seeds--total-fat-zero",
+  "description": "Total fat 0: saturates/fat ratio undefined, no score (decision 4).",
+  "source": "docs/specs/README.md decision 4",
+  "category": "fats_oils_nuts_seeds",
+  "input": {
+    "total_fat_g": 0,
+    "saturated_fat_g": 0,
+    "sugars_g": 0,
+    "salt_g": 0,
+    "fibre_g": 0,
+    "protein_g": 0,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "insufficient_data": [
+      "total_fat_g"
+    ]
+  }
+}

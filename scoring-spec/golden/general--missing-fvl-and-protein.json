@@ -1,0 +1,19 @@
+{
+  "id": "general--missing-fvl-and-protein",
+  "description": "Several inputs missing: all are listed, sorted.",
+  "source": "calculator: \"missing data\" rule",
+  "category": "general",
+  "input": {
+    "energy_kj": 900,
+    "saturated_fat_g": 0,
+    "sugars_g": 0,
+    "salt_g": 0,
+    "fibre_g": 0
+  },
+  "expected": {
+    "insufficient_data": [
+      "fvl_percent",
+      "protein_g"
+    ]
+  }
+}

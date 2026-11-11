@@ -1,0 +1,33 @@
+{
+  "id": "red_meat--pork-loin-chop-raw",
+  "description": "Official example 'Pork loin chop raw' from the Santé publique France calculator.",
+  "source": "calculator: Red meat row 4 (official result)",
+  "category": "red_meat",
+  "input": {
+    "energy_kj": 653,
+    "saturated_fat_g": 2.8,
+    "sugars_g": 0,
+    "salt_g": 0.1275,
+    "fibre_g": 0,
+    "protein_g": 23.2,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 1,
+      "sugars": 0,
+      "saturated_fat": 2,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 2,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 3,
+    "positive_total": 2,
+    "protein_counted": true,
+    "score": 1,
+    "grade": "B"
+  }
+}

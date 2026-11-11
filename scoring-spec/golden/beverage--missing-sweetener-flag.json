@@ -1,0 +1,20 @@
+{
+  "id": "beverage--missing-sweetener-flag",
+  "description": "Sweetener presence unknown: no score (decision 5).",
+  "source": "calculator: \"missing data\" rule",
+  "category": "beverage",
+  "input": {
+    "energy_kj": 100,
+    "saturated_fat_g": 0,
+    "sugars_g": 0,
+    "salt_g": 0,
+    "fibre_g": 0,
+    "protein_g": 0,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "insufficient_data": [
+      "non_nutritive_sweeteners"
+    ]
+  }
+}

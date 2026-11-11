@@ -1,0 +1,33 @@
+{
+  "id": "red_meat--beef-tenderloin-steak-raw",
+  "description": "Official example 'Beef tenderloin steak raw' from the Santé publique France calculator.",
+  "source": "calculator: Red meat row 3 (official result)",
+  "category": "red_meat",
+  "input": {
+    "energy_kj": 489,
+    "saturated_fat_g": 0.9,
+    "sugars_g": 0,
+    "salt_g": 0.125,
+    "fibre_g": 0,
+    "protein_g": 23.7,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 1,
+      "sugars": 0,
+      "saturated_fat": 0,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 2,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 1,
+    "positive_total": 2,
+    "protein_counted": true,
+    "score": -1,
+    "grade": "A"
+  }
+}

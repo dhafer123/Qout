@@ -1,0 +1,35 @@
+{
+  "id": "beverage--sweeteners-only",
+  "description": "Non-nutritive sweeteners alone add 4 points.",
+  "source": "Q&A Table 9 (non-nutritive sweeteners)",
+  "category": "beverage",
+  "input": {
+    "energy_kj": 0,
+    "saturated_fat_g": 0,
+    "sugars_g": 0,
+    "salt_g": 0,
+    "fibre_g": 0,
+    "protein_g": 0,
+    "fvl_percent": 0,
+    "non_nutritive_sweeteners": true
+  },
+  "expected": {
+    "negative": {
+      "energy": 0,
+      "sugars": 0,
+      "saturated_fat": 0,
+      "salt": 0,
+      "non_nutritive_sweeteners": 4
+    },
+    "positive": {
+      "protein": 0,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 4,
+    "positive_total": 0,
+    "protein_counted": true,
+    "score": 4,
+    "grade": "C"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "fats_oils_nuts_seeds--animal-fats",
+  "description": "Official example 'Animal fats' from the Santé publique France calculator.",
+  "source": "calculator: Fats, oils, nuts and seeds row 3 (official result)",
+  "category": "fats_oils_nuts_seeds",
+  "input": {
+    "total_fat_g": 81.3,
+    "saturated_fat_g": 54.7,
+    "sugars_g": 0.9,
+    "salt_g": 0.6,
+    "fibre_g": 0,
+    "protein_g": 0.7,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy_from_saturates": 10,
+      "sugars": 0,
+      "saturated_fat_ratio": 10,
+      "salt": 2
+    },
+    "positive": {
+      "protein": 0,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 22,
+    "positive_total": 0,
+    "protein_counted": false,
+    "score": 22,
+    "grade": "E"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "cheese--cheese",
+  "description": "Official example 'Cheese' from the Santé publique France calculator.",
+  "source": "calculator: Cheese row 3 (official result)",
+  "category": "cheese",
+  "input": {
+    "energy_kj": 1523,
+    "saturated_fat_g": 19.8,
+    "sugars_g": 0.5,
+    "salt_g": 1.8,
+    "fibre_g": 0.1,
+    "protein_g": 24.1,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 4,
+      "sugars": 0,
+      "saturated_fat": 10,
+      "salt": 8
+    },
+    "positive": {
+      "protein": 7,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 22,
+    "positive_total": 7,
+    "protein_counted": true,
+    "score": 15,
+    "grade": "D"
+  }
+}

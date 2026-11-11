@@ -1,0 +1,33 @@
+{
+  "id": "fats_oils_nuts_seeds--margarines",
+  "description": "Official example 'Margarines' from the Santé publique France calculator.",
+  "source": "calculator: Fats, oils, nuts and seeds row 4 (official result)",
+  "category": "fats_oils_nuts_seeds",
+  "input": {
+    "total_fat_g": 56.9,
+    "saturated_fat_g": 28.5,
+    "sugars_g": 0.8,
+    "salt_g": 0.7,
+    "fibre_g": 0.3,
+    "protein_g": 0.5,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy_from_saturates": 8,
+      "sugars": 0,
+      "saturated_fat_ratio": 7,
+      "salt": 3
+    },
+    "positive": {
+      "protein": 0,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 18,
+    "positive_total": 0,
+    "protein_counted": false,
+    "score": 18,
+    "grade": "D"
+  }
+}

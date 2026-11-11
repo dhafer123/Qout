@@ -1,0 +1,33 @@
+{
+  "id": "fats_oils_nuts_seeds--ratio-at-10-percent",
+  "description": "Saturates/fat exactly 10 % gets 1 point: Table 7 uses \"<\" (decision 2).",
+  "source": "Q&A Table 7 (saturates/lipids)",
+  "category": "fats_oils_nuts_seeds",
+  "input": {
+    "total_fat_g": 10,
+    "saturated_fat_g": 1,
+    "sugars_g": 0,
+    "salt_g": 0,
+    "fibre_g": 0,
+    "protein_g": 0,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy_from_saturates": 0,
+      "sugars": 0,
+      "saturated_fat_ratio": 1,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 0,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 1,
+    "positive_total": 0,
+    "protein_counted": true,
+    "score": 1,
+    "grade": "B"
+  }
+}

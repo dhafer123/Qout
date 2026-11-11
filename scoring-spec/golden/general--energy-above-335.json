@@ -1,0 +1,33 @@
+{
+  "id": "general--energy-above-335",
+  "description": "Energy just above 335 kJ gets 1 point; score 1 is the bottom of grade B.",
+  "source": "Q&A Table 5 (energy) + grade table",
+  "category": "general",
+  "input": {
+    "energy_kj": 336,
+    "saturated_fat_g": 0,
+    "sugars_g": 0,
+    "salt_g": 0,
+    "fibre_g": 0,
+    "protein_g": 0,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 1,
+      "sugars": 0,
+      "saturated_fat": 0,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 0,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 1,
+    "positive_total": 0,
+    "protein_counted": true,
+    "score": 1,
+    "grade": "B"
+  }
+}

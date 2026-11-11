@@ -1,0 +1,33 @@
+{
+  "id": "fats_oils_nuts_seeds--nuts-and-seeds-plain",
+  "description": "Official example 'Nuts and seeds (plain)' from the Santé publique France calculator.",
+  "source": "calculator: Fats, oils, nuts and seeds row 7 (official result)",
+  "category": "fats_oils_nuts_seeds",
+  "input": {
+    "total_fat_g": 49.7,
+    "saturated_fat_g": 6.4,
+    "sugars_g": 11.2,
+    "salt_g": 0,
+    "fibre_g": 7.3,
+    "protein_g": 17.2,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy_from_saturates": 1,
+      "sugars": 3,
+      "saturated_fat_ratio": 1,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 7,
+      "fibre": 4,
+      "fvl": 0
+    },
+    "negative_total": 5,
+    "positive_total": 11,
+    "protein_counted": true,
+    "score": -6,
+    "grade": "A"
+  }
+}

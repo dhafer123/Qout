@@ -1,0 +1,33 @@
+{
+  "id": "cheese--solid-and-semi-solid-cheese",
+  "description": "Official example 'Solid and semi-solid cheese' from the Santé publique France calculator.",
+  "source": "calculator: Cheese row 4 (official result)",
+  "category": "cheese",
+  "input": {
+    "energy_kj": 1568,
+    "saturated_fat_g": 20.2,
+    "sugars_g": 0,
+    "salt_g": 1.8,
+    "fibre_g": 0,
+    "protein_g": 26.1,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 4,
+      "sugars": 0,
+      "saturated_fat": 10,
+      "salt": 8
+    },
+    "positive": {
+      "protein": 7,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 22,
+    "positive_total": 7,
+    "protein_counted": true,
+    "score": 15,
+    "grade": "D"
+  }
+}

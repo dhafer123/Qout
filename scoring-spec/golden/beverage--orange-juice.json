@@ -1,0 +1,35 @@
+{
+  "id": "beverage--orange-juice",
+  "description": "Official example 'Orange juice' from the Santé publique France calculator.",
+  "source": "calculator: Beverages row 3 (official result)",
+  "category": "beverage",
+  "input": {
+    "energy_kj": 201,
+    "saturated_fat_g": 0,
+    "sugars_g": 9,
+    "salt_g": 0,
+    "fibre_g": 0,
+    "protein_g": 0.5,
+    "fvl_percent": 100,
+    "non_nutritive_sweeteners": false
+  },
+  "expected": {
+    "negative": {
+      "energy": 3,
+      "sugars": 7,
+      "saturated_fat": 0,
+      "salt": 0,
+      "non_nutritive_sweeteners": 0
+    },
+    "positive": {
+      "protein": 0,
+      "fibre": 0,
+      "fvl": 6
+    },
+    "negative_total": 10,
+    "positive_total": 6,
+    "protein_counted": true,
+    "score": 4,
+    "grade": "C"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "beverage--fvl-above-40-percent",
+  "description": "Beverage FVL above 40 % gets 2 points (table 0/2/4/6).",
+  "source": "Q&A Table 10 (FVL)",
+  "category": "beverage",
+  "input": {
+    "energy_kj": 100,
+    "saturated_fat_g": 0,
+    "sugars_g": 4,
+    "salt_g": 0,
+    "fibre_g": 0,
+    "protein_g": 0,
+    "fvl_percent": 41,
+    "non_nutritive_sweeteners": false
+  },
+  "expected": {
+    "negative": {
+      "energy": 2,
+      "sugars": 3,
+      "saturated_fat": 0,
+      "salt": 0,
+      "non_nutritive_sweeteners": 0
+    },
+    "positive": {
+      "protein": 0,
+      "fibre": 0,
+      "fvl": 2
+    },
+    "negative_total": 5,
+    "positive_total": 2,
+    "protein_counted": true,
+    "score": 3,
+    "grade": "C"
+  }
+}

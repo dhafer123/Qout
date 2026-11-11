@@ -1,0 +1,33 @@
+{
+  "id": "fats_oils_nuts_seeds--score-minus-5-grade-b",
+  "description": "Score -5 is the top of grade B for fats (A is -6 and below).",
+  "source": "Q&A Tables 7-8 + grade table",
+  "category": "fats_oils_nuts_seeds",
+  "input": {
+    "total_fat_g": 50,
+    "saturated_fat_g": 4,
+    "sugars_g": 0,
+    "salt_g": 0,
+    "fibre_g": 4.5,
+    "protein_g": 10,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy_from_saturates": 1,
+      "sugars": 0,
+      "saturated_fat_ratio": 0,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 4,
+      "fibre": 2,
+      "fvl": 0
+    },
+    "negative_total": 1,
+    "positive_total": 6,
+    "protein_counted": true,
+    "score": -5,
+    "grade": "B"
+  }
+}

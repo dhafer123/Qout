@@ -1,0 +1,33 @@
+{
+  "id": "general--high-protein-not-capped",
+  "description": "Same composition as red_meat--high-protein-capped: in general foods protein gives 7 points.",
+  "source": "Q&A Table 6 (proteins)",
+  "category": "general",
+  "input": {
+    "energy_kj": 600,
+    "saturated_fat_g": 1.5,
+    "sugars_g": 0,
+    "salt_g": 0.3,
+    "fibre_g": 0,
+    "protein_g": 20,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 1,
+      "sugars": 0,
+      "saturated_fat": 1,
+      "salt": 1
+    },
+    "positive": {
+      "protein": 7,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 3,
+    "positive_total": 7,
+    "protein_counted": true,
+    "score": -4,
+    "grade": "A"
+  }
+}

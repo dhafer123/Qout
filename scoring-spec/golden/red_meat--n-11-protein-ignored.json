@@ -1,0 +1,33 @@
+{
+  "id": "red_meat--n-11-protein-ignored",
+  "description": "Red meat with N = 11: protein (capped) is not subtracted.",
+  "source": "Q&A p. 28 (calculation rule) + Table 6 footnote",
+  "category": "red_meat",
+  "input": {
+    "energy_kj": 1100,
+    "saturated_fat_g": 8.5,
+    "sugars_g": 0,
+    "salt_g": 0,
+    "fibre_g": 0,
+    "protein_g": 25,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 3,
+      "sugars": 0,
+      "saturated_fat": 8,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 2,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 11,
+    "positive_total": 2,
+    "protein_counted": false,
+    "score": 11,
+    "grade": "D"
+  }
+}

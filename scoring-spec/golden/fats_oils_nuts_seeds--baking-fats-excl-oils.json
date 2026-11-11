@@ -1,0 +1,33 @@
+{
+  "id": "fats_oils_nuts_seeds--baking-fats-excl-oils",
+  "description": "Official example 'Baking fats (excl. oils)' from the Santé publique France calculator.",
+  "source": "calculator: Fats, oils, nuts and seeds row 5 (official result)",
+  "category": "fats_oils_nuts_seeds",
+  "input": {
+    "total_fat_g": 85.5,
+    "saturated_fat_g": 20.9,
+    "sugars_g": 0.2,
+    "salt_g": 0.6,
+    "fibre_g": 0,
+    "protein_g": 0.2,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy_from_saturates": 6,
+      "sugars": 0,
+      "saturated_fat_ratio": 3,
+      "salt": 2
+    },
+    "positive": {
+      "protein": 0,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 11,
+    "positive_total": 0,
+    "protein_counted": false,
+    "score": 11,
+    "grade": "D"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "general--score-18-grade-d",
+  "description": "Salt 3.61 g gets 18 points; score 18 is the top of grade D.",
+  "source": "Q&A Table 5 (salt) + grade table",
+  "category": "general",
+  "input": {
+    "energy_kj": 0,
+    "saturated_fat_g": 0,
+    "sugars_g": 0,
+    "salt_g": 3.61,
+    "fibre_g": 0,
+    "protein_g": 0,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 0,
+      "sugars": 0,
+      "saturated_fat": 0,
+      "salt": 18
+    },
+    "positive": {
+      "protein": 0,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 18,
+    "positive_total": 0,
+    "protein_counted": false,
+    "score": 18,
+    "grade": "D"
+  }
+}

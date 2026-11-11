@@ -1,0 +1,33 @@
+{
+  "id": "fats_oils_nuts_seeds--n-7-protein-ignored",
+  "description": "N = 7 (>= 7): protein points are not subtracted.",
+  "source": "Q&A p. 30 (fats calculation rule) + Tables 7-8",
+  "category": "fats_oils_nuts_seeds",
+  "input": {
+    "total_fat_g": 50,
+    "saturated_fat_g": 13,
+    "sugars_g": 0,
+    "salt_g": 0,
+    "fibre_g": 0,
+    "protein_g": 10,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy_from_saturates": 4,
+      "sugars": 0,
+      "saturated_fat_ratio": 3,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 4,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 7,
+    "positive_total": 4,
+    "protein_counted": false,
+    "score": 7,
+    "grade": "C"
+  }
+}

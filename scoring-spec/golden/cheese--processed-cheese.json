@@ -1,0 +1,33 @@
+{
+  "id": "cheese--processed-cheese",
+  "description": "Official example 'Processed cheese' from the Santé publique France calculator.",
+  "source": "calculator: Cheese row 6 (official result)",
+  "category": "cheese",
+  "input": {
+    "energy_kj": 1242,
+    "saturated_fat_g": 15.6,
+    "sugars_g": 1,
+    "salt_g": 2.3,
+    "fibre_g": 0,
+    "protein_g": 19.4,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 3,
+      "sugars": 0,
+      "saturated_fat": 10,
+      "salt": 11
+    },
+    "positive": {
+      "protein": 7,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 24,
+    "positive_total": 7,
+    "protein_counted": true,
+    "score": 17,
+    "grade": "D"
+  }
+}

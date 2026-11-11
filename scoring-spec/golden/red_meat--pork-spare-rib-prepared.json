@@ -1,0 +1,33 @@
+{
+  "id": "red_meat--pork-spare-rib-prepared",
+  "description": "Official example 'Pork spare rib prepared' from the Santé publique France calculator.",
+  "source": "calculator: Red meat row 6 (official result)",
+  "category": "red_meat",
+  "input": {
+    "energy_kj": 1025,
+    "saturated_fat_g": 6,
+    "sugars_g": 0.5,
+    "salt_g": 0.155,
+    "fibre_g": 0,
+    "protein_g": 22.4,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 3,
+      "sugars": 0,
+      "saturated_fat": 5,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 2,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 8,
+    "positive_total": 2,
+    "protein_counted": true,
+    "score": 6,
+    "grade": "C"
+  }
+}

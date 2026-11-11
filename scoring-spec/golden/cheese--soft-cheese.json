@@ -1,0 +1,33 @@
+{
+  "id": "cheese--soft-cheese",
+  "description": "Official example 'Soft cheese' from the Santé publique France calculator.",
+  "source": "calculator: Cheese row 5 (official result)",
+  "category": "cheese",
+  "input": {
+    "energy_kj": 1344,
+    "saturated_fat_g": 18.4,
+    "sugars_g": 2.6,
+    "salt_g": 1.6,
+    "fibre_g": 0.3,
+    "protein_g": 15.4,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 4,
+      "sugars": 0,
+      "saturated_fat": 10,
+      "salt": 7
+    },
+    "positive": {
+      "protein": 6,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 21,
+    "positive_total": 6,
+    "protein_counted": true,
+    "score": 15,
+    "grade": "D"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "fats_oils_nuts_seeds--nut-butter",
+  "description": "Official example 'Nut butter' from the Santé publique France calculator.",
+  "source": "calculator: Fats, oils, nuts and seeds row 8 (official result)",
+  "category": "fats_oils_nuts_seeds",
+  "input": {
+    "total_fat_g": 52.7,
+    "saturated_fat_g": 9.8,
+    "sugars_g": 6.9,
+    "salt_g": 0.6,
+    "fibre_g": 7.9,
+    "protein_g": 21.9,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy_from_saturates": 3,
+      "sugars": 2,
+      "saturated_fat_ratio": 2,
+      "salt": 2
+    },
+    "positive": {
+      "protein": 7,
+      "fibre": 5,
+      "fvl": 0
+    },
+    "negative_total": 9,
+    "positive_total": 12,
+    "protein_counted": false,
+    "score": 4,
+    "grade": "C"
+  }
+}

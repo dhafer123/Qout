@@ -1,0 +1,33 @@
+{
+  "id": "fats_oils_nuts_seeds--ratio-at-64-percent",
+  "description": "Saturates/fat exactly 64 % gets the maximum 10 points.",
+  "source": "Q&A Table 7 (saturates/lipids)",
+  "category": "fats_oils_nuts_seeds",
+  "input": {
+    "total_fat_g": 50,
+    "saturated_fat_g": 32,
+    "sugars_g": 0,
+    "salt_g": 0,
+    "fibre_g": 0,
+    "protein_g": 0,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy_from_saturates": 9,
+      "sugars": 0,
+      "saturated_fat_ratio": 10,
+      "salt": 0
+    },
+    "positive": {
+      "protein": 0,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 19,
+    "positive_total": 0,
+    "protein_counted": false,
+    "score": 19,
+    "grade": "E"
+  }
+}
