@@ -1,0 +1,12 @@
+#!/bin/sh
+# Removes AI attribution lines from every commit message (safety net).
+# Enable once per clone:  git config core.hooksPath .githooks
+msg_file="$1"
+tmp_file="$msg_file.tmp"
+
+grep -v -i -E '^(co-authored-by:.*(claude|anthropic)|.*generated with \[?claude code)' "$msg_file" > "$tmp_file"
+
+# Trim trailing blank lines left behind
+awk 'NF {for (i = 0; i < blank; i++) print ""; blank = 0; print; next} {blank++}' "$tmp_file" > "$msg_file"
+rm -f "$tmp_file"
+exit 0
