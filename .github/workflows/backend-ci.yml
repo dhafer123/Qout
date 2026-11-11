@@ -1,0 +1,98 @@
+# Backend CI: lint, type-check and test the FastAPI backend against real Postgres + Redis.
+# Runs only when something under backend/ (or this workflow) changes.
+
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, type-check, test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      # Same images as docker-compose.yml. Service containers cannot mount the
+      # init script that creates qout_test, so it is the default database here.
+      postgres:
+        image: postgres:16.15-alpine
+        env:
+          POSTGRES_USER: qout
+          POSTGRES_PASSWORD: ci-dummy-password
+          POSTGRES_DB: qout_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U qout -d qout_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7.4.12-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      # Dummy values for the throwaway CI services; no secrets needed.
+      APP_ENV: test
+      DATABASE_URL: postgresql+asyncpg://qout:ci-dummy-password@localhost:5432/qout_test
+      TEST_DATABASE_URL: postgresql+asyncpg://qout:ci-dummy-password@localhost:5432/qout_test
+      REDIS_URL: redis://localhost:6379/0
+      # Fail if uv.lock is out of date with pyproject.toml, for every uv command.
+      UV_LOCKED: "1"
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          version: "0.13.7"
+          working-directory: backend
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+      - name: Mypy (strict)
+        run: uv run mypy --strict app
+
+      # Coverage gate (fail_under) is configured in pyproject.toml.
+      - name: Pytest
+        run: uv run pytest
