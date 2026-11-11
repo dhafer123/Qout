@@ -18,3 +18,5 @@
 *.jar binary
 *.keystore binary
 *.jks binary
+*.pdf binary
+*.xlsx binary
