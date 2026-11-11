@@ -6,11 +6,11 @@ from functools import partial
 
 from fastapi import FastAPI
 from redis.asyncio import Redis
-from sqlalchemy.ext.asyncio import create_async_engine
 
 from app import __version__
 from app.api.health import router as health_router
 from app.core.config import Settings, get_settings
+from app.core.db import create_engine, create_session_factory
 from app.core.health import ReadinessCheck, check_database, check_redis
 from app.core.logging import configure_logging
 from app.core.request_id import RequestIdMiddleware
@@ -23,12 +23,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        engine = create_async_engine(str(settings.database_url), pool_pre_ping=True)
+        engine = create_engine(settings)
         redis = Redis.from_url(str(settings.redis_url))
         checks: dict[str, ReadinessCheck] = {
             "database": partial(check_database, engine),
             "redis": partial(check_redis, redis),
         }
+        app.state.session_factory = create_session_factory(engine)
         app.state.readiness_checks = checks
         try:
             yield

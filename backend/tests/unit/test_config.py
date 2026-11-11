@@ -14,6 +14,8 @@ ENV_VARS = (
     "DATABASE_URL",
     "REDIS_URL",
     "READINESS_TIMEOUT_SECONDS",
+    "DATABASE_POOL_SIZE",
+    "DATABASE_MAX_OVERFLOW",
 )
 
 
@@ -39,6 +41,8 @@ def test_defaults_apply_when_only_required_fields_are_set(
     assert settings.app_env == "dev"
     assert settings.log_level == "INFO"
     assert settings.readiness_timeout_seconds == 2.0
+    assert settings.database_pool_size == 5
+    assert settings.database_max_overflow == 10
     assert str(settings.database_url) == DB_URL
     assert str(settings.redis_url) == REDIS_URL
 
@@ -99,6 +103,8 @@ def test_later_env_file_overrides_earlier(tmp_path: Path) -> None:
         ("REDIS_URL", "http://cache.example"),
         ("READINESS_TIMEOUT_SECONDS", "0"),
         ("READINESS_TIMEOUT_SECONDS", "31"),
+        ("DATABASE_POOL_SIZE", "0"),
+        ("DATABASE_MAX_OVERFLOW", "-1"),
     ],
 )
 def test_invalid_values_are_rejected(

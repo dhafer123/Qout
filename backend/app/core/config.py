@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     app_env: AppEnv = "dev"
     log_level: LogLevel = "INFO"
     database_url: PostgresDsn
+    database_pool_size: int = Field(default=5, ge=1, le=100)
+    database_max_overflow: int = Field(default=10, ge=0, le=100)
     redis_url: RedisDsn
     readiness_timeout_seconds: float = Field(default=2.0, gt=0, le=30)
 
