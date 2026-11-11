@@ -42,9 +42,10 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Acceptance: a PR touching `backend/` runs the job and passes; a PR touching only `app/` skips it.
 
 ### T06 · Flutter skeleton
-- [ ] Flutter app (package `tn.qout.app` — confirm with me), Riverpod, go_router, very_good_analysis, freezed, flavors/env config (dev, staging, prod API URLs)
-- [ ] Folder structure per `CLAUDE.md`, theme (light/dark), placeholder home with "Scan" button
+- [x] Flutter app (package `tn.qout.app` — confirmed), Riverpod, go_router, very_good_analysis, freezed, flavors/env config (dev, staging, prod API URLs)
+- [x] Folder structure per `CLAUDE.md`, theme (light/dark), placeholder home with "Scan" button
 - Tests: **W** app boots and shows home; **U** env config resolves per flavor.
+- Done: 26 tests, line coverage 100 % except one line in `app.dart`. Android only (iOS flavors need Xcode; separate task later). Flutter 3.38.9 / Dart 3.10.8. Riverpod **2.6.1**: Riverpod 3 conflicts with freezed over `analyzer` on this SDK. Android flavors `dev`/`staging`/`prod` with `.dev`/`.staging` ID suffixes; flavor is mandatory (app fails at startup without one); `--dart-define=API_BASE_URL` overrides the URL. Generated `*.freezed.dart` files are committed. `flutter build apk --debug --flavor dev` verified (`tn.qout.app.dev`, label "Qout Dev").
 
 ### T07 · App CI
 - [ ] `.github/workflows/app-ci.yml`: path filter `app/**`; pub cache; format check, analyze, test; build debug APK
@@ -192,6 +193,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 ### T32 · CD to staging
 - [ ] Backend Dockerfile (multi-stage, non-root); build + push to GHCR on merge to `main`
 - [ ] Deploy to staging host, run migrations, smoke test (`/health/ready` + sample EAN lookup)
+- [ ] Replace the placeholder staging/prod API URLs (`*.qout.invalid`) in `app/lib/core/env/app_env.dart`
 - Acceptance: merge to `main` → staging updated automatically.
 
 ### T33 · Android release pipeline
@@ -223,3 +225,4 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - 2026-11-11 (T02): MinIO replaced by RustFS 1.0.5 (MinIO archived, images unpublished), see ADR 0002. Bucket created by a one-shot `amazon/aws-cli` container. Containers run on Docker Engine inside WSL 2, not Docker Desktop. Workflow changed to direct commits on `main` (CLAUDE.md updated).
 - 2026-11-11 (T03): backend runs in WSL with uv; virtualenv kept on the Linux side via `UV_PROJECT_ENVIRONMENT` (repo stays on `C:`). Integration tests fail fast with a clear message when the compose stack is down.
 - 2026-11-11 (T04): the API does not run migrations on startup; `alembic upgrade head` is an explicit step (CD step in T32). Fixed: the integration conftest hook had marked unit tests as `integration` too.
+- 2026-11-11 (T06): stayed on Flutter 3.38.9. Follow-up when Flutter is upgraded: move to Riverpod 3 (blocked by the freezed/analyzer constraint on Dart 3.10). Seed color `#2E7D32` is a placeholder until the visual identity exists.
