@@ -1,20 +1,30 @@
-"""Integration fixtures: real Postgres (test database) and Redis from docker compose."""
+"""Integration fixtures: real Postgres (test database) and Redis from docker compose.
+
+Database tests get `db_session`: a session inside an outer transaction that is rolled
+back after the test, so every test starts from a clean, migrated `qout_test`.
+"""
 
 import asyncio
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Callable, Iterator
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
+from pathlib import Path
 
 import httpx
 import pytest
+from alembic import command
+from alembic.config import Config
 from fastapi import FastAPI
 from pydantic import PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from redis.asyncio import Redis
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.pool import NullPool
 
 from app.core.config import BACKEND_DIR, REPO_ROOT, Settings
 from app.core.health import check_database, check_redis
 from app.factory import create_app
+from tests.models import TEST_SCHEMA, TestBase
 
 STACK_HINT = "Start the local stack first: `docker compose up -d` (repo root)."
 
@@ -30,9 +40,14 @@ class IntegrationEnv(BaseSettings):
     redis_url: RedisDsn
 
 
+_INTEGRATION_DIR = Path(__file__).parent
+
+
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    # This hook sees every collected test, not only those in this directory.
     for item in items:
-        item.add_marker(pytest.mark.integration)
+        if _INTEGRATION_DIR in item.path.parents:
+            item.add_marker(pytest.mark.integration)
 
 
 @pytest.fixture(scope="session")
@@ -116,3 +131,65 @@ async def silent_server() -> AsyncIterator[str]:
         for writer in writers:
             writer.close()
         await server.wait_closed()
+
+
+# ----------------------------------------------------------------------------- database
+
+
+def alembic_config(database_url: str) -> Config:
+    """Alembic config for programmatic use: explicit URL, leave logging alone."""
+    config = Config(str(BACKEND_DIR / "alembic.ini"))
+    config.attributes["database_url"] = database_url
+    config.attributes["configure_logger"] = False
+    return config
+
+
+async def _reset_test_schema(database_url: str, *, create: bool) -> None:
+    engine = create_async_engine(database_url, poolclass=NullPool)
+    try:
+        async with engine.begin() as connection:
+            await connection.execute(text(f"DROP SCHEMA IF EXISTS {TEST_SCHEMA} CASCADE"))
+            if create:
+                await connection.execute(text(f"CREATE SCHEMA {TEST_SCHEMA}"))
+                await connection.run_sync(TestBase.metadata.create_all)
+    finally:
+        await engine.dispose()
+
+
+@pytest.fixture(scope="session")
+def migrated_database(require_stack: None, integration_env: IntegrationEnv) -> Iterator[str]:
+    """Upgrade the test database to head once; create test-only tables. Yields its URL."""
+    url = str(integration_env.test_database_url)
+    command.upgrade(alembic_config(url), "head")
+    asyncio.run(_reset_test_schema(url, create=True))
+    yield url
+    asyncio.run(_reset_test_schema(url, create=False))
+
+
+@pytest.fixture
+async def db_engine(migrated_database: str) -> AsyncIterator[AsyncEngine]:
+    engine = create_async_engine(migrated_database, poolclass=NullPool)
+    yield engine
+    await engine.dispose()
+
+
+@pytest.fixture
+async def db_session(db_engine: AsyncEngine) -> AsyncIterator[AsyncSession]:
+    """Session bound to an outer transaction that is always rolled back.
+
+    `session.commit()` inside a test only releases a SAVEPOINT, so committed data is
+    visible within the test but never outlives it.
+    """
+    async with db_engine.connect() as connection:
+        transaction = await connection.begin()
+        session = AsyncSession(
+            bind=connection,
+            expire_on_commit=False,
+            join_transaction_mode="create_savepoint",
+        )
+        try:
+            yield session
+        finally:
+            await session.close()
+            if transaction.is_active:
+                await transaction.rollback()
