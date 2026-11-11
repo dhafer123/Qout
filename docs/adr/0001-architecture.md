@@ -28,7 +28,7 @@ service interfaces, not each other's tables. Services do not import FastAPI; rou
 stay thin.
 
 Storage: PostgreSQL (source of truth), Redis (cache + job queue), S3-compatible object
-storage for photos (MinIO locally).
+storage for photos (RustFS locally; see ADR 0002).
 
 ### Mobile app: Flutter
 

@@ -145,8 +145,8 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Tests: **U** token service; **I** register, login, refresh rotation, reuse detection, rate limit; **W** login form validation.
 
 ### T24 · Photo uploads
-- [ ] Presigned upload URLs (S3/MinIO), size/type limits, key naming per contribution
-- Tests: **I** presign against MinIO; rejects wrong content type.
+- [ ] Presigned upload URLs (S3/RustFS), size/type limits, key naming per contribution
+- Tests: **I** presign against RustFS; rejects wrong content type.
 
 ### T25 · Contributions API and moderation states
 - [ ] `contributions` table (photos, OCR text, parsed fields, parser_used, status: pending/approved/rejected)
