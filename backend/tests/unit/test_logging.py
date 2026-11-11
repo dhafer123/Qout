@@ -57,6 +57,12 @@ def test_includes_extra_fields_and_stringifies_unknown_types() -> None:
     assert "pathname" not in payload
 
 
+def test_drops_uvicorn_color_message() -> None:
+    payload = render(make_record(color_message="\x1b[36mhello\x1b[0m"))
+
+    assert "color_message" not in payload
+
+
 def test_includes_current_request_id() -> None:
     token = request_id_var.set("req-123")
     try:

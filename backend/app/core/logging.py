@@ -14,9 +14,11 @@ from typing import Any
 request_id_var: ContextVar[str | None] = ContextVar("request_id", default=None)
 
 # Attributes every LogRecord has; anything else on a record came from `extra=`.
+# `color_message` is uvicorn's ANSI-coloured duplicate of the message.
 _STANDARD_ATTRS = frozenset(vars(logging.LogRecord("", logging.INFO, "", 0, "", None, None))) | {
     "message",
     "asctime",
+    "color_message",
 }
 
 _UVICORN_LOGGERS = ("uvicorn", "uvicorn.error", "uvicorn.access")
