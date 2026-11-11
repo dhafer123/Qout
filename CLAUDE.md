@@ -37,12 +37,11 @@ Open Food Facts → 404 (unknown → contribution flow).
 
 1. Read the task in `TASKS.md`. Read the relevant existing code.
 2. Post a short plan (files to add/change, tests to write, open questions). **Wait for my OK.**
-3. Create a branch: `feat/Txx-short-name` (or `fix/`, `chore/`, `ci/`).
+3. Work directly on `main` (solo project: no feature branches, no PRs).
 4. Implement in small commits. Write tests alongside the code, not at the end.
-5. Run all checks locally (see below). Everything must pass.
+5. Run all checks locally (see below). Everything must pass before pushing.
 6. Tick the task's checkboxes in `TASKS.md`, add notes if something changed.
-7. Push the branch and open a PR with `gh pr create` (title = Conventional Commit style,
-   body = what/why/how tested). Do not merge; I review and merge.
+7. Push to `main` (`git push origin main`). Never force-push.
 8. End with a summary: what was done, how to test it manually, any follow-ups.
 
 ## Commit messages
