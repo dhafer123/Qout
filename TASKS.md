@@ -32,9 +32,10 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Done: 50 tests (unit + integration), coverage 100 %. Outages simulated for real: DB/Redis on a closed port (refused) and a silent TCP server (hung, hits the per-check timeout). Logging uses a stdlib JSON formatter (no structlog). App factory lives in `app/factory.py`; `app/main.py` only builds the app.
 
 ### T04 · Database layer
-- [ ] Async SQLAlchemy engine/session, Alembic configured for async, base model (id, created_at, updated_at)
-- [ ] Test fixtures: clean DB per test, factory helpers
+- [x] Async SQLAlchemy engine/session, Alembic configured for async, base model (id, created_at, updated_at)
+- [x] Test fixtures: clean DB per test, factory helpers
 - Tests: **I** migration up/down round-trip; session fixture isolation test.
+- Done: 71 tests, coverage 100 %. UUID primary keys (`gen_random_uuid()`); `created_at`/`updated_at` set by Postgres (`now()` on insert, `clock_timestamp()` on update). Migrations tested by round-trip, per-revision stairway and a model drift check. Empty baseline revision; real tables start in T12. Hand-written async factories (`tests/factories.py`), no factory_boy. Test-only models live in a `testing` schema with their own metadata. New env vars: `DATABASE_POOL_SIZE`, `DATABASE_MAX_OVERFLOW`.
 
 ### T05 · Backend CI
 - [ ] `.github/workflows/backend-ci.yml`: on PR + push, path filter `backend/**`; Postgres + Redis service containers; uv cache; ruff, mypy, pytest with coverage gate
@@ -221,3 +222,4 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - 2026-11-11 (T01): added `.gitattributes` forcing LF line endings (Windows + WSL + shell hooks). Solo workflow: work is pushed directly to `main` (no PRs) unless decided otherwise. Shared `.claude/settings.json` is tracked; `.claude/settings.local.json` is ignored.
 - 2026-11-11 (T02): MinIO replaced by RustFS 1.0.5 (MinIO archived, images unpublished), see ADR 0002. Bucket created by a one-shot `amazon/aws-cli` container. Containers run on Docker Engine inside WSL 2, not Docker Desktop. Workflow changed to direct commits on `main` (CLAUDE.md updated).
 - 2026-11-11 (T03): backend runs in WSL with uv; virtualenv kept on the Linux side via `UV_PROJECT_ENVIRONMENT` (repo stays on `C:`). Integration tests fail fast with a clear message when the compose stack is down.
+- 2026-11-11 (T04): the API does not run migrations on startup; `alembic upgrade head` is an explicit step (CD step in T32). Fixed: the integration conftest hook had marked unit tests as `integration` too.
