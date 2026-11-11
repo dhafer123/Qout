@@ -1,0 +1,70 @@
+# ---------- Environment / secrets ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.keystore
+*.jks
+key.properties
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# ---------- Flutter / Dart ----------
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+app/build/
+app/coverage/
+*.iml
+app/android/.gradle/
+app/android/local.properties
+app/android/captures/
+app/android/app/debug/
+app/android/app/profile/
+app/android/app/release/
+app/android/**/GeneratedPluginRegistrant.java
+app/ios/Flutter/Generated.xcconfig
+app/ios/Flutter/flutter_export_environment.sh
+app/ios/Pods/
+app/ios/.symlinks/
+app/ios/Runner/GeneratedPluginRegistrant.*
+
+# ---------- IDE / editors ----------
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*~
+
+# ---------- Claude Code (personal settings only; shared settings.json is tracked) ----------
+.claude/settings.local.json
+
+# ---------- OS ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- Local data ----------
+*.log
+*.sqlite
+*.db
