@@ -49,8 +49,9 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Done: 26 tests, line coverage 100 % except one line in `app.dart`. Android only (iOS flavors need Xcode; separate task later). Flutter 3.38.9 / Dart 3.10.8. Riverpod **2.6.1**: Riverpod 3 conflicts with freezed over `analyzer` on this SDK. Android flavors `dev`/`staging`/`prod` with `.dev`/`.staging` ID suffixes; flavor is mandatory (app fails at startup without one); `--dart-define=API_BASE_URL` overrides the URL. Generated `*.freezed.dart` files are committed. `flutter build apk --debug --flavor dev` verified (`tn.qout.app.dev`, label "Qout Dev").
 
 ### T07 · App CI
-- [ ] `.github/workflows/app-ci.yml`: path filter `app/**`; pub cache; format check, analyze, test; build debug APK
+- [x] `.github/workflows/app-ci.yml`: path filter `app/**`; pub cache; format check, analyze, test; build debug APK
 - Acceptance: runs only for `app/**` changes and passes.
+- Done: green run in ~6.5 min (most of it the Gradle build). Flutter pinned to 3.38.9 (bump together with the local SDK); Java 17 Temurin with Gradle cache; Flutter SDK + pub cache. `pub get --enforce-lockfile`; fails if committed generated code is stale (`build_runner` + `git status`). Coverage printed to the job summary, no gate (none required for the app). The `dev` debug APK is uploaded as artifact `qout-dev-debug-apk` (7 days). Verified: the workflow push ran App CI only; docs-only pushes run neither workflow. CI badge in README.
 
 ---
 
