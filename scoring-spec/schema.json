@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dhafer123/Qout/scoring-spec/schema.json",
+  "title": "Nutri-Score golden case",
+  "description": "One test case for the updated Nutri-Score algorithm (2023). Values per 100 g (or 100 mL for beverages). Point ranges come from docs/specs/nutri-score-qa-v11.pdf, Tables 5-10.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "description", "source", "category", "input", "expected"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^(general|red_meat|cheese|fats_oils_nuts_seeds|beverage|water)--[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Equals the file name without .json: <category>--<slug>."
+    },
+    "description": { "type": "string", "minLength": 1 },
+    "source": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Where the expected values come from, e.g. 'calculator: General foods row 3' or 'Q&A Table 5 (energy)'."
+    },
+    "category": {
+      "enum": ["general", "red_meat", "cheese", "fats_oils_nuts_seeds", "beverage", "water"]
+    },
+    "input": { "$ref": "#/$defs/input" },
+    "expected": {
+      "oneOf": [
+        { "$ref": "#/$defs/scored" },
+        { "$ref": "#/$defs/water_result" },
+        { "$ref": "#/$defs/insufficient" }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "category": { "const": "water" } } },
+      "then": {
+        "properties": {
+          "input": { "maxProperties": 0 },
+          "expected": { "$ref": "#/$defs/water_result" }
+        }
+      },
+      "else": {
+        "properties": { "expected": { "not": { "$ref": "#/$defs/water_result" } } }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": { "enum": ["general", "red_meat", "cheese"] },
+          "expected": { "required": ["grade", "score"] }
+        }
+      },
+      "then": {
+        "properties": {
+          "input": { "required": ["energy_kj", "sugars_g", "saturated_fat_g", "salt_g", "fibre_g", "protein_g", "fvl_percent"], "not": { "anyOf": [{ "required": ["total_fat_g"] }, { "required": ["non_nutritive_sweeteners"] }] } },
+          "expected": { "properties": { "negative": { "$ref": "#/$defs/negative_food" }, "positive": { "$ref": "#/$defs/positive_food" } } }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": { "const": "red_meat" },
+          "expected": { "required": ["positive"] }
+        }
+      },
+      "then": {
+        "properties": { "expected": { "properties": { "positive": { "properties": { "protein": { "maximum": 2 } } } } } }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": { "const": "fats_oils_nuts_seeds" },
+          "expected": { "required": ["grade", "score"] }
+        }
+      },
+      "then": {
+        "properties": {
+          "input": { "required": ["total_fat_g", "sugars_g", "saturated_fat_g", "salt_g", "fibre_g", "protein_g", "fvl_percent"], "not": { "required": ["non_nutritive_sweeteners"] } },
+          "expected": { "properties": { "negative": { "$ref": "#/$defs/negative_fats" }, "positive": { "$ref": "#/$defs/positive_food" } } }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "category": { "const": "beverage" },
+          "expected": { "required": ["grade", "score"] }
+        }
+      },
+      "then": {
+        "properties": {
+          "input": { "required": ["energy_kj", "sugars_g", "saturated_fat_g", "salt_g", "fibre_g", "protein_g", "fvl_percent", "non_nutritive_sweeteners"], "not": { "required": ["total_fat_g"] } },
+          "expected": {
+            "properties": {
+              "negative": { "$ref": "#/$defs/negative_beverage" },
+              "positive": { "$ref": "#/$defs/positive_beverage" },
+              "protein_counted": { "const": true },
+              "grade": { "enum": ["B", "C", "D", "E"] }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "category": { "const": "cheese" }, "expected": { "required": ["protein_counted"] } } },
+      "then": { "properties": { "expected": { "properties": { "protein_counted": { "const": true } } } } }
+    }
+  ],
+  "$defs": {
+    "amount": { "type": "number", "minimum": 0 },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "energy_kj": { "$ref": "#/$defs/amount" },
+        "sugars_g": { "$ref": "#/$defs/amount" },
+        "saturated_fat_g": { "$ref": "#/$defs/amount" },
+        "total_fat_g": { "$ref": "#/$defs/amount" },
+        "salt_g": { "$ref": "#/$defs/amount" },
+        "fibre_g": { "$ref": "#/$defs/amount" },
+        "protein_g": { "$ref": "#/$defs/amount" },
+        "fvl_percent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "non_nutritive_sweeteners": { "type": "boolean" }
+      }
+    },
+    "points": { "type": "integer", "minimum": 0 },
+    "negative_food": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["energy", "sugars", "saturated_fat", "salt"],
+      "properties": {
+        "energy": { "$ref": "#/$defs/points", "maximum": 10 },
+        "sugars": { "$ref": "#/$defs/points", "maximum": 15 },
+        "saturated_fat": { "$ref": "#/$defs/points", "maximum": 10 },
+        "salt": { "$ref": "#/$defs/points", "maximum": 20 }
+      }
+    },
+    "negative_fats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["energy_from_saturates", "sugars", "saturated_fat_ratio", "salt"],
+      "properties": {
+        "energy_from_saturates": { "$ref": "#/$defs/points", "maximum": 10 },
+        "sugars": { "$ref": "#/$defs/points", "maximum": 15 },
+        "saturated_fat_ratio": { "$ref": "#/$defs/points", "maximum": 10 },
+        "salt": { "$ref": "#/$defs/points", "maximum": 20 }
+      }
+    },
+    "negative_beverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["energy", "sugars", "saturated_fat", "salt", "non_nutritive_sweeteners"],
+      "properties": {
+        "energy": { "$ref": "#/$defs/points", "maximum": 10 },
+        "sugars": { "$ref": "#/$defs/points", "maximum": 10 },
+        "saturated_fat": { "$ref": "#/$defs/points", "maximum": 10 },
+        "salt": { "$ref": "#/$defs/points", "maximum": 20 },
+        "non_nutritive_sweeteners": { "enum": [0, 4] }
+      }
+    },
+    "positive_food": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protein", "fibre", "fvl"],
+      "properties": {
+        "protein": { "$ref": "#/$defs/points", "maximum": 7 },
+        "fibre": { "$ref": "#/$defs/points", "maximum": 5 },
+        "fvl": { "enum": [0, 1, 2, 5] }
+      }
+    },
+    "positive_beverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protein", "fibre", "fvl"],
+      "properties": {
+        "protein": { "$ref": "#/$defs/points", "maximum": 7 },
+        "fibre": { "$ref": "#/$defs/points", "maximum": 5 },
+        "fvl": { "enum": [0, 2, 4, 6] }
+      }
+    },
+    "scored": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["negative", "positive", "negative_total", "positive_total", "protein_counted", "score", "grade"],
+      "properties": {
+        "negative": { "type": "object" },
+        "positive": { "type": "object" },
+        "negative_total": { "$ref": "#/$defs/points" },
+        "positive_total": { "$ref": "#/$defs/points" },
+        "protein_counted": {
+          "type": "boolean",
+          "description": "False when the protein points are left out of the score (N >= 11 for foods, N >= 7 for fats)."
+        },
+        "score": { "type": "integer" },
+        "grade": { "enum": ["A", "B", "C", "D", "E"] }
+      }
+    },
+    "water_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grade"],
+      "properties": { "grade": { "const": "A" } }
+    },
+    "insufficient": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["insufficient_data"],
+      "properties": {
+        "insufficient_data": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["energy_kj", "sugars_g", "saturated_fat_g", "total_fat_g", "salt_g", "fibre_g", "protein_g", "fvl_percent", "non_nutritive_sweeteners"]
+          },
+          "description": "Inputs that are missing (or unusable, e.g. total_fat_g = 0 in the fats category), sorted alphabetically."
+        }
+      }
+    }
+  }
+}
