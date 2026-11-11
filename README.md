@@ -14,7 +14,7 @@ coverage grows for local (Tunisian) products that global databases miss.
 |---|---|
 | Mobile app | Flutter (Android first, iOS later), Riverpod, go_router, dio, drift, mobile_scanner, ML Kit text recognition |
 | Backend | Python 3.12, FastAPI, SQLAlchemy 2 (async) + Alembic, Pydantic v2, arq worker |
-| Data | PostgreSQL, Redis (cache + job queue), S3-compatible object storage (MinIO locally) |
+| Data | PostgreSQL, Redis (cache + job queue), S3-compatible object storage (RustFS locally) |
 | External | Open Food Facts (backend only), optional LLM API for label parsing |
 | CI/CD | GitHub Actions |
 
@@ -37,7 +37,9 @@ docs/adr/             Architecture decision records
 
 ### Prerequisites
 
-- Git, Docker Desktop (with WSL 2 on Windows)
+- Git
+- Docker Engine + Compose plugin. On Windows: run it inside WSL 2 (e.g. Ubuntu 24.04 with
+  `docker-ce` and `docker-compose-plugin`); Docker Desktop is not required.
 - [uv](https://docs.astral.sh/uv/) and Python 3.12 (backend)
 - Flutter SDK (app)
 
@@ -51,10 +53,31 @@ git config core.hooksPath .githooks
 cp .env.example .env
 ```
 
+### Local infrastructure
+
+`docker-compose.yml` runs everything the backend needs:
+
+| Service | Image | Address (localhost only) | Notes |
+|---|---|---|---|
+| `postgres` | `postgres:16.15-alpine` | `localhost:5432` | Databases `qout` and `qout_test` |
+| `redis` | `redis:7.4.12-alpine` | `localhost:6379` | AOF persistence |
+| `rustfs` | `rustfs/rustfs:1.0.5` | API `localhost:9000`, console http://localhost:9001 | S3-compatible; log in with `S3_ACCESS_KEY` / `S3_SECRET_KEY` |
+| `s3-init` | `amazon/aws-cli:2.40.0` | – | One-shot: creates `S3_BUCKET`, then exits 0 |
+
+```sh
+docker compose up -d        # start (data kept in named volumes)
+docker compose ps           # postgres, redis, rustfs should be "healthy"
+docker compose down         # stop, keep data
+docker compose down -v      # stop and delete all data (fresh start)
+```
+
+The test database is created by `infra/postgres/init/` only when the Postgres volume is
+empty. If you change `POSTGRES_TEST_DB` later, run `docker compose down -v` and start again.
+
 ### Run locally (placeholders until the corresponding tasks land)
 
 ```sh
-# Infrastructure: Postgres, Redis, MinIO
+# Infrastructure: Postgres, Redis, RustFS
 docker compose up -d
 
 # Backend (from backend/)
