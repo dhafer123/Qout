@@ -58,10 +58,11 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 ## Phase 1 — Scoring engine (the core)
 
 ### T08 · Scoring spec and golden format
-- [ ] `docs/specs/`: I add the official Nutri-Score specification (current revised algorithm). **Claude: if it is missing, stop and ask.**
-- [ ] `scoring-spec/schema.json`: JSON schema for a golden case (category, nutrients per 100 g/ml, expected points per component, expected total, expected grade)
-- [ ] 20+ golden cases covering every category (general, beverages, fats/oils/nuts/seeds, cheese, water) and boundary values
+- [x] `docs/specs/`: I add the official Nutri-Score specification (current revised algorithm). **Claude: if it is missing, stop and ask.**
+- [x] `scoring-spec/schema.json`: JSON schema for a golden case (category, nutrients per 100 g/ml, expected points per component, expected total, expected grade)
+- [x] 20+ golden cases covering every category (general, beverages, fats/oils/nuts/seeds, cheese, water) and boundary values
 - Tests: **U** every golden file validates against the schema.
+- Done: specs = Q&A V11, 2022 foods and 2023 beverages Scientific Committee reports, official calculator (2024-04-04); `docs/specs/README.md` lists sources, where each rule lives and 7 interpretation decisions. 57 golden cases: the calculator's 20 official examples (+ water) with official results, boundary cases for every table/grade edge/protein rule/red meat cap, and insufficient-data cases. Categories: `general`, `red_meat`, `cheese`, `fats_oils_nuts_seeds`, `beverage`, `water` (red meat added: it has its own rule). Expected values cross-checked with a throwaway reference that reproduces all official examples. Tests (`backend/tests/unit/test_golden_cases.py`, 130+ checks): schema validity, ids, category coverage, totals add up, schema rejects invalid cases. New dev dependency `jsonschema`. Backend CI also runs on `scoring-spec/**`.
 
 ### T09 · Nutri-Score engine (Python)
 - [ ] CI: add the ≥ 95 % coverage gate for `modules/scoring` (from T05)
@@ -230,3 +231,4 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - 2026-11-11 (T04): the API does not run migrations on startup; `alembic upgrade head` is an explicit step (CD step in T32). Fixed: the integration conftest hook had marked unit tests as `integration` too.
 - 2026-11-11 (T06): stayed on Flutter 3.38.9. Follow-up when Flutter is upgraded: move to Riverpod 3 (blocked by the freezed/analyzer constraint on Dart 3.10). Seed color `#2E7D32` is a placeholder until the visual identity exists.
 - 2026-11-11 (T05): first push-triggered run was stuck in `queued` by a GitHub Actions outage; re-run via `workflow_dispatch` once it recovered.
+- 2026-11-11 (T08): the official calculator holds only ~20 example products (the rest are empty template rows). Decisions recorded in `docs/specs/README.md`: exact-threshold values get the lower points (calculator `<=`), except the fats saturates/fat ratio (`<`); beverage salt 3.2 g → 15 points (calculator typo); total fat 0 in the fats category → insufficient data. For T09: kcal→kJ factor 4.2 (calculator), sugar alcohols are not non-nutritive sweeteners, alcoholic drinks > 1.2 % are out of scope.
