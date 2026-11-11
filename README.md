@@ -74,6 +74,36 @@ docker compose down -v      # stop and delete all data (fresh start)
 The test database is created by `infra/postgres/init/` only when the Postgres volume is
 empty. If you change `POSTGRES_TEST_DB` later, run `docker compose down -v` and start again.
 
+### Backend
+
+Runs inside WSL (Ubuntu) with [uv](https://docs.astral.sh/uv/)
+(`curl -LsSf https://astral.sh/uv/install.sh | sh`). If the repo lives on the Windows
+drive (`/mnt/c/...`), keep the virtualenv on the Linux side. It's faster and avoids
+clashes with Windows. Add this to `~/.profile` once:
+
+```sh
+export UV_PROJECT_ENVIRONMENT="$HOME/.venvs/qout-backend"
+export UV_LINK_MODE=copy
+```
+
+From `backend/`:
+
+```sh
+uv sync                                  # install dependencies
+uv run uvicorn app.main:app --reload     # http://localhost:8000/docs
+uv run pytest                            # unit + integration (needs docker compose up -d)
+uv run pytest tests/unit                 # unit tests only, no services needed
+```
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /health` | Liveness: always 200 while the process runs |
+| `GET /health/ready` | Readiness: 200 if Postgres and Redis respond, else 503 with the failing checks |
+
+Logs are JSON lines on stdout. Every request gets an `X-Request-ID` (reused from the
+request if valid, otherwise generated) that appears in the response and in log lines.
+Settings come from environment variables and `.env` (see `.env.example`).
+
 ### Run locally (placeholders until the corresponding tasks land)
 
 ```sh
@@ -82,7 +112,7 @@ docker compose up -d
 
 # Backend (from backend/)
 uv sync
-uv run alembic upgrade head
+uv run alembic upgrade head   # from T04
 uv run uvicorn app.main:app --reload
 
 # App (from app/)
