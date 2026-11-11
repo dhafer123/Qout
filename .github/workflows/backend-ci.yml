@@ -1,5 +1,5 @@
 # Backend CI: lint, type-check and test the FastAPI backend against real Postgres + Redis.
-# Runs only when something under backend/ (or this workflow) changes.
+# Runs only when backend/, the shared scoring spec, or this workflow changes.
 
 name: Backend CI
 
@@ -8,10 +8,12 @@ on:
     branches: [main]
     paths:
       - "backend/**"
+      - "scoring-spec/**"
       - ".github/workflows/backend-ci.yml"
   pull_request:
     paths:
       - "backend/**"
+      - "scoring-spec/**"
       - ".github/workflows/backend-ci.yml"
   workflow_dispatch:
 
