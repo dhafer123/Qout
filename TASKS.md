@@ -22,7 +22,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - [x] `docker-compose.yml`: Postgres 16, Redis 7, RustFS (+ bucket init), named volumes, healthchecks (MinIO replaced, see ADR 0002)
 - [x] Separate test database (`qout_test`) created on startup
 - Acceptance: `docker compose up -d` → all services healthy.
-- [ ] Acceptance run: **pending**. No container runtime on the dev machine yet (Docker Engine in WSL 2 to be installed). Validated statically only: YAML, pinned images, healthchecks, localhost ports, env defaults match `.env.example`, init script syntax.
+- [x] Acceptance run (2026-11-11, Docker Engine 29.9.3 / Compose v5.7.0 in WSL 2 Ubuntu 24.04): postgres, redis, rustfs healthy; s3-init exited 0 and created `qout-uploads`; `qout` and `qout_test` exist (owner `qout`); after `down` + `up` data persisted (Redis key, test DB) and bucket init reported "already exists".
 
 ### T03 · Backend skeleton
 - [ ] uv project, FastAPI app factory, `core/config.py` (pydantic-settings), structured JSON logging, request-id middleware
