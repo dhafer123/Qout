@@ -1,0 +1,131 @@
+from pathlib import Path
+
+import pytest
+from pydantic import ValidationError
+
+from app.core.config import Settings, get_settings
+
+DB_URL = "postgresql+asyncpg://user:pw@db.example:5432/qout"
+REDIS_URL = "redis://cache.example:6379/0"
+
+ENV_VARS = (
+    "APP_ENV",
+    "LOG_LEVEL",
+    "DATABASE_URL",
+    "REDIS_URL",
+    "READINESS_TIMEOUT_SECONDS",
+)
+
+
+@pytest.fixture(autouse=True)
+def clean_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    for name in ENV_VARS:
+        monkeypatch.delenv(name, raising=False)
+
+
+def write_env_file(path: Path, **values: str) -> Path:
+    path.write_text("".join(f"{k}={v}\n" for k, v in values.items()), encoding="utf-8")
+    return path
+
+
+def test_defaults_apply_when_only_required_fields_are_set(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DATABASE_URL", DB_URL)
+    monkeypatch.setenv("REDIS_URL", REDIS_URL)
+
+    settings = Settings(_env_file=None)
+
+    assert settings.app_env == "dev"
+    assert settings.log_level == "INFO"
+    assert settings.readiness_timeout_seconds == 2.0
+    assert str(settings.database_url) == DB_URL
+    assert str(settings.redis_url) == REDIS_URL
+
+
+def test_missing_required_fields_raise(tmp_path: Path) -> None:
+    with pytest.raises(ValidationError) as exc_info:
+        Settings(_env_file=None)
+
+    missing = {err["loc"][0] for err in exc_info.value.errors() if err["type"] == "missing"}
+    assert missing == {"database_url", "redis_url"}
+
+
+def test_reads_values_from_env_file(tmp_path: Path) -> None:
+    env_file = write_env_file(
+        tmp_path / ".env",
+        APP_ENV="staging",
+        LOG_LEVEL="debug",
+        DATABASE_URL=DB_URL,
+        REDIS_URL=REDIS_URL,
+        READINESS_TIMEOUT_SECONDS="0.5",
+        UNRELATED_SETTING="ignored",
+    )
+
+    settings = Settings(_env_file=env_file)
+
+    assert settings.app_env == "staging"
+    assert settings.log_level == "DEBUG"
+    assert settings.readiness_timeout_seconds == 0.5
+
+
+def test_environment_variables_override_env_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env_file = write_env_file(
+        tmp_path / ".env", APP_ENV="staging", DATABASE_URL=DB_URL, REDIS_URL=REDIS_URL
+    )
+    monkeypatch.setenv("APP_ENV", "prod")
+
+    assert Settings(_env_file=env_file).app_env == "prod"
+
+
+def test_later_env_file_overrides_earlier(tmp_path: Path) -> None:
+    root_env = write_env_file(
+        tmp_path / "root.env", LOG_LEVEL="INFO", DATABASE_URL=DB_URL, REDIS_URL=REDIS_URL
+    )
+    backend_env = write_env_file(tmp_path / "backend.env", LOG_LEVEL="WARNING")
+
+    assert Settings(_env_file=(root_env, backend_env)).log_level == "WARNING"
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("APP_ENV", "production"),
+        ("LOG_LEVEL", "VERBOSE"),
+        ("DATABASE_URL", "mysql://user@host/db"),
+        ("DATABASE_URL", "not a url"),
+        ("REDIS_URL", "http://cache.example"),
+        ("READINESS_TIMEOUT_SECONDS", "0"),
+        ("READINESS_TIMEOUT_SECONDS", "31"),
+    ],
+)
+def test_invalid_values_are_rejected(
+    monkeypatch: pytest.MonkeyPatch, field: str, value: str
+) -> None:
+    monkeypatch.setenv("DATABASE_URL", DB_URL)
+    monkeypatch.setenv("REDIS_URL", REDIS_URL)
+    monkeypatch.setenv(field, value)
+
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)
+
+
+def test_settings_are_immutable(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("DATABASE_URL", DB_URL)
+    monkeypatch.setenv("REDIS_URL", REDIS_URL)
+    settings = Settings(_env_file=None)
+
+    with pytest.raises(ValidationError):
+        settings.app_env = "prod"  # type: ignore[misc]
+
+
+def test_get_settings_is_cached(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("DATABASE_URL", DB_URL)
+    monkeypatch.setenv("REDIS_URL", REDIS_URL)
+    get_settings.cache_clear()
+    try:
+        assert get_settings() is get_settings()
+    finally:
+        get_settings.cache_clear()
