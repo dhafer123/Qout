@@ -10,12 +10,13 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 ## Phase 0 — Foundations
 
 ### T01 · Repo skeleton and tooling
-- [ ] Monorepo folders: `backend/`, `app/`, `scoring-spec/golden/`, `docs/specs/`, `docs/adr/`, `.github/workflows/`
-- [ ] `.gitignore` (Python, Flutter, env files, IDE), `.editorconfig`, `.env.example`
-- [ ] `README.md` (one-paragraph pitch, stack, how to run — placeholders OK)
-- [ ] `docs/adr/0001-architecture.md`: modular monolith, Flutter + FastAPI, OFF as data source
-- [ ] Verify `.claude/settings.json` and `.githooks/commit-msg` are present; document `git config core.hooksPath .githooks` in README
+- [x] Monorepo folders: `backend/`, `app/`, `scoring-spec/golden/`, `docs/specs/`, `docs/adr/`, `.github/workflows/`
+- [x] `.gitignore` (Python, Flutter, env files, IDE), `.editorconfig`, `.env.example`
+- [x] `README.md` (one-paragraph pitch, stack, how to run — placeholders OK)
+- [x] `docs/adr/0001-architecture.md`: modular monolith, Flutter + FastAPI, OFF as data source
+- [x] Verify `.claude/settings.json` and `.githooks/commit-msg` are present; document `git config core.hooksPath .githooks` in README
 - Tests: none (tooling only). Acceptance: a test commit shows no AI trailer.
+- Done: hook verified with a throwaway commit containing `Co-Authored-By: Claude` and `Generated with Claude Code` lines; both were stripped.
 
 ### T02 · Local infrastructure
 - [ ] `docker-compose.yml`: Postgres 16, Redis 7, MinIO (+ bucket init), named volumes, healthchecks
@@ -215,3 +216,4 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 
 ## Notes / decisions log
 - (add decisions here as tasks are done)
+- 2026-11-11 (T01): added `.gitattributes` forcing LF line endings (Windows + WSL + shell hooks). Solo workflow: work is pushed directly to `main` (no PRs) unless decided otherwise. Shared `.claude/settings.json` is tracked; `.claude/settings.local.json` is ignored.
