@@ -44,4 +44,4 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     """Return the process-wide settings, loaded once."""
-    return Settings()  # type: ignore[call-arg]  # required fields come from the environment
+    return Settings()
