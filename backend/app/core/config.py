@@ -45,6 +45,11 @@ class Settings(BaseSettings):
     off_max_retries: int = Field(default=3, ge=0, le=10)
     off_rate_limit_per_minute: int = Field(default=100, ge=1, le=1000)
 
+    # Product lookup cache (Redis). Unknown barcodes are remembered for less time, so a
+    # product added to OFF later shows up soon.
+    product_cache_ttl_seconds: int = Field(default=86_400, ge=1)
+    product_not_found_ttl_seconds: int = Field(default=600, ge=1)
+
     @field_validator("off_user_agent")
     @classmethod
     def _real_user_agent(cls, value: str) -> str:

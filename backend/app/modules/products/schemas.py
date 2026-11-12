@@ -20,6 +20,7 @@ from app.modules.products.models import (
     QualityFlag,
     ScanOutcome,
 )
+from app.modules.scoring.additives import OverexposureRisk
 from app.modules.scoring.models import Category, Grade
 
 Ean = Annotated[str, StringConstraints(pattern=EAN_PATTERN)]
@@ -135,3 +136,68 @@ class ScanEventCreate(_Schema):
     ean: Ean
     outcome: ScanOutcome
     product_id: uuid.UUID | None = None
+
+
+# ---------------------------------------------------------------- lookup response
+
+
+class AdditiveDetail(BaseModel):
+    code: str
+    """Taxonomy code, e.g. E330 or E160a(i)."""
+    name: str | None
+    overexposure_risk: OverexposureRisk
+    """EFSA overexposure risk; `unknown` means not evaluated, not "no risk"."""
+
+
+class NutritionDetail(BaseModel):
+    """The latest declared nutrition, per 100 g or 100 mL (`basis`). None: not declared."""
+
+    version: int
+    basis: NutritionBasis
+    source: DataSource
+    energy_kj: Annotated[Decimal, _as_json_number] | None
+    sugars_g: Annotated[Decimal, _as_json_number] | None
+    saturated_fat_g: Annotated[Decimal, _as_json_number] | None
+    total_fat_g: Annotated[Decimal, _as_json_number] | None
+    salt_g: Annotated[Decimal, _as_json_number] | None
+    fibre_g: Annotated[Decimal, _as_json_number] | None
+    protein_g: Annotated[Decimal, _as_json_number] | None
+    fvl_percent: Annotated[Decimal, _as_json_number] | None
+    non_nutritive_sweeteners: bool | None
+
+
+class ScoreDetail(BaseModel):
+    engine_version: str
+    grade: Grade | None
+    """None when the data is insufficient (see `breakdown.insufficient_data`)."""
+    total: int | None
+    """Points (negative minus positive); None for water and insufficient data."""
+    breakdown: dict[str, Any]
+    """The golden `expected` block (scoring-spec/README.md): points per component and
+    `assumed_zero`, `{"grade": "A"}` for water, or `{"insufficient_data": [fields]}`."""
+    computed_at: datetime
+
+
+class ProductDetail(BaseModel):
+    """`GET /v1/products/{ean}`: everything the app shows for a scanned product."""
+
+    ean: str
+    """As stored: digits only, UPC-A as EAN-13."""
+    name: str | None
+    brand: str | None
+    image_url: str | None
+    category: Category | None
+    source: DataSource
+    status: ProductStatus
+    quality_flag: QualityFlag | None
+    nova_group: int | None
+    additives: list[AdditiveDetail]
+    nutrition: NutritionDetail | None
+    score: ScoreDetail | None
+    """None when the product's Nutri-Score category is unknown (nothing to score with)."""
+    updated_at: datetime
+    """Latest change to the product, its nutrition or its score."""
+
+
+class ErrorResponse(BaseModel):
+    detail: str
