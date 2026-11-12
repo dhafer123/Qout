@@ -4,5 +4,5 @@
 library;
 
 export 'package:qout/scoring/engine.dart'
-    show kjFromKcal, requiredFields, saltFromSodium, score;
+    show kjFromKcal, requiredFields, saltFromSodium, score, zeroIfUndeclared;
 export 'package:qout/scoring/models.dart';

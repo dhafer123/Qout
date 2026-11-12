@@ -134,7 +134,7 @@ void main() {
       grade: Grade.a,
       breakdown: null,
     );
-    expect(water.engineVersion, 'nutriscore-2023.1');
+    expect(water.engineVersion, 'nutriscore-2023.2');
     const missing = ScoreResult.insufficientData(
       category: Category.general,
       missing: ['fibre_g'],

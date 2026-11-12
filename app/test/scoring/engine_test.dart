@@ -74,7 +74,7 @@ void main() {
 
   group('missing data', () {
     for (final MapEntry(key: category, value: values) in base.entries) {
-      for (final field in values.keys) {
+      for (final field in values.keys.where((f) => f != 'fibre_g')) {
         test('${category.value} without $field', () {
           final result = scoreSpec(
             category,
@@ -99,6 +99,40 @@ void main() {
         );
       });
     }
+
+    for (final MapEntry(key: category, value: values) in base.entries) {
+      test('${category.value}: undeclared fibre counts as 0 (decision 8)', () {
+        final undeclared = scoreSpec(category, {...values}..remove('fibre_g'));
+        final zero = scoreSpec(category, values);
+        if (undeclared is! NutriScore || zero is! NutriScore) {
+          fail('expected grades, got $undeclared and $zero');
+        }
+        expect(undeclared.breakdown!.assumedZero, ['fibre_g']);
+        expect(zero.breakdown!.assumedZero, isEmpty);
+        expect(undeclared.grade, zero.grade);
+        expect(undeclared.breakdown!.copyWith(assumedZero: []), zero.breakdown);
+      });
+    }
+
+    test('fibre is not listed with other missing fields', () {
+      final values = {...zeroFood}
+        ..remove('fibre_g')
+        ..remove('protein_g');
+      expect(
+        scoreSpec(Category.general, values),
+        const ScoreResult.insufficientData(
+          category: Category.general,
+          missing: ['protein_g'],
+        ),
+      );
+    });
+
+    test('fibre is not required anywhere', () {
+      expect(zeroIfUndeclared, ['fibre_g']);
+      for (final fields in requiredFields.values) {
+        expect(fields, isNot(contains('fibre_g')));
+      }
+    });
 
     test('fats with zero total fat is unusable', () {
       final values = {...zeroFats, 'total_fat_g': 0}..remove('saturated_fat_g');

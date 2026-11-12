@@ -6,7 +6,7 @@ part 'models.freezed.dart';
 ///
 /// Must equal `ENGINE_VERSION` in the Python engine
 /// (`backend/app/modules/scoring/models.py`).
-const scoringEngineVersion = 'nutriscore-2023.1';
+const scoringEngineVersion = 'nutriscore-2023.2';
 
 /// Scoring category. Choosing it is the caller's job (docs/specs/README.md).
 enum Category {
@@ -178,6 +178,9 @@ abstract class Breakdown with _$Breakdown {
     required int positiveTotal,
     required bool proteinCounted,
     required int score,
+
+    /// Undeclared inputs scored as 0 points (decision 8: fibre only).
+    @Default(<String>[]) List<String> assumedZero,
   }) = _Breakdown;
 }
 

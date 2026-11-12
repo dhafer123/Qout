@@ -14,7 +14,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Breakdown {
 
- Map<String, int> get negative; Map<String, int> get positive; int get negativeTotal; int get positiveTotal; bool get proteinCounted; int get score;
+ Map<String, int> get negative; Map<String, int> get positive; int get negativeTotal; int get positiveTotal; bool get proteinCounted; int get score;/// Undeclared inputs scored as 0 points (decision 8: fibre only).
+ List<String> get assumedZero;
 /// Create a copy of Breakdown
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +26,16 @@ $BreakdownCopyWith<Breakdown> get copyWith => _$BreakdownCopyWithImpl<Breakdown>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Breakdown&&const DeepCollectionEquality().equals(other.negative, negative)&&const DeepCollectionEquality().equals(other.positive, positive)&&(identical(other.negativeTotal, negativeTotal) || other.negativeTotal == negativeTotal)&&(identical(other.positiveTotal, positiveTotal) || other.positiveTotal == positiveTotal)&&(identical(other.proteinCounted, proteinCounted) || other.proteinCounted == proteinCounted)&&(identical(other.score, score) || other.score == score));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Breakdown&&const DeepCollectionEquality().equals(other.negative, negative)&&const DeepCollectionEquality().equals(other.positive, positive)&&(identical(other.negativeTotal, negativeTotal) || other.negativeTotal == negativeTotal)&&(identical(other.positiveTotal, positiveTotal) || other.positiveTotal == positiveTotal)&&(identical(other.proteinCounted, proteinCounted) || other.proteinCounted == proteinCounted)&&(identical(other.score, score) || other.score == score)&&const DeepCollectionEquality().equals(other.assumedZero, assumedZero));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(negative),const DeepCollectionEquality().hash(positive),negativeTotal,positiveTotal,proteinCounted,score);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(negative),const DeepCollectionEquality().hash(positive),negativeTotal,positiveTotal,proteinCounted,score,const DeepCollectionEquality().hash(assumedZero));
 
 @override
 String toString() {
-  return 'Breakdown(negative: $negative, positive: $positive, negativeTotal: $negativeTotal, positiveTotal: $positiveTotal, proteinCounted: $proteinCounted, score: $score)';
+  return 'Breakdown(negative: $negative, positive: $positive, negativeTotal: $negativeTotal, positiveTotal: $positiveTotal, proteinCounted: $proteinCounted, score: $score, assumedZero: $assumedZero)';
 }
 
 
@@ -45,7 +46,7 @@ abstract mixin class $BreakdownCopyWith<$Res>  {
   factory $BreakdownCopyWith(Breakdown value, $Res Function(Breakdown) _then) = _$BreakdownCopyWithImpl;
 @useResult
 $Res call({
- Map<String, int> negative, Map<String, int> positive, int negativeTotal, int positiveTotal, bool proteinCounted, int score
+ Map<String, int> negative, Map<String, int> positive, int negativeTotal, int positiveTotal, bool proteinCounted, int score, List<String> assumedZero
 });
 
 
@@ -62,7 +63,7 @@ class _$BreakdownCopyWithImpl<$Res>
 
 /// Create a copy of Breakdown
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? negative = null,Object? positive = null,Object? negativeTotal = null,Object? positiveTotal = null,Object? proteinCounted = null,Object? score = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? negative = null,Object? positive = null,Object? negativeTotal = null,Object? positiveTotal = null,Object? proteinCounted = null,Object? score = null,Object? assumedZero = null,}) {
   return _then(_self.copyWith(
 negative: null == negative ? _self.negative : negative // ignore: cast_nullable_to_non_nullable
 as Map<String, int>,positive: null == positive ? _self.positive : positive // ignore: cast_nullable_to_non_nullable
@@ -70,7 +71,8 @@ as Map<String, int>,negativeTotal: null == negativeTotal ? _self.negativeTotal :
 as int,positiveTotal: null == positiveTotal ? _self.positiveTotal : positiveTotal // ignore: cast_nullable_to_non_nullable
 as int,proteinCounted: null == proteinCounted ? _self.proteinCounted : proteinCounted // ignore: cast_nullable_to_non_nullable
 as bool,score: null == score ? _self.score : score // ignore: cast_nullable_to_non_nullable
-as int,
+as int,assumedZero: null == assumedZero ? _self.assumedZero : assumedZero // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 
@@ -155,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Map<String, int> negative,  Map<String, int> positive,  int negativeTotal,  int positiveTotal,  bool proteinCounted,  int score)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Map<String, int> negative,  Map<String, int> positive,  int negativeTotal,  int positiveTotal,  bool proteinCounted,  int score,  List<String> assumedZero)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Breakdown() when $default != null:
-return $default(_that.negative,_that.positive,_that.negativeTotal,_that.positiveTotal,_that.proteinCounted,_that.score);case _:
+return $default(_that.negative,_that.positive,_that.negativeTotal,_that.positiveTotal,_that.proteinCounted,_that.score,_that.assumedZero);case _:
   return orElse();
 
 }
@@ -176,10 +178,10 @@ return $default(_that.negative,_that.positive,_that.negativeTotal,_that.positive
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Map<String, int> negative,  Map<String, int> positive,  int negativeTotal,  int positiveTotal,  bool proteinCounted,  int score)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Map<String, int> negative,  Map<String, int> positive,  int negativeTotal,  int positiveTotal,  bool proteinCounted,  int score,  List<String> assumedZero)  $default,) {final _that = this;
 switch (_that) {
 case _Breakdown():
-return $default(_that.negative,_that.positive,_that.negativeTotal,_that.positiveTotal,_that.proteinCounted,_that.score);case _:
+return $default(_that.negative,_that.positive,_that.negativeTotal,_that.positiveTotal,_that.proteinCounted,_that.score,_that.assumedZero);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +198,10 @@ return $default(_that.negative,_that.positive,_that.negativeTotal,_that.positive
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Map<String, int> negative,  Map<String, int> positive,  int negativeTotal,  int positiveTotal,  bool proteinCounted,  int score)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Map<String, int> negative,  Map<String, int> positive,  int negativeTotal,  int positiveTotal,  bool proteinCounted,  int score,  List<String> assumedZero)?  $default,) {final _that = this;
 switch (_that) {
 case _Breakdown() when $default != null:
-return $default(_that.negative,_that.positive,_that.negativeTotal,_that.positiveTotal,_that.proteinCounted,_that.score);case _:
+return $default(_that.negative,_that.positive,_that.negativeTotal,_that.positiveTotal,_that.proteinCounted,_that.score,_that.assumedZero);case _:
   return null;
 
 }
@@ -211,7 +213,7 @@ return $default(_that.negative,_that.positive,_that.negativeTotal,_that.positive
 
 
 class _Breakdown implements Breakdown {
-  const _Breakdown({required final  Map<String, int> negative, required final  Map<String, int> positive, required this.negativeTotal, required this.positiveTotal, required this.proteinCounted, required this.score}): _negative = negative,_positive = positive;
+  const _Breakdown({required final  Map<String, int> negative, required final  Map<String, int> positive, required this.negativeTotal, required this.positiveTotal, required this.proteinCounted, required this.score, final  List<String> assumedZero = const <String>[]}): _negative = negative,_positive = positive,_assumedZero = assumedZero;
   
 
  final  Map<String, int> _negative;
@@ -232,6 +234,15 @@ class _Breakdown implements Breakdown {
 @override final  int positiveTotal;
 @override final  bool proteinCounted;
 @override final  int score;
+/// Undeclared inputs scored as 0 points (decision 8: fibre only).
+ final  List<String> _assumedZero;
+/// Undeclared inputs scored as 0 points (decision 8: fibre only).
+@override@JsonKey() List<String> get assumedZero {
+  if (_assumedZero is EqualUnmodifiableListView) return _assumedZero;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_assumedZero);
+}
+
 
 /// Create a copy of Breakdown
 /// with the given fields replaced by the non-null parameter values.
@@ -243,16 +254,16 @@ _$BreakdownCopyWith<_Breakdown> get copyWith => __$BreakdownCopyWithImpl<_Breakd
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Breakdown&&const DeepCollectionEquality().equals(other._negative, _negative)&&const DeepCollectionEquality().equals(other._positive, _positive)&&(identical(other.negativeTotal, negativeTotal) || other.negativeTotal == negativeTotal)&&(identical(other.positiveTotal, positiveTotal) || other.positiveTotal == positiveTotal)&&(identical(other.proteinCounted, proteinCounted) || other.proteinCounted == proteinCounted)&&(identical(other.score, score) || other.score == score));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Breakdown&&const DeepCollectionEquality().equals(other._negative, _negative)&&const DeepCollectionEquality().equals(other._positive, _positive)&&(identical(other.negativeTotal, negativeTotal) || other.negativeTotal == negativeTotal)&&(identical(other.positiveTotal, positiveTotal) || other.positiveTotal == positiveTotal)&&(identical(other.proteinCounted, proteinCounted) || other.proteinCounted == proteinCounted)&&(identical(other.score, score) || other.score == score)&&const DeepCollectionEquality().equals(other._assumedZero, _assumedZero));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_negative),const DeepCollectionEquality().hash(_positive),negativeTotal,positiveTotal,proteinCounted,score);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_negative),const DeepCollectionEquality().hash(_positive),negativeTotal,positiveTotal,proteinCounted,score,const DeepCollectionEquality().hash(_assumedZero));
 
 @override
 String toString() {
-  return 'Breakdown(negative: $negative, positive: $positive, negativeTotal: $negativeTotal, positiveTotal: $positiveTotal, proteinCounted: $proteinCounted, score: $score)';
+  return 'Breakdown(negative: $negative, positive: $positive, negativeTotal: $negativeTotal, positiveTotal: $positiveTotal, proteinCounted: $proteinCounted, score: $score, assumedZero: $assumedZero)';
 }
 
 
@@ -263,7 +274,7 @@ abstract mixin class _$BreakdownCopyWith<$Res> implements $BreakdownCopyWith<$Re
   factory _$BreakdownCopyWith(_Breakdown value, $Res Function(_Breakdown) _then) = __$BreakdownCopyWithImpl;
 @override @useResult
 $Res call({
- Map<String, int> negative, Map<String, int> positive, int negativeTotal, int positiveTotal, bool proteinCounted, int score
+ Map<String, int> negative, Map<String, int> positive, int negativeTotal, int positiveTotal, bool proteinCounted, int score, List<String> assumedZero
 });
 
 
@@ -280,7 +291,7 @@ class __$BreakdownCopyWithImpl<$Res>
 
 /// Create a copy of Breakdown
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? negative = null,Object? positive = null,Object? negativeTotal = null,Object? positiveTotal = null,Object? proteinCounted = null,Object? score = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? negative = null,Object? positive = null,Object? negativeTotal = null,Object? positiveTotal = null,Object? proteinCounted = null,Object? score = null,Object? assumedZero = null,}) {
   return _then(_Breakdown(
 negative: null == negative ? _self._negative : negative // ignore: cast_nullable_to_non_nullable
 as Map<String, int>,positive: null == positive ? _self._positive : positive // ignore: cast_nullable_to_non_nullable
@@ -288,7 +299,8 @@ as Map<String, int>,negativeTotal: null == negativeTotal ? _self.negativeTotal :
 as int,positiveTotal: null == positiveTotal ? _self.positiveTotal : positiveTotal // ignore: cast_nullable_to_non_nullable
 as int,proteinCounted: null == proteinCounted ? _self.proteinCounted : proteinCounted // ignore: cast_nullable_to_non_nullable
 as bool,score: null == score ? _self.score : score // ignore: cast_nullable_to_non_nullable
-as int,
+as int,assumedZero: null == assumedZero ? _self._assumedZero : assumedZero // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 

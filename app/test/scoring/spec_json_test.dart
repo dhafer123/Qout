@@ -51,13 +51,30 @@ void main() {
       );
     });
 
+    test('assumed zero is written only when used', () {
+      final undeclared = expectedToSpec(
+        score(
+          Category.general,
+          NutritionInput(
+            energyKj: 900,
+            sugarsG: 5,
+            saturatedFatG: 0,
+            saltG: 0,
+            proteinG: 0,
+            fvlPercent: 0,
+          ),
+        ),
+      );
+      expect(undeclared['assumed_zero'], ['fibre_g']);
+      expect(undeclared['score'], 3);
+    });
+
     test('insufficient data', () {
       expect(
         expectedToSpec(score(Category.general, NutritionInput())),
         {
           'insufficient_data': [
             'energy_kj',
-            'fibre_g',
             'fvl_percent',
             'protein_g',
             'salt_g',

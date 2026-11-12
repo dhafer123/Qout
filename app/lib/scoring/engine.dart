@@ -8,7 +8,8 @@
 /// - cheese: always N - P;
 /// - fats, oils, nuts and seeds: N < 7 -> N - P; otherwise N - fibre - FVL;
 /// - beverages: always N - P, sweeteners add 4 to N, never A;
-/// - water: always A, no inputs.
+/// - water: always A, no inputs;
+/// - undeclared fibre: 0 points, reported in `assumedZero` (decision 8).
 library;
 
 import 'package:qout/scoring/exact_decimal.dart';
@@ -20,7 +21,6 @@ const _foodFields = [
   'sugars_g',
   'saturated_fat_g',
   'salt_g',
-  'fibre_g',
   'protein_g',
   'fvl_percent',
 ];
@@ -29,13 +29,17 @@ const _fatsFields = [
   'sugars_g',
   'saturated_fat_g',
   'salt_g',
-  'fibre_g',
   'protein_g',
   'fvl_percent',
 ];
 
+/// Inputs scored as 0 points when undeclared, and reported in
+/// [Breakdown.assumedZero] (decision 8).
+const zeroIfUndeclared = ['fibre_g'];
+
 /// Inputs each category needs (spec names); any missing gives
-/// [InsufficientData] (decision 5).
+/// [InsufficientData] (decision 5). Fibre is not among them: see
+/// [zeroIfUndeclared].
 const Map<Category, List<String>> requiredFields = {
   Category.general: _foodFields,
   Category.redMeat: _foodFields,
@@ -70,8 +74,16 @@ ScoreResult score(Category category, NutritionInput input) {
     );
   }
 
-  ExactDecimal v(String field) => ExactDecimal.fromDouble(input.amount(field)!);
-  return switch (category) {
+  final assumed = [
+    for (final field in zeroIfUndeclared)
+      if (!input.isDeclared(field)) field,
+  ];
+  ExactDecimal v(String field) {
+    final value = input.amount(field);
+    return value == null ? _zero : ExactDecimal.fromDouble(value);
+  }
+
+  final result = switch (category) {
     Category.fatsOilsNutsSeeds => _scoreFats(v),
     Category.beverage => _scoreBeverage(
       v,
@@ -79,7 +91,15 @@ ScoreResult score(Category category, NutritionInput input) {
     ),
     _ => _scoreFood(category, v),
   };
+  if (assumed.isEmpty || result is! NutriScore || result.breakdown == null) {
+    return result;
+  }
+  return result.copyWith(
+    breakdown: result.breakdown!.copyWith(assumedZero: assumed),
+  );
 }
+
+final _zero = ExactDecimal.fromInt(0);
 
 typedef _Values = ExactDecimal Function(String field);
 

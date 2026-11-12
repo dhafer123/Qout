@@ -55,5 +55,6 @@ Map<String, Object?> expectedToSpec(ScoreResult result) => switch (result) {
     'protein_counted': b.proteinCounted,
     'score': b.score,
     'grade': grade.letter,
+    if (b.assumedZero.isNotEmpty) 'assumed_zero': b.assumedZero,
   },
 };
