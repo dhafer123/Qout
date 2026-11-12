@@ -1,0 +1,208 @@
+{
+ "ean": "6191513502052",
+ "product": {
+  "additives_tags": [
+   "en:e1420",
+   "en:e14xx",
+   "en:e202",
+   "en:e410",
+   "en:e415"
+  ],
+  "brands": "Président",
+  "categories_tags": [
+   "en:dairies",
+   "en:fermented-foods",
+   "en:desserts",
+   "en:fermented-milk-products",
+   "en:cheeses",
+   "en:dairy-desserts",
+   "en:fermented-dairy-desserts",
+   "en:fromages-blancs-petit-suisses-and-skyr",
+   "en:plain-fermented-dairy-desserts",
+   "fr:fromages-blancs",
+   "fr:fromages-blancs-natures"
+  ],
+  "code": "6191513502052",
+  "generic_name": "Spécialité fromagère nature",
+  "image_front_url": "https://images.openfoodfacts.org/images/products/619/151/350/2052/front_en.31.400.jpg",
+  "nova_group": 4,
+  "nutriments": {
+   "added-sugars": 0,
+   "added-sugars_100g": 0,
+   "added-sugars_unit": "g",
+   "added-sugars_value": 0,
+   "carbohydrates": 3.3,
+   "carbohydrates_100g": 3.3,
+   "carbohydrates_unit": "g",
+   "carbohydrates_value": 3.3,
+   "energy": 807.1,
+   "energy-kcal": 195.2,
+   "energy-kcal_100g": 195.2,
+   "energy-kcal_unit": "kcal",
+   "energy-kcal_value": 195.2,
+   "energy-kj": 807.1,
+   "energy-kj_100g": 807.1,
+   "energy-kj_unit": "kJ",
+   "energy-kj_value": 807.1,
+   "energy_100g": 807.1,
+   "energy_unit": "kJ",
+   "energy_value": 807.1,
+   "fat": 18,
+   "fat_100g": 18,
+   "fat_unit": "g",
+   "fat_value": 18,
+   "fruits-vegetables-legumes-estimate-from-ingredients_100g": 0,
+   "fruits-vegetables-nuts-estimate-from-ingredients_100g": 0,
+   "nova-group": 4,
+   "nova-group_100g": 4,
+   "nova-group_serving": 4,
+   "nova-group_unit": "",
+   "nova-group_value": 4,
+   "proteins": 5,
+   "proteins_100g": 5,
+   "proteins_unit": "g",
+   "proteins_value": 5,
+   "salt": 0.4,
+   "salt_100g": 0.4,
+   "salt_unit": "g",
+   "salt_value": 0.4,
+   "saturated-fat": 15,
+   "saturated-fat_100g": 15,
+   "saturated-fat_unit": "g",
+   "saturated-fat_value": 15,
+   "sodium": 0.16,
+   "sodium_100g": 0.16,
+   "sodium_unit": "g",
+   "sodium_value": 0.16,
+   "sugars": 2.5,
+   "sugars_100g": 2.5,
+   "sugars_unit": "g",
+   "sugars_value": 2.5
+  },
+  "nutriscore": {
+   "2021": {
+    "category_available": 1,
+    "data": {
+     "energy": 807.1,
+     "energy_points": 2,
+     "energy_value": 807.1,
+     "fiber": 0,
+     "fiber_points": 0,
+     "fiber_value": 0,
+     "fruits_vegetables_nuts_colza_walnut_olive_oils": 0,
+     "fruits_vegetables_nuts_colza_walnut_olive_oils_points": 0,
+     "fruits_vegetables_nuts_colza_walnut_olive_oils_value": 0,
+     "is_beverage": 0,
+     "is_cheese": "",
+     "is_fat": 0,
+     "is_water": 0,
+     "negative_points": 13,
+     "positive_points": 0,
+     "proteins": 5,
+     "proteins_points": 3,
+     "proteins_value": 5,
+     "saturated_fat": 15,
+     "saturated_fat_points": 10,
+     "saturated_fat_value": 15,
+     "sodium": 160,
+     "sodium_points": 1,
+     "sodium_value": 160,
+     "sugars": 2.5,
+     "sugars_points": 0,
+     "sugars_value": 2.5
+    },
+    "estimated": 0,
+    "grade": "d",
+    "nutrients_available": 1,
+    "nutriscore_applicable": 1,
+    "nutriscore_computed": 1,
+    "preparation": "as_sold",
+    "score": 13
+   },
+   "2023": {
+    "category_available": 1,
+    "data": {
+     "components": {
+      "negative": [
+       {
+        "id": "energy",
+        "points": 2,
+        "points_max": 10,
+        "unit": "kJ",
+        "value": 807.1
+       },
+       {
+        "id": "sugars",
+        "points": 0,
+        "points_max": 15,
+        "unit": "g",
+        "value": 2.5
+       },
+       {
+        "id": "saturated_fat",
+        "points": 10,
+        "points_max": 10,
+        "unit": "g",
+        "value": 15
+       },
+       {
+        "id": "salt",
+        "points": 1,
+        "points_max": 20,
+        "unit": "g",
+        "value": 0.4
+       }
+      ],
+      "positive": [
+       {
+        "id": "fiber",
+        "points": 0,
+        "points_max": 5,
+        "unit": "g",
+        "value": null
+       },
+       {
+        "id": "fruits_vegetables_legumes",
+        "points": 0,
+        "points_max": 5,
+        "unit": "%",
+        "value": 0
+       }
+      ]
+     },
+     "count_proteins": 0,
+     "count_proteins_reason": "negative_points_greater_than_or_equal_to_11",
+     "is_beverage": 0,
+     "is_cheese": "",
+     "is_fat_oil_nuts_seeds": 0,
+     "is_red_meat_product": 0,
+     "is_water": 0,
+     "negative_points": 13,
+     "negative_points_max": 55,
+     "positive_nutrients": [
+      "fiber",
+      "fruits_vegetables_legumes"
+     ],
+     "positive_points": 0,
+     "positive_points_max": 10
+    },
+    "estimated": 0,
+    "grade": "d",
+    "nutrients_available": 1,
+    "nutriscore_applicable": 1,
+    "nutriscore_computed": 1,
+    "preparation": "as_sold",
+    "score": 13
+   }
+  },
+  "nutriscore_grade": "d",
+  "nutriscore_version": "2023",
+  "nutrition_data": "on",
+  "nutrition_data_per": "100g",
+  "nutrition_data_prepared_per": "100g",
+  "product_name": "Fraidoux",
+  "product_name_ar": "",
+  "product_name_fr": "fraidoux"
+ },
+ "recorded_at": "2026-11-12"
+}

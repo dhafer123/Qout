@@ -1,0 +1,87 @@
+{
+ "ean": "7613037792935",
+ "product": {
+  "brands": "Nestlé",
+  "categories_tags": [
+   "en:beverages-and-beverages-preparations",
+   "en:beverages",
+   "en:dairies",
+   "en:dried-products",
+   "en:milks-liquid-and-powder",
+   "en:dried-products-to-be-rehydrated",
+   "en:milks",
+   "en:dehydrated-beverages",
+   "en:milk-powders",
+   "en:infant-milks"
+  ],
+  "code": "7613037792935",
+  "generic_name": "Préparation pour nourrissons avec Fer",
+  "image_front_url": "https://images.openfoodfacts.org/images/products/761/303/779/2935/front_fr.3.400.jpg",
+  "nutriments": {
+   "saturated-fat": 0,
+   "saturated-fat_100g": 0,
+   "saturated-fat_unit": "g",
+   "saturated-fat_value": 0,
+   "sugars": 0,
+   "sugars_100g": 0,
+   "sugars_unit": "g",
+   "sugars_value": 0
+  },
+  "nutriscore": {
+   "2021": {
+    "category_available": 1,
+    "data": {
+     "energy": null,
+     "fiber": 0,
+     "fruits_vegetables_nuts_colza_walnut_olive_oils": 0,
+     "is_beverage": 0,
+     "is_cheese": 0,
+     "is_fat": 0,
+     "is_water": 0,
+     "proteins": null,
+     "saturated_fat": null,
+     "sodium": null,
+     "sugars": null
+    },
+    "estimated": 0,
+    "grade": "unknown",
+    "nutrients_available": 0,
+    "nutriscore_applicable": 1,
+    "nutriscore_computed": 0,
+    "preparation": "prepared"
+   },
+   "2023": {
+    "category_available": 1,
+    "data": {
+     "energy": null,
+     "fiber": null,
+     "fruits_vegetables_legumes": null,
+     "is_beverage": 1,
+     "is_cheese": 0,
+     "is_fat_oil_nuts_seeds": 0,
+     "is_red_meat_product": 0,
+     "is_water": 0,
+     "non_nutritive_sweeteners": null,
+     "proteins": null,
+     "salt": null,
+     "saturated_fat": null,
+     "sugars": null
+    },
+    "estimated": 0,
+    "grade": "unknown",
+    "nutrients_available": 0,
+    "nutriscore_applicable": 1,
+    "nutriscore_computed": 0,
+    "preparation": "prepared"
+   }
+  },
+  "nutriscore_grade": "unknown",
+  "nutriscore_version": "2023",
+  "nutrition_data": "on",
+  "nutrition_data_per": "100g",
+  "nutrition_data_prepared_per": "100g",
+  "product_name": "Nan Optipro 1",
+  "product_name_fr": "Nan Optipro 1"
+ },
+ "recorded_at": "2026-11-12"
+}
