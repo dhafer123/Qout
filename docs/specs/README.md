@@ -7,7 +7,7 @@ rule 2). Every value in `scoring-spec/` and in the scoring engines must trace ba
 
 | File | Document | Publisher / date | Role |
 |---|---|---|---|
-| `nutri-score-qa-v11.pdf` | Q&A for the updated Nutri-Score algorithm, V11 | Santé publique France | **Primary.** Point tables (Tables 5–10), calculation rules, grade table (p. 32), product categories |
+| `nutri-score-qa-v11.pdf` | Q&A for the updated Nutri-Score algorithm, V11 | Santé publique France | **Primary.** Point tables (Tables 5–10), calculation rules, grade table (p. 32, an image), product categories |
 | `nutri-score-foods-report-2022.pdf` | Update report from the Scientific Committee, 2022 | Scientific Committee, voted 29 June 2022 | Confirms foods and fats tables (recap, pp. 130–134) |
 | `nutri-score-beverages-report-2023.pdf` | Second update report (beverages), V2 2023 | Scientific Committee, voted 1 February 2023 | Confirms beverage tables (p. 73) |
 | `nutri-score-calculator-2024-04-04.xlsx` | Official calculator for the updated algorithm | Santé publique France, 2024-04-04 | Exact comparison operators; official example results used as golden cases |
@@ -19,12 +19,14 @@ Downloaded from <https://www.santepubliquefrance.fr/en/nutrition-and-physical-ac
 
 | Category | N component | P component | Score rule | Grades |
 |---|---|---|---|---|
-| General foods | Q&A Table 5 | Q&A Table 6 | N < 11: N − P; else N − fibre − FVL | Q&A p. 32, "Foods" |
-| Red meat | Table 5 | Table 6, protein capped at 2 points | as general | "Foods" |
-| Cheese | Table 5 | Table 6 | always N − P | "Foods" |
-| Fats, oils, nuts and seeds | Q&A Table 7 (energy from saturates = saturates × 37; saturates/fat ratio in %) | Q&A Table 8 | N < 7: N − P; else N − fibre − FVL | "Animal and vegetable fats, nuts and seeds" |
-| Beverages | Q&A Table 9 (+4 points if non-nutritive sweeteners) | Q&A Table 10 | always N − P | "Beverages" (B to E only) |
+| General foods | Q&A Table 5 | Q&A Table 6 | N < 11: N − P; else N − fibre − FVL | A ≤ 0, B 1–2, C 3–10, D 11–18, E ≥ 19 (2022 report §1.8.2, p. 50) |
+| Red meat | Table 5 | Table 6, protein capped at 2 points | as general | as general foods |
+| Cheese | Table 5 | Table 6 | always N − P | as general foods |
+| Fats, oils, nuts and seeds | Q&A Table 7 (energy from saturates = saturates × 37; saturates/fat ratio in %) | Q&A Table 8 | N < 7: N − P; else N − fibre − FVL | A ≤ −6, B −5 to 2, C 3–10, D 11–18, E ≥ 19 (2022 report §2.4.3, p. 73) |
+| Beverages | Q&A Table 9 (+4 points if non-nutritive sweeteners) | Q&A Table 10 | always N − P | B ≤ 2, C 3–6, D 7–9, E ≥ 10; never A (2023 report §6.7.3, p. 48) |
 | Water | — | — | — | always A |
+
+The Q&A grade table (p. 32) is an image; the grade bands above are quoted from the reports and match the calculator's formulas.
 
 Category membership (what counts as cheese, red meat, beverage, fats/nuts/seeds) is defined
 in the Q&A, pp. 16–21. Choosing the category is an input to the engine, not part of scoring.
@@ -50,12 +52,15 @@ golden case:
 6. **Water** (mineral, spring, table water without additions) is always A and takes no inputs.
    Flavoured waters are beverages and cannot be A (Q&A p. 16).
 7. **Rounding:** none. Points use the declared values as given (Q&A p. 11–13).
+   The calculator's "General foods" sheet alone rounds protein to 2 decimals before
+   scoring (`ROUND(J, 2)`); we do not. Results differ only for protein declared with 3+
+   decimals just above a threshold (e.g. 2.404 g: 1 point here, 0 in that sheet).
 
 ## Constants for later tasks
 
 - Salt ↔ sodium: salt = sodium × 2.5 (Q&A p. 12; calculator "Conversion tool").
-- kcal → kJ: the calculator's conversion tool uses kJ = round(kcal × 4.2). Engines take kJ;
-  use this factor only if a source gives kcal alone.
+- kcal → kJ: the calculator's conversion tool uses kJ = ROUND(kcal × 4.2, 0), halves rounded
+  away from zero (Excel). Engines take kJ; use this factor only if a source gives kcal alone.
 - Non-nutritive sweeteners: sugar alcohols E420, E421, E953, E956, E964, E965, E966, E967, E968
   do **not** count (calculator sheet "Non-nutritive sweeteners"; Q&A Appendix 3).
 - Alcoholic beverages above 1.2 % alcohol are out of scope (beverages report, p. 72).
