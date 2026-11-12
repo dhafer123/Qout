@@ -148,18 +148,21 @@ async def test_nutrition_version_is_unique_per_product(db_session: AsyncSession)
     )
 
 
-async def test_score_grade_and_total_go_together(db_session: AsyncSession) -> None:
+async def test_score_total_needs_a_grade(db_session: AsyncSession) -> None:
     product = await ProductFactory.create(db_session)
     sql = (
         "INSERT INTO scores (product_id, engine_version, grade, total, breakdown) "
         "VALUES (:product_id, 'v', :grade, :total, '{}')"
     )
-    assert await violates(db_session, sql, product_id=product.id, grade="B", total=None) == (
-        "ck_scores_grade_with_total"
+    assert await violates(db_session, sql, product_id=product.id, grade=None, total=3) == (
+        "ck_scores_total_needs_grade"
     )
     assert await violates(db_session, sql, product_id=product.id, grade="F", total=1) == (
         "ck_scores_score_grade"
     )
+    # Water: a grade without points; insufficient data: neither.
+    await db_session.execute(text(sql), {"product_id": product.id, "grade": "A", "total": None})
+    await db_session.execute(text(sql), {"product_id": product.id, "grade": None, "total": None})
 
 
 async def test_one_score_per_facts_and_engine_version(db_session: AsyncSession) -> None:

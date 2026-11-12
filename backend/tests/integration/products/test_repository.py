@@ -24,7 +24,8 @@ from app.modules.products.repository import (
     ScanEventRepository,
     ScoreRepository,
 )
-from app.modules.scoring import ENGINE_VERSION, Category, Grade
+from app.modules.products.scoring import nutrition_input, score_row
+from app.modules.scoring import ENGINE_VERSION, Category, Grade, score
 from tests.factories import NutritionFactsFactory, ProductFactory, ScoreFactory
 
 # ---------------------------------------------------------------- products
@@ -288,3 +289,37 @@ async def test_record_scans(db_session: AsyncSession) -> None:
     assert (found.product_id, found.outcome) == (product.id, ScanOutcome.FOUND)
     assert (unknown.product_id, unknown.outcome) == (None, ScanOutcome.NOT_FOUND)
     assert found.created_at is not None
+
+
+# ---------------------------------------------------------------- end to end
+
+
+async def test_score_stored_facts_and_store_the_result(db_session: AsyncSession) -> None:
+    """Facts saved as NUMERIC, read back, scored, and the score saved and read back."""
+    product = await ProductFactory.create(db_session, category=Category.FATS_OILS_NUTS_SEEDS)
+    facts = await NutritionFactsRepository(db_session).add_version(
+        facts_for(
+            product,
+            total_fat_g="1",
+            saturated_fat_g="0.58",  # ratio exactly 58 %: 9 points
+            sugars_g="0",
+            salt_g="0",
+            fibre_g="0",
+            protein_g="0",
+            fvl_percent="0",
+        )
+    )
+    db_session.expunge_all()
+
+    stored = await NutritionFactsRepository(db_session).latest(product.id)
+    assert stored is not None
+    result = score(Category.FATS_OILS_NUTS_SEEDS, nutrition_input(stored))
+    repo = ScoreRepository(db_session)
+    await repo.add(score_row(result, product_id=product.id, nutrition_facts_id=facts.id))
+    db_session.expunge_all()
+
+    latest = await repo.latest(product.id)
+    assert latest is not None
+    assert latest.breakdown["negative"]["saturated_fat_ratio"] == 9
+    # 0.58 g x 37 = 21.46 kJ (0 points) + ratio 9 = N 9; no positive points.
+    assert (latest.grade, latest.total) == (Grade.C, 9)

@@ -159,13 +159,14 @@ class Score(IdTimestampMixin, Base):
     """The engine's result for one nutrition facts version and engine version.
 
     `breakdown` is the golden `expected` block (scoring-spec/README.md): points per
-    component, or `{"insufficient_data": [...]}` (then `grade` and `total` are null).
+    component, `{"grade": "A"}` for water (grade, no total), or
+    `{"insufficient_data": [...]}` (no grade, no total).
     """
 
     __tablename__ = "scores"
     __table_args__ = (
         UniqueConstraint("nutrition_facts_id", "engine_version"),
-        CheckConstraint("(grade IS NULL) = (total IS NULL)", name="grade_with_total"),
+        CheckConstraint("total IS NULL OR grade IS NOT NULL", name="total_needs_grade"),
         Index("ix_scores_product_id_created_at", "product_id", "created_at"),
     )
 

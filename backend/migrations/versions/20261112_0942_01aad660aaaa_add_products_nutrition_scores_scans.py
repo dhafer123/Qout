@@ -279,7 +279,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.CheckConstraint(
-            "(grade IS NULL) = (total IS NULL)", name=op.f("ck_scores_grade_with_total")
+            "total IS NULL OR grade IS NOT NULL", name=op.f("ck_scores_total_needs_grade")
         ),
         sa.ForeignKeyConstraint(
             ["nutrition_facts_id"],
