@@ -1,9 +1,10 @@
 """Barcode lookup: cache → our database → Open Food Facts → not found.
 
-A product found on OFF is normalised, stored with its nutrition facts and score, and
-committed before it is returned. A stored product without a score for the current engine
-version (or for its latest nutrition) is scored on the way out. No FastAPI imports: the
-router maps the errors below to HTTP statuses.
+A product found on OFF is normalised, stored with its nutrition facts and score
+(`ProductUpserter`, shared with the bulk import), and committed before it is returned.
+A stored product without a score for the current engine version (or for its latest
+nutrition) is scored on the way out. No FastAPI imports: the router maps the errors below
+to HTTP statuses.
 """
 
 import logging
@@ -24,7 +25,6 @@ from app.modules.products.models import (
     Score,
 )
 from app.modules.products.repository import (
-    DuplicateEanError,
     NutritionFactsRepository,
     ProductRepository,
     ScoreRepository,
@@ -35,15 +35,9 @@ from app.modules.products.schemas import (
     ProductDetail,
     ScoreDetail,
 )
-from app.modules.products.scoring import nutrition_input, score_row
-from app.modules.scoring import (
-    ENGINE_VERSION,
-    NutritionInput,
-    OverexposureRisk,
-    ScoreResult,
-    additive,
-    score,
-)
+from app.modules.products.scoring import score_row
+from app.modules.products.upsert import ProductUpserter, score_product
+from app.modules.scoring import ENGINE_VERSION, OverexposureRisk, additive
 
 logger = logging.getLogger(__name__)
 
@@ -108,36 +102,18 @@ class ProductLookup:
             raise ProductNotFoundError(ean)
 
         normalized = normalize(ean, off)
-        try:
-            product = await self._products.add(Product(**normalized.product.model_dump()))
-        except DuplicateEanError:
-            # Another request stored it first (it has committed, or we would still wait).
-            stored = await self._products.get_by_ean(ean)
-            if stored is None:  # pragma: no cover - deleted in between
-                raise
-            return stored
-
-        facts = None
-        if normalized.nutrition is not None:
-            facts = await self._nutrition.add_version(
-                NutritionFacts(product_id=product.id, **normalized.nutrition.model_dump())
-            )
-        result = _score(product, facts)
-        if result is not None:
-            await self._scores.add(
-                score_row(
-                    result,
-                    product_id=product.id,
-                    nutrition_facts_id=None if facts is None else facts.id,
-                    off_grade=normalized.off_grade,
-                )
-            )
+        result = await ProductUpserter(self._session).upsert(normalized)
         await self._session.commit()
-        logger.info(
-            "product imported from OFF",
-            extra={"ean": ean, "quality_flag": product.quality_flag, "issues": normalized.issues},
-        )
-        return product
+        if result.changed:
+            logger.info(
+                "product imported from OFF",
+                extra={
+                    "ean": ean,
+                    "quality_flag": result.product.quality_flag,
+                    "issues": normalized.issues,
+                },
+            )
+        return result.product
 
     # ------------------------------------------------------------ stored products
 
@@ -148,12 +124,14 @@ class ProductLookup:
 
     async def _current_score(self, product: Product, facts: NutritionFacts | None) -> Score | None:
         """The score of the latest nutrition with the current engine, computed if missing."""
+        if product.category is None:
+            return None  # unknown category: nothing to score with (older scores don't apply)
         facts_id = None if facts is None else facts.id
         latest = await self._scores.latest(product.id, engine_version=ENGINE_VERSION)
         if latest is not None and latest.nutrition_facts_id == facts_id:
             return latest
-        result = _score(product, facts)
-        if result is None:
+        result = score_product(product, facts)
+        if result is None:  # pragma: no cover - category checked above
             return None
         previous = await self._scores.latest(product.id)
         off_grade = (
@@ -172,14 +150,6 @@ class ProductLookup:
             return await self._scores.latest(product.id, engine_version=ENGINE_VERSION)
         await self._session.commit()
         return row
-
-
-def _score(product: Product, facts: NutritionFacts | None) -> ScoreResult | None:
-    """Engine result, or None when the category is unknown (nothing to score with)."""
-    if product.category is None:
-        return None
-    nutrition = NutritionInput() if facts is None else nutrition_input(facts)
-    return score(product.category, nutrition)
 
 
 # ---------------------------------------------------------------- response mapping

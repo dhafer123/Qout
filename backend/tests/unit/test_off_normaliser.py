@@ -1,6 +1,7 @@
 """Open Food Facts normaliser on recorded (and a few hand-edited) OFF responses."""
 
 import json
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -521,3 +522,22 @@ def test_components_without_fvl_fall_back_to_the_estimate() -> None:
     data = {"components": {"negative": [{"id": "sugars", "value": 5}], "positive": []}}
     off = minimal(nutriscore={"2023": {"category_available": 1, "data": data}})
     assert normalize("6194001800104", off).nutrition.fvl_percent == 10  # type: ignore[union-attr]
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        (1_750_000_000, datetime(2025, 6, 15, 15, 6, 40, tzinfo=UTC)),
+        (1_750_000_000.5, datetime(2025, 6, 15, 15, 6, 40, 500_000, tzinfo=UTC)),
+        (None, None),
+        ("1750000000", None),
+        (True, None),
+        (0, None),  # 1970: before Open Food Facts existed
+        (10**20, None),
+        (float("inf"), None),
+        (float("nan"), None),
+    ],
+)
+def test_source_modified_at(raw: Any, expected: datetime | None) -> None:
+    off = minimal(last_modified_t=raw)
+    assert normalize("6194001800104", off).product.source_modified_at == expected

@@ -15,6 +15,7 @@ Pure functions, no I/O. Decisions (TASKS.md, T13):
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
@@ -48,6 +49,7 @@ _FLAGS = (  # first match wins: water is also flagged as a beverage
 )
 _GRADES = {"a": Grade.A, "b": Grade.B, "c": Grade.C, "d": Grade.D, "e": Grade.E}
 _HUNDRED = Decimal(100)
+_FIRST_OFF_YEAR = 2012  # Open Food Facts started in 2012: earlier times are garbage
 
 # Data-quality heuristics (not scoring constants). EU energy factors (Regulation (EU)
 # 1169/2011, Annex XIV) give 4.0 (fibre) to 4.25 (protein, carbohydrate) kJ per kcal;
@@ -102,6 +104,7 @@ def normalize(ean: str, off: Mapping[str, Any]) -> NormalizedProduct:
         nova_group=nova_group_from_off(off.get("nova_group")),
         additives=[a.code for a in additives_from_off(_list(off.get("additives_tags")))],
         quality_flag=report.flag(),
+        source_modified_at=_modified_at(off),
     )
     return NormalizedProduct(
         product=product,
@@ -314,6 +317,18 @@ def _off_grade(off: Mapping[str, Any]) -> Grade | None:
         return None
     grade = off.get("nutriscore_grade")
     return _GRADES.get(grade) if isinstance(grade, str) else None
+
+
+def _modified_at(off: Mapping[str, Any]) -> datetime | None:
+    """OFF's `last_modified_t` (Unix seconds), or None if absent or not a plausible time."""
+    value = off.get("last_modified_t")
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return None
+    try:
+        modified = datetime.fromtimestamp(value, tz=UTC)
+    except (OverflowError, OSError, ValueError):
+        return None
+    return modified if modified.year >= _FIRST_OFF_YEAR else None
 
 
 def _name(off: Mapping[str, Any]) -> str | None:

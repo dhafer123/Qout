@@ -103,6 +103,9 @@ class Product(IdTimestampMixin, Base):
         ARRAY(String(16)), server_default=text("'{}'::varchar[]")
     )
     """Additive codes as in the taxonomy (E330, E160a(i)); risk is looked up on read."""
+    source_modified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    """When the source last changed the product (OFF `last_modified_t`). Imports never
+    replace newer data with an older record."""
 
 
 AMOUNT_COLUMNS = (
