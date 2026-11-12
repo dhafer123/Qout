@@ -13,7 +13,7 @@ from sqlalchemy import Connection, inspect
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.core.models import Base
+from app.models import Base
 from tests.integration.conftest import alembic_config
 
 
