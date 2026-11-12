@@ -64,3 +64,52 @@ golden case:
 - Non-nutritive sweeteners: sugar alcohols E420, E421, E953, E956, E964, E965, E966, E967, E968
   do **not** count (calculator sheet "Non-nutritive sweeteners"; Q&A Appendix 3).
 - Alcoholic beverages above 1.2 % alcohol are out of scope (beverages report, p. 72).
+
+# Additives and NOVA (T10)
+
+## Sources
+
+| File | Document | Publisher / date | Role |
+|---|---|---|---|
+| `off-additives-taxonomy-7fbee09.txt` | Additives taxonomy (`taxonomies/additives.txt`) | Open Food Facts, `openfoodfacts-server` commit `7fbee09`, 2026-11-12 | Additive codes, English names, EFSA overexposure risk |
+
+Downloaded from
+<https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server/7fbee094fb9d89e98c49ab4b2102c7b48b1a7a05/taxonomies/additives.txt>.
+© Open Food Facts contributors. The file comes from an AGPL-3.0 repository; Open Food Facts
+data is published under the Open Database License (ODbL). Attribution is required either way;
+the exact licence of the taxonomy is to be confirmed before the public release (T37).
+
+The backend does not read this file at runtime: `uv run python -m app.modules.scoring.taxonomy`
+generates `backend/app/modules/scoring/data/additives.json` from it, and a test fails if the two
+are out of sync.
+
+## Additive risk flag
+
+The flag is the taxonomy's `efsa_evaluation_overexposure_risk`, which summarises EFSA's
+re-evaluation opinion for the additive (linked in `efsa_evaluation_url`):
+
+| Taxonomy value | Qout flag | Meaning |
+|---|---|---|
+| `en:high` | `high` | EFSA found a high risk that part of the population exceeds the acceptable daily intake |
+| `en:moderate` | `moderate` | moderate risk of exceeding it |
+| `en:no` | `none` | no risk of exceeding it found |
+| (absent) | `unknown` | no flag in the source; **not** the same as "no risk" |
+
+Decisions:
+
+1. **Sub-additives inherit their parent's flag** when they have none of their own (e.g. E339(i)
+   from E339, phosphates, `high`): EFSA evaluates these as one group. Applies to 37 entries
+   (65 have a flag of their own, 624 stay unknown);
+   the result records which code the flag came from.
+2. **Only E-numbered entries** are used (726). Generic entries such as "Exxx" or "E14XX" are
+   skipped.
+3. **Open Food Facts tags** (`en:e160ai`) match taxonomy codes (`E160a(i)`) by comparing
+   lower-case letters and digits only. A tag that is not in the taxonomy is kept with risk
+   `unknown`.
+
+## NOVA
+
+Not computed: the NOVA group (1–4) is taken from the Open Food Facts product field
+`nova_group`. Any other value (missing, out of range, not a number) means unknown.
+Groups: 1 unprocessed or minimally processed foods, 2 processed culinary ingredients,
+3 processed foods, 4 ultra-processed foods (NOVA classification, as used by Open Food Facts).
