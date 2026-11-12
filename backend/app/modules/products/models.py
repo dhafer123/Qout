@@ -6,6 +6,7 @@ which keeps async code free of lazy loading.
 """
 
 import uuid
+from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
 from typing import Any
@@ -13,6 +14,7 @@ from typing import Any
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
+    DateTime,
     Enum,
     ForeignKey,
     Index,
@@ -22,6 +24,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    func,
     text,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
@@ -166,6 +169,11 @@ class Score(IdTimestampMixin, Base):
         Index("ix_scores_product_id_created_at", "product_id", "created_at"),
     )
 
+    # Real write time, not the transaction start (`now()`): several scores written in one
+    # transaction (rescoring) must still order correctly for the latest-score query.
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.clock_timestamp()
+    )
     product_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"))
     nutrition_facts_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("nutrition_facts.id", ondelete="CASCADE")
