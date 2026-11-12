@@ -541,3 +541,139 @@ def test_components_without_fvl_fall_back_to_the_estimate() -> None:
 def test_source_modified_at(raw: Any, expected: datetime | None) -> None:
     off = minimal(last_modified_t=raw)
     assert normalize("6194001800104", off).product.source_modified_at == expected
+
+
+# ---------------------------------------------------------------- schema 1003+ (bulk exports)
+
+EXPORT_FIXTURES = FIXTURES.parent / "off_export"
+
+
+def schema1004(name: str) -> dict[str, Any]:
+    product: dict[str, Any] = json.loads(
+        (EXPORT_FIXTURES / f"{name}.json").read_text(encoding="utf-8")
+    )
+    return product
+
+
+def test_schema_1004_recorded_product_gets_offs_grade() -> None:
+    off = schema1004("schema1004-general-sweet-spread")
+    assert (off["schema_version"], off["nutriments"]) == (1004, {})
+
+    result = normalize(off["code"], off)
+
+    assert (result.product.category, result.product.quality_flag) == (Category.GENERAL, QC)
+    nutrition = result.nutrition
+    assert nutrition is not None
+    assert nutrition.basis == G
+    assert (nutrition.energy_kj, nutrition.sugars_g, nutrition.saturated_fat_g) == (
+        Decimal(2206),
+        Decimal("48.7"),
+        Decimal(17),
+    )
+    assert (nutrition.salt_g, nutrition.fibre_g, nutrition.protein_g) == (
+        Decimal("0.4"),
+        Decimal("0.5"),
+        Decimal("6.3"),
+    )
+    assert nutrition.fvl_percent == 0
+    graded = score(Category.GENERAL, nutrition_input(NutritionFacts(**nutrition.model_dump())))
+    assert isinstance(graded, NutriScore)
+    assert graded.grade == result.off_grade == Grade.E
+
+
+def test_schema_1004_estimates_are_not_declared_values() -> None:
+    off = schema1004("schema1004-general-estimated-fibre")
+    aggregated = off["nutrition"]["aggregated_set"]["nutrients"]
+    assert aggregated["fiber"]["source"] == "estimate"
+
+    nutrition = normalize(off["code"], off).nutrition
+
+    assert nutrition is not None
+    assert nutrition.fibre_g is None  # estimated from the ingredients: not declared
+    assert nutrition.fvl_percent == Decimal("6.8")  # OFF's own 2023 input (an estimate)
+    assert nutrition.sugars_g == Decimal(13)
+
+
+def aggregated(
+    nutrients: dict[str, Any], *, per: str = "100g", preparation: str = "as_sold"
+) -> dict[str, Any]:
+    return {
+        "nutriments": {},
+        "nutrition": {
+            "aggregated_set": {"per": per, "preparation": preparation, "nutrients": nutrients}
+        },
+        "nutriscore": {"2023": {"category_available": 1, "data": {}}},
+    }
+
+
+def g(value: Any, **extra: Any) -> dict[str, Any]:
+    return {"value": value, "unit": "g", "source": "packaging", **extra}
+
+
+def test_schema_1004_mapping() -> None:
+    off = aggregated(
+        {
+            "energy-kcal": {"value": 100, "unit": "kcal"},
+            "sugars": g(5),
+            "fiber": g(2, modifier="<"),
+            "sodium": g(0.4),
+            "fruits-vegetables-legumes": {"value": 30, "unit": "%", "source": "estimate"},
+            "proteins": {"unit": "g", "value_computed": 3},  # no declared value
+            "fat": "garbage",
+            "vitamin-c": {"value": 12, "unit": "mg"},  # not read
+        },
+        per="100ml",
+    )
+    result = normalize("6194001800104", off)
+    nutrition = result.nutrition
+    assert nutrition is not None
+    assert (nutrition.basis, nutrition.energy_kj, nutrition.sugars_g) == (M, 420, 5)
+    assert (nutrition.fibre_g, nutrition.salt_g, nutrition.fvl_percent) == (2, 1, 30)
+    assert (nutrition.protein_g, nutrition.total_fat_g) == (None, None)
+    assert result.product.quality_flag == QI
+    assert not any("unit" in issue for issue in result.issues)
+
+
+def test_schema_1004_unexpected_unit_is_suspect() -> None:
+    result = normalize("6194001800104", aggregated({"salt": {"value": 400, "unit": "mg"}}))
+    assert result.product.quality_flag == QS
+    assert "unexpected unit for salt: 'mg'" in result.issues
+    assert result.nutrition is None or result.nutrition.salt_g is None
+
+
+def test_schema_1004_prepared_values_are_not_used() -> None:
+    result = normalize("6194001800104", aggregated({"sugars": g(5)}, preparation="prepared"))
+    assert result.nutrition is None
+    assert "nutrition declared for the prepared product only (not used)" in result.issues
+
+
+def test_schema_1004_per_serving_is_refused() -> None:
+    result = normalize("6194001800104", aggregated({"sugars": g(5)}, per="serving"))
+    assert result.nutrition is None
+    assert "nutrition declared per serving only (not converted)" in result.issues
+
+
+@pytest.mark.parametrize("nutrition", [{}, {"aggregated_set": None}, {"input_sets": []}])
+def test_schema_1004_without_aggregated_values(nutrition: dict[str, Any]) -> None:
+    off = {**aggregated({}), "nutrition": nutrition}
+    assert normalize("6194001800104", off).nutrition is None
+
+
+def test_schema_1004_nutrients_not_a_mapping() -> None:
+    off = aggregated({})
+    off["nutrition"]["aggregated_set"]["nutrients"] = ["sugars"]
+    assert normalize("6194001800104", off).nutrition is None
+
+
+@pytest.mark.parametrize("flag", [True, "on"])
+def test_schema_1004_no_nutrition_on_packaging(flag: Any) -> None:
+    off = {**aggregated({}), "nutrition": {"no_nutrition_data_on_packaging": flag}}
+    result = normalize("6194001800104", off)
+    assert result.nutrition is None
+    assert "OFF has no nutrition data for this product" in result.issues
+
+
+def test_old_shape_wins_when_both_are_present() -> None:
+    off = minimal(nutrition={"aggregated_set": {"per": "100g", "preparation": "as_sold",
+                                                "nutrients": {"sugars": g(99)}}})  # fmt: skip
+    assert normalize("6194001800104", off).nutrition.sugars_g == 5  # type: ignore[union-attr]

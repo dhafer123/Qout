@@ -10,6 +10,10 @@ Pure functions, no I/O. Decisions (TASKS.md, T13):
 - Values per 100 g / 100 mL only. Data declared per serving only is refused, not converted.
 - Unusable values (not a number, negative, more than 100 g per 100 g) are dropped, never
   clamped, and the product is flagged suspect.
+- OFF product schema 1003+ (bulk exports, T15) keeps nutrition in
+  `nutrition.aggregated_set` instead of `nutriments`; it is read the way OFF's API turns it
+  back into `nutriments`: as-sold values only, ingredient-based estimates only for
+  fruits/vegetables/legumes (as the "estimate" value), other estimates dropped.
 """
 
 import math
@@ -49,6 +53,22 @@ _FLAGS = (  # first match wins: water is also flagged as a beverage
 )
 _GRADES = {"a": Grade.A, "b": Grade.B, "c": Grade.C, "d": Grade.D, "e": Grade.E}
 _HUNDRED = Decimal(100)
+# Schema 1003+ nutrients the normaliser reads, with their expected unit.
+_AGGREGATED_UNITS = {
+    "energy-kj": "kJ",
+    "energy": "kJ",
+    "energy-kcal": "kcal",
+    "sugars": "g",
+    "saturated-fat": "g",
+    "fat": "g",
+    "fiber": "g",
+    "proteins": "g",
+    "salt": "g",
+    "sodium": "g",
+    "carbohydrates": "g",
+    "fruits-vegetables-legumes": "%",
+}
+_ESTIMATED = frozenset({"fruits-vegetables-legumes"})
 _FIRST_OFF_YEAR = 2012  # Open Food Facts started in 2012: earlier times are garbage
 
 # Data-quality heuristics (not scoring constants). EU energy factors (Regulation (EU)
@@ -90,6 +110,7 @@ class NormalizedProduct(BaseModel):
 def normalize(ean: str, off: Mapping[str, Any]) -> NormalizedProduct:
     """Normalise the `product` object returned by `OffClient.get_product`."""
     report = _Report()
+    off = _with_legacy_nutrition(off, report)
     category = _category(off)
     nutrition = _nutrition(off, category, report)
     _check_completeness(category, nutrition, report)
@@ -112,6 +133,53 @@ def normalize(ean: str, off: Mapping[str, Any]) -> NormalizedProduct:
         off_grade=_off_grade(off),
         issues=report.suspect + report.gaps,
     )
+
+
+# ---------------------------------------------------------------- schema 1003+
+
+
+def _with_legacy_nutrition(off: Mapping[str, Any], report: _Report) -> Mapping[str, Any]:
+    """`off` with schema 1003+ nutrition also given as `nutriments` (old shape)."""
+    nutrition = off.get("nutrition")
+    if not isinstance(nutrition, Mapping) or _has_legacy_values(off.get("nutriments")):
+        return off
+    legacy = dict(off)
+    if nutrition.get("no_nutrition_data_on_packaging") in (True, "on"):
+        legacy["no_nutrition_data"] = "on"
+    aggregated = nutrition.get("aggregated_set")
+    if not isinstance(aggregated, Mapping):
+        return legacy
+    if aggregated.get("preparation") != "as_sold":
+        report.gaps.append("nutrition declared for the prepared product only (not used)")
+        legacy["nutriments"] = {}
+        return legacy
+    legacy["nutrition_data_per"] = aggregated.get("per")
+    nutrients = aggregated.get("nutrients")
+    legacy["nutriments"] = _legacy_nutriments(
+        nutrients if isinstance(nutrients, Mapping) else {}, report
+    )
+    return legacy
+
+
+def _legacy_nutriments(nutrients: Mapping[str, Any], report: _Report) -> dict[str, Any]:
+    legacy: dict[str, Any] = {}
+    for name, unit in _AGGREGATED_UNITS.items():
+        entry = nutrients.get(name)
+        if not isinstance(entry, Mapping) or "value" not in entry:
+            continue
+        estimate = entry.get("source") == "estimate"
+        if estimate and name not in _ESTIMATED:
+            continue  # computed from the ingredients, not declared
+        if entry.get("unit", unit) != unit:
+            report.suspect.append(f"unexpected unit for {name}: {entry.get('unit')!r}")
+            continue
+        suffix = "-estimate-from-ingredients_100g" if estimate else "_100g"
+        legacy[f"{name}{suffix}"] = entry["value"]
+    return legacy
+
+
+def _has_legacy_values(nutriments: object) -> bool:
+    return isinstance(nutriments, Mapping) and any(str(k).endswith("_100g") for k in nutriments)
 
 
 # ---------------------------------------------------------------- category

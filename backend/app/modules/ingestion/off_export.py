@@ -71,7 +71,7 @@ def _ean(code: object) -> str | Rejected:
     try:
         return normalize_ean(code.strip())
     except InvalidEanError as error:
-        return Rejected(f"invalid barcode {code!r}: {error}")
+        return Rejected(str(error))
 
 
 def scan(

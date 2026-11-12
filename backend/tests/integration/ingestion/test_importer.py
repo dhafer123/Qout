@@ -1,5 +1,6 @@
 """FileImporter against real Postgres and Redis, with the fixture export."""
 
+import json
 from collections.abc import Callable
 from decimal import Decimal
 from pathlib import Path
@@ -20,6 +21,7 @@ from app.modules.products.upsert import ProductUpserter
 from app.modules.scoring import ENGINE_VERSION
 from tests.factories import ProductFactory
 from tests.integration.ingestion.conftest import (
+    FIXTURES,
     NESCAFE,
     NUTELLA,
     RICOTTA,
@@ -347,3 +349,22 @@ async def test_changed_products_leave_the_cache(
 
     assert await redis.get(cache_key(NUTELLA)) is None
     assert await redis.get(cache_key(RICOTTA)) == b"stale"  # unchanged: still valid
+
+
+# ---------------------------------------------------------------- real export data
+
+
+async def test_schema_1004_export_line_is_scored(
+    sessions: Sessions, cache: ProductCache, write_gz: WriteGz
+) -> None:
+    """The bulk files use OFF's newer product schema (nutrition in `aggregated_set`)."""
+    path = FIXTURES / "off_export" / "schema1004-general-sweet-spread.json"
+    product = json.loads(path.read_text(encoding="utf-8"))
+
+    await importer(sessions, cache).run(
+        ImportKind.DELTA, "delta-1", write_gz([json.dumps(product)])
+    )
+
+    [facts], [score] = await product_rows(sessions, product["code"])
+    assert facts.sugars_g == Decimal("48.7")
+    assert (score.grade, score.off_grade) == ("E", "E")
