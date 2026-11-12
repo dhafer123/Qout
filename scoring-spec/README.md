@@ -56,3 +56,24 @@ File name = `id` = `<category>--<slug>.json`.
 1. Create `golden/<category>--<slug>.json`, with `source` pointing at the table or rule it tests.
 2. Run `uv run pytest tests/unit/test_golden_cases.py` from `backend/`: it validates the file
    against the schema, the file name, and that the points add up.
+
+## Parity between the engines
+
+Golden cases pin known answers; the parity check makes sure the Python and Dart engines
+also agree everywhere else. `parity/inputs.json` (generated, committed) holds every golden
+input, every threshold of every table with values exactly on and 0.001 either side of it
+(including the fats saturates/fat ratio and energy from saturates), and 600 random products
+per category, some with missing fields. Both engines score it; CI job `scoring-parity`
+fails on any difference.
+
+```bash
+# from backend/ (WSL)
+uv run python -m app.modules.scoring.parity run /tmp/py.json
+# from app/
+dart run tool/scoring_parity.dart ../py-dart.json
+# from backend/
+uv run python -m app.modules.scoring.parity compare /tmp/py.json ../py-dart.json
+```
+
+After changing the generator or a golden case, regenerate the inputs with
+`uv run python -m app.modules.scoring.parity generate`; a backend test fails until you do.
