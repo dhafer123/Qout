@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from functools import partial
 
 from fastapi import FastAPI
+from fastapi.routing import APIRoute
 from redis.asyncio import Redis
 
 from app import __version__
@@ -42,9 +43,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             await redis.aclose()
             await engine.dispose()
 
-    app = FastAPI(title="Qout API", version=__version__, lifespan=lifespan)
+    app = FastAPI(
+        title="Qout API",
+        version=__version__,
+        lifespan=lifespan,
+        generate_unique_id_function=operation_id,
+    )
     app.state.settings = settings
     app.add_middleware(RequestIdMiddleware)
     app.include_router(health_router)
     app.include_router(products_router)
     return app
+
+
+def operation_id(route: APIRoute) -> str:
+    """OpenAPI operation id from the route function: `get_product` -> `getProduct`. The
+    app's generated client names its methods after it (`api/openapi.json`)."""
+    first, *rest = route.name.split("_")
+    return first + "".join(part.capitalize() for part in rest)

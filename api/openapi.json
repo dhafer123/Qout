@@ -1,0 +1,591 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Qout API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Liveness: the process is up",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Readiness: database and Redis are reachable",
+        "operationId": "ready",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/products/{ean}": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Look up a product by barcode",
+        "description": "Barcode: EAN-8, UPC-A (returned as EAN-13), EAN-13 or GTIN-14, with a valid check digit. Served from the cache or our database; unknown barcodes are looked up on Open Food Facts, stored and scored.",
+        "operationId": "getProduct",
+        "parameters": [
+          {
+            "name": "ean",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown barcode",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Not a valid barcode",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not stored, and Open Food Facts is unavailable; retry later",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdditiveDetail": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "overexposure_risk": {
+            "$ref": "#/components/schemas/OverexposureRisk"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "overexposure_risk"
+        ],
+        "title": "AdditiveDetail"
+      },
+      "Category": {
+        "type": "string",
+        "enum": [
+          "general",
+          "red_meat",
+          "cheese",
+          "fats_oils_nuts_seeds",
+          "beverage",
+          "water"
+        ],
+        "title": "Category",
+        "description": "Scoring category. Choosing it is the caller's job (see docs/specs/README.md)."
+      },
+      "DataSource": {
+        "type": "string",
+        "enum": [
+          "open_food_facts",
+          "contribution",
+          "manual"
+        ],
+        "title": "DataSource"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorResponse"
+      },
+      "Grade": {
+        "type": "string",
+        "enum": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E"
+        ],
+        "title": "Grade"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "HealthResponse"
+      },
+      "NutritionBasis": {
+        "type": "string",
+        "enum": [
+          "per_100g",
+          "per_100ml"
+        ],
+        "title": "NutritionBasis"
+      },
+      "NutritionDetail": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "basis": {
+            "$ref": "#/components/schemas/NutritionBasis"
+          },
+          "source": {
+            "$ref": "#/components/schemas/DataSource"
+          },
+          "energy_kj": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Energy Kj"
+          },
+          "sugars_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sugars G"
+          },
+          "saturated_fat_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saturated Fat G"
+          },
+          "total_fat_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Fat G"
+          },
+          "salt_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salt G"
+          },
+          "fibre_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fibre G"
+          },
+          "protein_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Protein G"
+          },
+          "fvl_percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fvl Percent"
+          },
+          "non_nutritive_sweeteners": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Non Nutritive Sweeteners"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "basis",
+          "source",
+          "energy_kj",
+          "sugars_g",
+          "saturated_fat_g",
+          "total_fat_g",
+          "salt_g",
+          "fibre_g",
+          "protein_g",
+          "fvl_percent",
+          "non_nutritive_sweeteners"
+        ],
+        "title": "NutritionDetail",
+        "description": "The latest declared nutrition, per 100 g or 100 mL (`basis`). None: not declared."
+      },
+      "OverexposureRisk": {
+        "type": "string",
+        "enum": [
+          "high",
+          "moderate",
+          "none",
+          "unknown"
+        ],
+        "title": "OverexposureRisk",
+        "description": "EFSA's risk that part of the population exceeds the acceptable daily intake."
+      },
+      "ProductDetail": {
+        "properties": {
+          "ean": {
+            "type": "string",
+            "title": "Ean"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "$ref": "#/components/schemas/DataSource"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProductStatus"
+          },
+          "quality_flag": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QualityFlag"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nova_group": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nova Group"
+          },
+          "additives": {
+            "items": {
+              "$ref": "#/components/schemas/AdditiveDetail"
+            },
+            "type": "array",
+            "title": "Additives"
+          },
+          "nutrition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "score": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScoreDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ean",
+          "name",
+          "brand",
+          "image_url",
+          "category",
+          "source",
+          "status",
+          "quality_flag",
+          "nova_group",
+          "additives",
+          "nutrition",
+          "score",
+          "updated_at"
+        ],
+        "title": "ProductDetail",
+        "description": "`GET /v1/products/{ean}`: everything the app shows for a scanned product."
+      },
+      "ProductStatus": {
+        "type": "string",
+        "enum": [
+          "unverified",
+          "verified",
+          "hidden"
+        ],
+        "title": "ProductStatus"
+      },
+      "QualityFlag": {
+        "type": "string",
+        "enum": [
+          "complete",
+          "incomplete",
+          "suspect"
+        ],
+        "title": "QualityFlag",
+        "description": "Data quality, set by the Open Food Facts normaliser (T13)."
+      },
+      "ReadinessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "not_ready"
+            ],
+            "title": "Status"
+          },
+          "checks": {
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "ok",
+                "error",
+                "timeout"
+              ]
+            },
+            "type": "object",
+            "title": "Checks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "checks"
+        ],
+        "title": "ReadinessResponse"
+      },
+      "ScoreDetail": {
+        "properties": {
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Grade"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          },
+          "breakdown": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Breakdown"
+          },
+          "computed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Computed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "engine_version",
+          "grade",
+          "total",
+          "breakdown",
+          "computed_at"
+        ],
+        "title": "ScoreDetail"
+      }
+    }
+  }
+}
