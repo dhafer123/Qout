@@ -1,0 +1,4361 @@
+{
+ "source": "off-additives-taxonomy-7fbee09.txt",
+ "additives": {
+  "E15x": {
+   "name": "E15x food additive",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E100": {
+   "name": "Curcumin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E100(i)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E100(ii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E101": {
+   "name": "Riboflavins",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E101(i)": {
+   "name": "Riboflavin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E101(ii)": {
+   "name": "Riboflavin-5′-phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E101(iii)": {
+   "name": "Riboflavin from Bacillus subtilis",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E101(iv)": {
+   "name": "Riboflavin from Ashbya gossypii",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E101a": {
+   "name": "E101a food additive",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E102": {
+   "name": "Tartrazine",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E103": {
+   "name": "Alkannin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E104": {
+   "name": "Quinoline yellow",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E105": {
+   "name": "Fast Yellow AB",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E106": {
+   "name": "flavin mononucleotide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E107": {
+   "name": "Yellow 2G",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E110": {
+   "name": "Sunset yellow FCF",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E111": {
+   "name": "Orange GGN",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E120": {
+   "name": "Cochineal",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E121": {
+   "name": "Citrus Red 2",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E122": {
+   "name": "Azorubine",
+   "risk": "none",
+   "risk_from": "E122",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2009.1332"
+  },
+  "E123": {
+   "name": "Amaranth",
+   "risk": "none",
+   "risk_from": "E123",
+   "efsa_url": "http://www.efsa.europa.eu/fr/efsajournal/doc/1649.pdf"
+  },
+  "E124": {
+   "name": "Ponceau 4r",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E125": {
+   "name": "Scarlet GN",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E126": {
+   "name": "Ponceau 6R",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E127": {
+   "name": "Erythrosine",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E128": {
+   "name": "Red 2G",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E129": {
+   "name": "Allura red",
+   "risk": "none",
+   "risk_from": "E129",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2015.4007"
+  },
+  "E130": {
+   "name": "Indanthrene blue RS",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E131": {
+   "name": "Patent blue v",
+   "risk": "moderate",
+   "risk_from": "E131",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2013.2818"
+  },
+  "E132": {
+   "name": "Indigotine",
+   "risk": "none",
+   "risk_from": "E132",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2014.3768"
+  },
+  "E133": {
+   "name": "Brilliant blue FCF",
+   "risk": "moderate",
+   "risk_from": "E133",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2010.1853"
+  },
+  "E140": {
+   "name": "Chlorophylls and Chlorophyllins",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E140(i)": {
+   "name": "Chlorophylls",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E140(ii)": {
+   "name": "Chlorophyllins",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E141": {
+   "name": "Copper complexes of chlorophylls and chlorophyllins",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E141(i)": {
+   "name": "Copper complexes of chlorophylls",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E141(ii)": {
+   "name": "Copper complexes of chlorophyllins",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E142": {
+   "name": "Green s",
+   "risk": "moderate",
+   "risk_from": "E142",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2010.1851"
+  },
+  "E143": {
+   "name": "Fast Green FCF",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E150": {
+   "name": "Caramel",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E150a": {
+   "name": "Plain caramel",
+   "risk": "none",
+   "risk_from": "E150a",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2012.3030"
+  },
+  "E150b": {
+   "name": "Caustic sulphite caramel",
+   "risk": "none",
+   "risk_from": "E150b",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2011.2004"
+  },
+  "E150c": {
+   "name": "Ammonia caramel",
+   "risk": "moderate",
+   "risk_from": "E150c",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2012.3030"
+  },
+  "E150d": {
+   "name": "Sulphite ammonia caramel",
+   "risk": "none",
+   "risk_from": "E150d",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2012.3030"
+  },
+  "E151": {
+   "name": "Brilliant black bn",
+   "risk": "none",
+   "risk_from": "E151",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2015.3960"
+  },
+  "E152": {
+   "name": "Black 7984",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E153": {
+   "name": "Vegetable carbon",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E154": {
+   "name": "Brown FK",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E155": {
+   "name": "Brown ht",
+   "risk": "high",
+   "risk_from": "E155",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2014.3719"
+  },
+  "E160": {
+   "name": "Carotenoids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160a": {
+   "name": "carotene",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160a(i)": {
+   "name": "Beta-carotene",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160a(ii)": {
+   "name": "Plant carotenes",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160a(iii)": {
+   "name": "Beta-carotene from blakeslea trispora",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160a(iv)": {
+   "name": "Algal carotenes",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160b": {
+   "name": "Annatto",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160b(i)": {
+   "name": "Annatto bixin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160b(ii)": {
+   "name": "Annatto norbixin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160b(iii)": {
+   "name": "Oil-extracted annatto",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160c": {
+   "name": "Paprika extract",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160c(i)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160c(ii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160d": {
+   "name": "Lycopene",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160d(i)": {
+   "name": "Lycopene\\",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160d(ii)": {
+   "name": "Lycopene\\",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160d(iii)": {
+   "name": "Lycopene\\",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160e": {
+   "name": "Beta-apo-8′-carotenal (c30)",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E160f": {
+   "name": "Ethyl ester of beta-apo-8'-carotenic acid (C 30)",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161": {
+   "name": "Xanthophylls",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161a": {
+   "name": "Flavoxanthin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161b": {
+   "name": "Lutein",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161b(i)": {
+   "name": "Lutein from Tagetes erecta",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161b(ii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161b(iii)": {
+   "name": "Lutein esters from Tagetes erecta",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161c": {
+   "name": "Cryptoaxanthin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161d": {
+   "name": "Rubixanthin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161e": {
+   "name": "Violaxanthin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161f": {
+   "name": "Rhodoxanthin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161g": {
+   "name": "Canthaxanthin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161h": {
+   "name": "Zeaxanthin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161h(i)": {
+   "name": "Zeaxanthin\\",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161h(ii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161i": {
+   "name": "Citranaxanthin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E161j": {
+   "name": "Astaxanthin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E162": {
+   "name": "Beetroot red",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163": {
+   "name": "Anthocyanins",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163(ii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163(iii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163(iv)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163(ix)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163(v)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163(vi)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163(vii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163(viii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163(x)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163(xi)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163a": {
+   "name": "Cyanidin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163b": {
+   "name": "Delphinidin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163c": {
+   "name": "Malvidin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163d": {
+   "name": "Pelargonidin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163e": {
+   "name": "Peonidin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E163f": {
+   "name": "Petunidin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E164": {
+   "name": "saffron",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E165": {
+   "name": "Gardenia Blue",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E166": {
+   "name": "Sandalwood",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E170": {
+   "name": "Calcium carbonates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E170(i)": {
+   "name": "Calcium carbonate",
+   "risk": "none",
+   "risk_from": "E170(i)",
+   "efsa_url": "http://www.efsa.europa.eu/fr/efsajournal/doc/2318.pdf"
+  },
+  "E170(ii)": {
+   "name": "Calcium hydrogen carbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E171": {
+   "name": "Titanium dioxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E172": {
+   "name": "Iron oxides and iron hydroxides",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E172(i)": {
+   "name": "Black iron oxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E172(ii)": {
+   "name": "Red iron oxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E172(iii)": {
+   "name": "Yellow iron oxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E173": {
+   "name": "Aluminium",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E174": {
+   "name": "Silver",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E175": {
+   "name": "Gold",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E180": {
+   "name": "Litholrubine bk",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E181": {
+   "name": "Tannin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E182": {
+   "name": "Orcein",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E200": {
+   "name": "Sorbic acid",
+   "risk": "high",
+   "risk_from": "E200",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2015.4144"
+  },
+  "E201": {
+   "name": "Sodium sorbate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E202": {
+   "name": "Potassium sorbate",
+   "risk": "high",
+   "risk_from": "E202",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2015.4144"
+  },
+  "E203": {
+   "name": "Calcium sorbate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E209": {
+   "name": "Heptylparaben",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E210": {
+   "name": "Benzoic acid",
+   "risk": "high",
+   "risk_from": "E210",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4433"
+  },
+  "E211": {
+   "name": "Sodium benzoate",
+   "risk": "high",
+   "risk_from": "E211",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4433"
+  },
+  "E212": {
+   "name": "Potassium benzoate",
+   "risk": "high",
+   "risk_from": "E212",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4433"
+  },
+  "E213": {
+   "name": "Calcium benzoate",
+   "risk": "high",
+   "risk_from": "E213",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4433"
+  },
+  "E214": {
+   "name": "Ethyl p-hydroxybenzoate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E215": {
+   "name": "Sodium ethyl p-hydroxybenzoate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E216": {
+   "name": "Propyl para-hydroxybenzoate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E217": {
+   "name": "Sodium propyl para-hydroxybenzoate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E218": {
+   "name": "Methyl p-hydroxybenzoate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E219": {
+   "name": "Sodium methyl p-hydroxybenzoate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E220": {
+   "name": "Sulphur dioxide",
+   "risk": "high",
+   "risk_from": "E220",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4438"
+  },
+  "E221": {
+   "name": "Sodium sulphite",
+   "risk": "high",
+   "risk_from": "E221",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4438"
+  },
+  "E222": {
+   "name": "Sodium bisulphite",
+   "risk": "high",
+   "risk_from": "E222",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4438"
+  },
+  "E223": {
+   "name": "Sodium metabisulphite",
+   "risk": "high",
+   "risk_from": "E223",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4438"
+  },
+  "E224": {
+   "name": "Potassium metabisulphite",
+   "risk": "high",
+   "risk_from": "E224",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4438"
+  },
+  "E225": {
+   "name": "Calcium Disulphite",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E226": {
+   "name": "Calcium sulphite",
+   "risk": "high",
+   "risk_from": "E226",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4438"
+  },
+  "E227": {
+   "name": "Calcium bisulphite",
+   "risk": "high",
+   "risk_from": "E227",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4438"
+  },
+  "E228": {
+   "name": "Potassium bisulphite",
+   "risk": "high",
+   "risk_from": "E228",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4438"
+  },
+  "E230": {
+   "name": "Biphenyl",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E231": {
+   "name": "Orthophenyl phenol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E232": {
+   "name": "Sodium orthophenyl phenol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E233": {
+   "name": "Thiabendazole",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E234": {
+   "name": "Nisin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E235": {
+   "name": "Natamycin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E236": {
+   "name": "Formic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E237": {
+   "name": "Sodium formiate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E238": {
+   "name": "Calcium formiate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E239": {
+   "name": "Hexamethylene tetramine",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E240": {
+   "name": "Formaldehyde",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E241": {
+   "name": "Gum Guaicum",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E242": {
+   "name": "Dimethyl dicarbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E243": {
+   "name": "Ethyl lauroyl arginate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E246": {
+   "name": "Glycolipids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E249": {
+   "name": "Potassium nitrite",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E250": {
+   "name": "Sodium nitrite",
+   "risk": "high",
+   "risk_from": "E250",
+   "efsa_url": "https://zenodo.org/record/1252752/files/EFSAOutputs_KJ_2018.xlsx"
+  },
+  "E251": {
+   "name": "Sodium nitrate",
+   "risk": "high",
+   "risk_from": "E251",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2017.4787"
+  },
+  "E252": {
+   "name": "Potassium nitrate",
+   "risk": "high",
+   "risk_from": "E252",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2017.4787"
+  },
+  "E260": {
+   "name": "Acetic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E261": {
+   "name": "Potassium acetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E261(i)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E261(ii)": {
+   "name": "Potassium diacetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E262": {
+   "name": "Sodium acetates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E262(i)": {
+   "name": "Sodium acetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E262(ii)": {
+   "name": "Sodium diacetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E263": {
+   "name": "Calcium acetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E264": {
+   "name": "Ammonium acetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E265": {
+   "name": "Dehydroacetic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E266": {
+   "name": "Sodium dehydroacetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E267": {
+   "name": "Buffered vinegar",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E270": {
+   "name": "Lactic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E280": {
+   "name": "Propionic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E281": {
+   "name": "Sodium propionate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E282": {
+   "name": "calcium propionate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E283": {
+   "name": "Potassium propionate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E284": {
+   "name": "Boric acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E285": {
+   "name": "Sodium tetraborate (borax)",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E290": {
+   "name": "Carbon dioxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E296": {
+   "name": "Malic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E297": {
+   "name": "Fumaric acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E300": {
+   "name": "Ascorbic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E301": {
+   "name": "Sodium ascorbate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E302": {
+   "name": "Calcium ascorbate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E303": {
+   "name": "Potassium ascorbate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E304": {
+   "name": "Fatty acid esters of ascorbic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E304(i)": {
+   "name": "Ascorbyl palmitate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E304(ii)": {
+   "name": "Ascorbyl stearate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E306": {
+   "name": "Tocopherol-rich extract",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E307": {
+   "name": "Alpha-tocopherol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E307a": {
+   "name": "D-Alpha-tocopherol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E307b": {
+   "name": "concentrated tocopherol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E307c": {
+   "name": "DL-Alpha-tocopherol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E308": {
+   "name": "Gamme-tocopherol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E309": {
+   "name": "Delta-tocopherol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E310": {
+   "name": "Propyl gallate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E311": {
+   "name": "Octyl gallate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E312": {
+   "name": "Dodecyl gallate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E313": {
+   "name": "Ethyl gallate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E314": {
+   "name": "Guaiacum",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E315": {
+   "name": "Erythorbic acid",
+   "risk": "none",
+   "risk_from": "E315",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2016.4360"
+  },
+  "E316": {
+   "name": "sodium erythorbate",
+   "risk": "none",
+   "risk_from": "E316",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2016.4360"
+  },
+  "E317": {
+   "name": "Erythorbin acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E318": {
+   "name": "Calcium erythorbin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E319": {
+   "name": "Tertiary-butylhydroquinone (tbhq)",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E320": {
+   "name": "Butylated hydroxyanisole (bha)",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E321": {
+   "name": "Butylated hydroxytoluene",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E322": {
+   "name": "Lecithins",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E322(i)": {
+   "name": "Lecithin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E322(ii)": {
+   "name": "Partially hydrolyzed lecithin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E322(iii)": {
+   "name": "Lecithin\\",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E322a": {
+   "name": "Oat lecithin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E323": {
+   "name": "Anoxomer",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E324": {
+   "name": "Ethoxyquin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E325": {
+   "name": "sodium lactate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E326": {
+   "name": "potassium lactate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E327": {
+   "name": "calcium lactate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E328": {
+   "name": "ammonium lactate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E329": {
+   "name": "Magnesium lactate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E330": {
+   "name": "Citric acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E331": {
+   "name": "Sodium citrates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E331(i)": {
+   "name": "Monosodium citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E331(ii)": {
+   "name": "Disodium citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E331(iii)": {
+   "name": "Trisodium citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E332": {
+   "name": "Potassium citrates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E332(i)": {
+   "name": "Monopotassium citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E332(ii)": {
+   "name": "Tripotassium citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E333": {
+   "name": "Calcium citrates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E333(i)": {
+   "name": "Monocalcium citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E333(ii)": {
+   "name": "Dicalcium citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E333(iii)": {
+   "name": "Tricalcium citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E334": {
+   "name": "L(+)-tartaric acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E335": {
+   "name": "Sodium tartrates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E335(i)": {
+   "name": "Monosodium tartrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E335(ii)": {
+   "name": "Disodium tartrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E336": {
+   "name": "Potassium tartrates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E336(i)": {
+   "name": "Monopotassium tartrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E336(ii)": {
+   "name": "Dipotassium tartrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E337": {
+   "name": "Potassium sodium tartrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E338": {
+   "name": "Phosphoric acid",
+   "risk": "high",
+   "risk_from": "E338",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E339": {
+   "name": "Sodium phosphates",
+   "risk": "high",
+   "risk_from": "E339",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E339(i)": {
+   "name": "Monosodium phosphate",
+   "risk": "high",
+   "risk_from": "E339",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E339(ii)": {
+   "name": "Disodium phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E339(iii)": {
+   "name": "Trisodium phosphate",
+   "risk": "high",
+   "risk_from": "E339",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E340": {
+   "name": "Potassium phosphates",
+   "risk": "high",
+   "risk_from": "E340",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E340(i)": {
+   "name": "Monopotassium phosphate",
+   "risk": "high",
+   "risk_from": "E340",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E340(ii)": {
+   "name": "Dipotassium phosphate",
+   "risk": "high",
+   "risk_from": "E340",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E340(iii)": {
+   "name": "Tripotassium phosphate",
+   "risk": "high",
+   "risk_from": "E340",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E341": {
+   "name": "Calcium phosphates",
+   "risk": "high",
+   "risk_from": "E341",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E341(i)": {
+   "name": "Monocalcium phosphate",
+   "risk": "high",
+   "risk_from": "E341",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E341(ii)": {
+   "name": "Dicalcium phosphate",
+   "risk": "high",
+   "risk_from": "E341",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E341(iii)": {
+   "name": "Tricalcium phosphate",
+   "risk": "high",
+   "risk_from": "E341",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E342": {
+   "name": "Ammonium phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E342(i)": {
+   "name": "Ammonium dihydrogen phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E342(ii)": {
+   "name": "Diammonium hydrogen phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E343": {
+   "name": "Magnesium phosphates",
+   "risk": "high",
+   "risk_from": "E343",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E343(i)": {
+   "name": "Monomagnesium phosphate",
+   "risk": "high",
+   "risk_from": "E343",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E343(ii)": {
+   "name": "Dimagnesium phosphate",
+   "risk": "high",
+   "risk_from": "E343",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E343(iii)": {
+   "name": "Trimagnesium phosphate",
+   "risk": "high",
+   "risk_from": "E343",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E344": {
+   "name": "Lecithin citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E345": {
+   "name": "Magnesium citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E349": {
+   "name": "ammonium malate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E350": {
+   "name": "Sodium malates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E350(i)": {
+   "name": "Sodium malate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E350(ii)": {
+   "name": "Sodium hydrogen malate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E351": {
+   "name": "Potassium malate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E351(i)": {
+   "name": "Potassium hydrogen malate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E351(ii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E352": {
+   "name": "Calcium malates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E352(i)": {
+   "name": "Calcium malate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E352(ii)": {
+   "name": "Calcium hydrogen malate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E353": {
+   "name": "Metatartaric acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E354": {
+   "name": "Calcium tartrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E355": {
+   "name": "Adipic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E356": {
+   "name": "Sodium adipate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E357": {
+   "name": "Potassium adipate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E359": {
+   "name": "ammonium adipate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E363": {
+   "name": "Succinic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E364": {
+   "name": "Sodium succinates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E364(i)": {
+   "name": "Monosodium succinate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E364(ii)": {
+   "name": "Disodium succinate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E365": {
+   "name": "Sodium fumarate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E366": {
+   "name": "Potassium fumarate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E367": {
+   "name": "Calcium fumarate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E368": {
+   "name": "ammonium fumarate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E369": {
+   "name": "Alanin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E370": {
+   "name": "1\\",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E375": {
+   "name": "Nicotinic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E380": {
+   "name": "Triammonium citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E381": {
+   "name": "ferric ammonium citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E383": {
+   "name": "calcium glycerophosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E384": {
+   "name": "Isopropyl citrates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E385": {
+   "name": "Calcium disodium ethylenediaminetetraacetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E388": {
+   "name": "Thiodipropionic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E391": {
+   "name": "Phytic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E392": {
+   "name": "Extracts of rosemary",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E399": {
+   "name": "Calcium lactobionate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E400": {
+   "name": "Alginic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E401": {
+   "name": "sodium alginate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E402": {
+   "name": "Potassium alginate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E403": {
+   "name": "Ammonium alginate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E404": {
+   "name": "Calcium alginate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E405": {
+   "name": "Propane-1\\",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E406": {
+   "name": "Agar",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E407": {
+   "name": "Carrageenan",
+   "risk": "high",
+   "risk_from": "E407",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2018.5238"
+  },
+  "E407a": {
+   "name": "Processed eucheuma seaweed",
+   "risk": "high",
+   "risk_from": "E407a",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2018.5238"
+  },
+  "E408": {
+   "name": "Bakers yeast glycan",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E409": {
+   "name": "Arabinogalactan",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E410": {
+   "name": "Locust bean gum",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E411": {
+   "name": "E411 food additive",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E412": {
+   "name": "Guar gum",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E413": {
+   "name": "Tragacanth",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E414": {
+   "name": "Acacia gum",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E414a": {
+   "name": "E414a food additive",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E415": {
+   "name": "Xanthan gum",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E416": {
+   "name": "Karaya-gum",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E417": {
+   "name": "Tara gum",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E418": {
+   "name": "Gellan gum",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E418(i)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E418(ii)": {
+   "name": "Low-acyl clarified gellan gum",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E419": {
+   "name": "Gum ghatti",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E420": {
+   "name": "Sorbitol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E420(i)": {
+   "name": "D-sorbitol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E420(ii)": {
+   "name": "Sorbitol syrup",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E421": {
+   "name": "Mannitol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E422": {
+   "name": "Glycerol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E424": {
+   "name": "Curdlan",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E425": {
+   "name": "Konjac",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E425(i)": {
+   "name": "Konjac gum",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E425(ii)": {
+   "name": "Konjac glucomannan",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E426": {
+   "name": "Soybean hemicellulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E427": {
+   "name": "Cassia gum",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E428": {
+   "name": "Gelatine",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E429": {
+   "name": "peptone",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E430": {
+   "name": "Polyoxyethylene (8) stearate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E431": {
+   "name": "Polyoxyethylene (40) stearate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E432": {
+   "name": "Polyoxyethylene sorbitan monolaurate",
+   "risk": "moderate",
+   "risk_from": "E432",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2015.4152"
+  },
+  "E433": {
+   "name": "Polyoxyethylene sorbitan monooleate",
+   "risk": "moderate",
+   "risk_from": "E433",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2015.4152"
+  },
+  "E434": {
+   "name": "Polyoxyethylene sorbitan monopalmitate",
+   "risk": "moderate",
+   "risk_from": "E434",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2015.4152"
+  },
+  "E435": {
+   "name": "Polyoxyethylene sorbitan monostearate",
+   "risk": "moderate",
+   "risk_from": "E435",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2015.4152"
+  },
+  "E436": {
+   "name": "Polyoxyethylene sorbitan tristearate",
+   "risk": "moderate",
+   "risk_from": "E436",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2015.4152"
+  },
+  "E440": {
+   "name": "Pectins",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E440(i)": {
+   "name": "non-amidated pectin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E440(ii)": {
+   "name": "Amidated pectin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E440a": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E440a(ii)": {
+   "name": "Sodium pectate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E440a(iii)": {
+   "name": "Potassium pectate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E440a(iv)": {
+   "name": "Ammonium Pectate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E440b": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E441": {
+   "name": "Superglycerinated hydrogenated rapeseed oil",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E442": {
+   "name": "Ammonium phosphatides",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E443": {
+   "name": "Brominated vegetable oil",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E444": {
+   "name": "Sucrose acetate isobutyrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E445": {
+   "name": "Glycerol esters of wood rosin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E445(i)": {
+   "name": "Glycerol ester of gum rosin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E445(ii)": {
+   "name": "Glycerol ester of tall oil rosin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E445(iii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E446": {
+   "name": "Succistearin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E450": {
+   "name": "Diphosphates",
+   "risk": "high",
+   "risk_from": "E450",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E450(i)": {
+   "name": "Disodium diphosphate",
+   "risk": "high",
+   "risk_from": "E450",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E450(ii)": {
+   "name": "Trisodium diphosphate",
+   "risk": "high",
+   "risk_from": "E450",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E450(iii)": {
+   "name": "Tetrasodium diphosphate",
+   "risk": "high",
+   "risk_from": "E450",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E450(iv)": {
+   "name": "dipotassium dihydrogenpyrophosphate",
+   "risk": "high",
+   "risk_from": "E450",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E450(ix)": {
+   "name": "Magnesium dihydrogen diphosphate",
+   "risk": "high",
+   "risk_from": "E450",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E450(v)": {
+   "name": "Tetrapotassium diphosphate",
+   "risk": "high",
+   "risk_from": "E450",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E450(vi)": {
+   "name": "Dicalcium diphosphate",
+   "risk": "high",
+   "risk_from": "E450",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E450(vii)": {
+   "name": "Calcium dihydrogen diphosphate",
+   "risk": "high",
+   "risk_from": "E450",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E450(viii)": {
+   "name": null,
+   "risk": "high",
+   "risk_from": "E450",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E451": {
+   "name": "Triphosphates",
+   "risk": "high",
+   "risk_from": "E451",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E451(i)": {
+   "name": "Pentasodium triphosphate",
+   "risk": "high",
+   "risk_from": "E451",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E451(ii)": {
+   "name": "Pentapotassium triphosphate",
+   "risk": "high",
+   "risk_from": "E451",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E451(iii)": {
+   "name": "Sodium potassium triphosphate",
+   "risk": "high",
+   "risk_from": "E451",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E452": {
+   "name": "Polyphosphates",
+   "risk": "high",
+   "risk_from": "E452",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E452(i)": {
+   "name": "Sodium polyphosphate",
+   "risk": "high",
+   "risk_from": "E452",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E452(ii)": {
+   "name": "Potassium polyphosphate",
+   "risk": "high",
+   "risk_from": "E452",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E452(iii)": {
+   "name": "Sodium calcium polyphosphate",
+   "risk": "high",
+   "risk_from": "E452",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E452(iv)": {
+   "name": "Calcium polyphosphate",
+   "risk": "high",
+   "risk_from": "E452",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E452(v)": {
+   "name": "Ammonium polyphosphate",
+   "risk": "high",
+   "risk_from": "E452",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E452(vi)": {
+   "name": "Sodium tripolyphosphate",
+   "risk": "high",
+   "risk_from": "E452",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E457": {
+   "name": "Alpha-Cyclodextrine",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E458": {
+   "name": "Gamma-Cyclodextrine",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E459": {
+   "name": "Beta-cyclodextrine",
+   "risk": "high",
+   "risk_from": "E459",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2016.4628"
+  },
+  "E460": {
+   "name": "Cellulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E460(i)": {
+   "name": "Microcrystalline cellulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E460(ii)": {
+   "name": "Powdered cellulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E461": {
+   "name": "methyl cellulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E462": {
+   "name": "Ethyl cellulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E463": {
+   "name": "Hydroxypropyl cellulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E464": {
+   "name": "Hydroxypropyl methyl cellulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E465": {
+   "name": "Ethyl methyl cellulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E466": {
+   "name": "Sodium carboxy methyl cellulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E467": {
+   "name": "Ethulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E468": {
+   "name": "Cross-linked sodium carboxymethylcellulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E469": {
+   "name": "Enzymatically hydrolysed carboxymethylcellulose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E470": {
+   "name": "Sodium/potassium/calcium and magnesium salts of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E470(i)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E470(ii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E470(iii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E470a": {
+   "name": "Sodium/potassium and calcium salts of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E470a(i)": {
+   "name": "Sodium salts of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E470a(ii)": {
+   "name": "Potassium salts of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E470a(iii)": {
+   "name": "Calcium salts of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E470b": {
+   "name": "Magnesium salts of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E471": {
+   "name": "Mono- and diglycerides of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E472": {
+   "name": "acid esters of mono- and diglycerides of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E472a": {
+   "name": "Acetic acid esters of mono- and diglycerides of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E472b": {
+   "name": "Lactic acid esters of mono- and diglycerides of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E472c": {
+   "name": "Citric acid esters of mono- and diglycerides of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E472d": {
+   "name": "Tartaric acid esters of mono- and diglycerides of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E472e": {
+   "name": "Mono- and diacetyltartaric acid esters of mono- and diglycerides of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E472f": {
+   "name": "Mixed acetic and tartaric acid esters of mono- and diglycerides of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E472g": {
+   "name": "Succinylated monoglycerides",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E473": {
+   "name": "Sucrose esters of fatty acids",
+   "risk": "high",
+   "risk_from": "E473",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2018.5087"
+  },
+  "E473a": {
+   "name": "Oligoesters of sucrose type I",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E474": {
+   "name": "Sucroglycerides",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E475": {
+   "name": "Polyglycerol esters of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E476": {
+   "name": "Polyglycerol polyricinoleate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E477": {
+   "name": "Propane-1\\",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E478": {
+   "name": "Lactylated fatty acid esters of glycerol and propane-1",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E479b": {
+   "name": "Thermally oxidised soya bean oil interacted with mono- and diglycerides of fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E481": {
+   "name": "Sodium stearoyl-2-lactylate",
+   "risk": "high",
+   "risk_from": "E481",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2013.3144"
+  },
+  "E481(i)": {
+   "name": null,
+   "risk": "high",
+   "risk_from": "E481",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2013.3144"
+  },
+  "E481(ii)": {
+   "name": "Sodium oleyl lactylate",
+   "risk": "high",
+   "risk_from": "E481",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2013.3144"
+  },
+  "E482": {
+   "name": "Calcium stearoyl-2-lactylate",
+   "risk": "high",
+   "risk_from": "E482",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2013.3144"
+  },
+  "E482(i)": {
+   "name": "Calcium stearoyl lactylate",
+   "risk": "high",
+   "risk_from": "E482",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2013.3144"
+  },
+  "E482(ii)": {
+   "name": "Calcium oleyl lactylate",
+   "risk": "high",
+   "risk_from": "E482",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2013.3144"
+  },
+  "E483": {
+   "name": "Stearyl tartrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E484": {
+   "name": "Stearyl citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E485": {
+   "name": "Sodium stearoyl fumarate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E486": {
+   "name": "Calcium stearoyl fumarate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E487": {
+   "name": "sodium dodecyl sulfate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E488": {
+   "name": "Ethoxylated Mono- and Di-Glycerides",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E489": {
+   "name": "Methyl glucoside-coconut oil ester",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E490": {
+   "name": null,
+   "risk": "none",
+   "risk_from": "E1520",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2018.5235"
+  },
+  "E491": {
+   "name": "Sorbitan monostearate",
+   "risk": "high",
+   "risk_from": "E491",
+   "efsa_url": "hhttps://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2017.4788"
+  },
+  "E492": {
+   "name": "Sorbitan tristearate",
+   "risk": "high",
+   "risk_from": "E492",
+   "efsa_url": "hhttps://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2017.4788"
+  },
+  "E493": {
+   "name": "Sorbitan monolaurate",
+   "risk": "high",
+   "risk_from": "E493",
+   "efsa_url": "hhttps://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2017.4788"
+  },
+  "E494": {
+   "name": "Sorbitan monooleate",
+   "risk": "high",
+   "risk_from": "E494",
+   "efsa_url": "hhttps://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2017.4788"
+  },
+  "E495": {
+   "name": "Sorbitan monopalmitate",
+   "risk": "high",
+   "risk_from": "E495",
+   "efsa_url": "hhttps://efsa.onlinelibrary.wiley.com/doi/epdf/10.2903/j.efsa.2017.4788"
+  },
+  "E496": {
+   "name": "Sorbitan trioleate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E500": {
+   "name": "Sodium carbonates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E500(i)": {
+   "name": "Sodium carbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E500(ii)": {
+   "name": "Sodium hydrogen carbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E500(iii)": {
+   "name": "Sodium sesquicarbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E501": {
+   "name": "Potassium carbonates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E501(i)": {
+   "name": "Potassium carbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E501(ii)": {
+   "name": "Potassium hydrogen carbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E502": {
+   "name": "Carbonates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E503": {
+   "name": "Ammonium carbonates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E503(i)": {
+   "name": "Ammonium carbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E503(ii)": {
+   "name": "Ammonium hydrogen carbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E504": {
+   "name": "Magnesium carbonates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E504(i)": {
+   "name": "Magnesium carbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E504(ii)": {
+   "name": "Magnesium hydroxide carbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E505": {
+   "name": "Ferrous carbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E507": {
+   "name": "Hydrochloric acid",
+   "risk": "moderate",
+   "risk_from": "E507",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5751"
+  },
+  "E508": {
+   "name": "Potassium chloride",
+   "risk": "moderate",
+   "risk_from": "E508",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5751"
+  },
+  "E509": {
+   "name": "Calcium chloride",
+   "risk": "moderate",
+   "risk_from": "E509",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5751"
+  },
+  "E510": {
+   "name": "ammonium chloride",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E511": {
+   "name": "Magnesium chloride",
+   "risk": "moderate",
+   "risk_from": "E511",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5751"
+  },
+  "E512": {
+   "name": "Stannous chloride",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E513": {
+   "name": "Sulphuric acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E514": {
+   "name": "Sodium sulphates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E514(i)": {
+   "name": "Sodium sulphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E514(ii)": {
+   "name": "Sodium hydrogen sulphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E515": {
+   "name": "Potassium sulphates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E515(i)": {
+   "name": "Potassium sulphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E515(ii)": {
+   "name": "Potassium hydrogen sulphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E516": {
+   "name": "Calcium sulphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E517": {
+   "name": "Ammonium sulphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E518": {
+   "name": "Magnesium sulphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E519": {
+   "name": "Copper sulphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E520": {
+   "name": "Aluminium sulphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E521": {
+   "name": "Aluminium sodium sulphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E522": {
+   "name": "Aluminium potassium sulphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E523": {
+   "name": "Aluminium ammonium sulphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E524": {
+   "name": "Sodium hydroxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E525": {
+   "name": "Potassium hydroxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E526": {
+   "name": "Calcium hydroxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E527": {
+   "name": "Ammonium hydroxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E528": {
+   "name": "Magnesium hydroxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E529": {
+   "name": "Calcium oxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E530": {
+   "name": "Magnesium oxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E535": {
+   "name": "Sodium ferrocyanide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E536": {
+   "name": "Potassium ferrocyanide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E537": {
+   "name": "ferrous hexacyanomanganate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E538": {
+   "name": "Calcium ferrocyanide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E539": {
+   "name": "sodium thiosulfate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E540": {
+   "name": null,
+   "risk": "high",
+   "risk_from": "E450",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E541": {
+   "name": "Sodium aluminium phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E541(i)": {
+   "name": "Acid sodium aluminium phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E541(ii)": {
+   "name": "Alkaline sodium aluminium phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E542": {
+   "name": "Bone phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E543": {
+   "name": "E543 food additive",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E544": {
+   "name": null,
+   "risk": "high",
+   "risk_from": "E452",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E545": {
+   "name": null,
+   "risk": "high",
+   "risk_from": "E452",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2019.5674"
+  },
+  "E546": {
+   "name": "Magnesium pyrophosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E550": {
+   "name": "Sodium silicate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E550(i)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E550(ii)": {
+   "name": "Sodium metasilicate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E551": {
+   "name": "Silicon dioxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E552": {
+   "name": "Calcium silicate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E553": {
+   "name": "Magnesium silicates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E553(i)": {
+   "name": "Magnesium silicate\\",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E553(ii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E553(iii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E553a": {
+   "name": "synthetic magnesium silicates",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E553a(i)": {
+   "name": "Synthetic magnesium silicate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E553a(ii)": {
+   "name": "Magnesium trisilicate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E553b": {
+   "name": "Talc",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E554": {
+   "name": "Sodium aluminium silicate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E555": {
+   "name": "Potassium aluminium silicate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E556": {
+   "name": "Calcium aluminium silicate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E557": {
+   "name": "hemimorphite",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E558": {
+   "name": "Bentonite",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E559": {
+   "name": "Aluminium silicate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E560": {
+   "name": "Potassium silicate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E570": {
+   "name": "Fatty acids",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E571": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E572": {
+   "name": "Magnesium stearate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E573": {
+   "name": "Aluminium stearate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E574": {
+   "name": "Gluconic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E575": {
+   "name": "Glucono-delta-lactone",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E576": {
+   "name": "Sodium gluconate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E577": {
+   "name": "Potassium gluconate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E578": {
+   "name": "calcium gluconate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E579": {
+   "name": "iron gluconate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E580": {
+   "name": "Magnesium Gluconate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E585": {
+   "name": "Ferrous lactate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E586": {
+   "name": "4-hexylresorcinol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E620": {
+   "name": "Glutamic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E621": {
+   "name": "Monosodium glutamate",
+   "risk": "high",
+   "risk_from": "E621",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2017.4910"
+  },
+  "E622": {
+   "name": "Monopotassium glutamate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E623": {
+   "name": "Calcium diglutamate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E624": {
+   "name": "Monoammonium glutamate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E625": {
+   "name": "Magnesium diglutamate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E626": {
+   "name": "Guanylic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E627": {
+   "name": "Disodium guanylate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E628": {
+   "name": "Dipotassium guanylate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E629": {
+   "name": "Calcium guanylate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E630": {
+   "name": "Inosinic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E631": {
+   "name": "Disodium inosinate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E632": {
+   "name": "Dipotassium inosinate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E633": {
+   "name": "Calcium inosinate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E634": {
+   "name": "Calcium 5'-ribonucleotide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E635": {
+   "name": "Disodium 5'-ribonucleotide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E636": {
+   "name": "Maltol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E637": {
+   "name": "Ethyl maltol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E638": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E640": {
+   "name": "Glycine and its sodium salt",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E640(i)": {
+   "name": "Glycine",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E640(ii)": {
+   "name": "Sodiumglycinate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E641": {
+   "name": "Leucine",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E642": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E650": {
+   "name": "Zinc acetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E710": {
+   "name": "Spiramycin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E713": {
+   "name": "Tylosin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E900": {
+   "name": "Dimethylpolysiloxane and Methylphenylpolysiloxane",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E900a": {
+   "name": "Dimethyl polysiloxane",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E900b": {
+   "name": "Methylphenylpolysiloxane",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E901": {
+   "name": "white and yellow beeswax",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E902": {
+   "name": "Candelilla wax",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E903": {
+   "name": "Carnauba wax",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E904": {
+   "name": "Shellac",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E905": {
+   "name": "Synthetic wax",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E905a": {
+   "name": "mineral oil",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E905b": {
+   "name": "petroleum jelly",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E905c": {
+   "name": "Petroleum wax",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E905c(i)": {
+   "name": "Microcrystalline wax",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E905c(ii)": {
+   "name": "Paraffin wax",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E905d": {
+   "name": "Mineral oil high viscosity",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E905e": {
+   "name": "Mineral oil medium viscosity",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E905f": {
+   "name": "Mineral oil medium and low viscosity class II",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E905g": {
+   "name": "Mineral oil medium and low viscosity class III",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E906": {
+   "name": "Benzoin resin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E907": {
+   "name": "Hydrogenated poly-1-decene",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E908": {
+   "name": "Rice bran wax",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E909": {
+   "name": "Spermaceti",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E910": {
+   "name": "Wax ester",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E911": {
+   "name": "Fatty acid methyl ester",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E912": {
+   "name": "Montanic acid esters",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E913": {
+   "name": "Lanolin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E914": {
+   "name": "Oxidised polyethylene wax",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E915": {
+   "name": "Esters of Colophane",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E916": {
+   "name": "Calcium iodate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E917": {
+   "name": "potassium iodate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E918": {
+   "name": "Nitrogen oxides",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E919": {
+   "name": "Nitrosyl chloride",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E920": {
+   "name": "l-cysteine",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E921": {
+   "name": "L-cysteine hydrochloride monohydrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E922": {
+   "name": "Potassium persulfate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E923": {
+   "name": "ammonium persulfate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E924": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E924a": {
+   "name": "Potassium bromate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E924b": {
+   "name": "Calcium bromate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E925": {
+   "name": "Chlorine",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E926": {
+   "name": "Chlorine dioxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E927": {
+   "name": "Azodicarbonamide and Carbamide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E927a": {
+   "name": "Azodicarbonamide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E927b": {
+   "name": "Carbamide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E928": {
+   "name": "Benzole peroxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E929": {
+   "name": "acetone peroxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E930": {
+   "name": "calcium peroxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E931": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E932": {
+   "name": "Nitrogen oxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E938": {
+   "name": "Argon",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E939": {
+   "name": "Helium",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E940": {
+   "name": "Dichlorodifluoromethane",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E941": {
+   "name": "Nitrogen",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E942": {
+   "name": "Nitrous oxide",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E943a": {
+   "name": "Butane",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E943b": {
+   "name": "Isobutane",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E944": {
+   "name": "Propane",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E945": {
+   "name": "chloropentafluoroethane",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E946": {
+   "name": "octafluorocyclobutane",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E948": {
+   "name": "Oxygen",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E949": {
+   "name": "Hydrogen",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E950": {
+   "name": "Acesulfame k",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E951": {
+   "name": "Aspartame",
+   "risk": "none",
+   "risk_from": "E951",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2013.3496"
+  },
+  "E952": {
+   "name": "Cyclamic acid and its Na and Ca salts",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E952(i)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E952(ii)": {
+   "name": "Calcium cyclamate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E952(iv)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E953": {
+   "name": "isomalt",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E954": {
+   "name": "saccharin and its salts",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E954(i)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E954(ii)": {
+   "name": "Calcium saccharin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E954(iii)": {
+   "name": "Potassium saccharin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E954(iv)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E955": {
+   "name": "Sucralose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E956": {
+   "name": "Alitame",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E957": {
+   "name": "Thaumatin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E958": {
+   "name": "Glycyrrhizin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E959": {
+   "name": "Neohesperidine dihydrochalcone",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E960": {
+   "name": "Steviol glycosides",
+   "risk": "moderate",
+   "risk_from": "E960",
+   "efsa_url": "http://dx.doi.org/10.2903/j.efsa.2015.4146"
+  },
+  "E960a": {
+   "name": "Steviol glycosides from Stevia",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E960b": {
+   "name": "Rebaudioside from multiple gene donors expressed in Yarrowia lipolityca",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E960c": {
+   "name": "Enzymatically produced steviol glycosides",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E960d": {
+   "name": "Glucosylated steviol glycosides",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E961": {
+   "name": "Neotame",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E962": {
+   "name": "Salt of aspartame-acesulfame",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E963": {
+   "name": "Tagatose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E964": {
+   "name": "Polyglycitol syrup",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E965": {
+   "name": "maltitol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E965(i)": {
+   "name": "D-Maltitol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E965(ii)": {
+   "name": "Maltitol syrup",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E966": {
+   "name": "Lactitol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E967": {
+   "name": "Xylitol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E968": {
+   "name": "Erythritol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E969": {
+   "name": "Advantame",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E999": {
+   "name": "Quillaia extract",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E999(i)": {
+   "name": "Quillaia extract type 1",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E999(ii)": {
+   "name": "Quillaia extract type 2",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1000": {
+   "name": "Cholic acid",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1001": {
+   "name": "Choline salt",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1001(i)": {
+   "name": "Choline acetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1001(ii)": {
+   "name": "Choline carbonate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1001(iii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1001(iv)": {
+   "name": "Choline citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1001(v)": {
+   "name": "Choline tartrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1001(vi)": {
+   "name": "Choline lactate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1100": {
+   "name": "Alpha-Amylase",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1100(i)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1100(ii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1100(iii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1100(iv)": {
+   "name": "alpha-Amylase from Bacillus megaterium expressed in Bacillus subtilis",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1100(v)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1100(vi)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1101": {
+   "name": "Protease",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1101(i)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1101(ii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1101(iii)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1101(iv)": {
+   "name": null,
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1101(v)": {
+   "name": "Protease from Streptomyces fradiae",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1101(vi)": {
+   "name": "Proteases from Bacillus subtilis",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1102": {
+   "name": "Glucose oxidase",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1103": {
+   "name": "Invertase",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1104": {
+   "name": "lipase",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1105": {
+   "name": "Lysozyme",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1200": {
+   "name": "Polydextrose",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1201": {
+   "name": "Polyvinylpyrrolidone",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1202": {
+   "name": "Polyvinylpolypyrrolidone",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1203": {
+   "name": "Polyvinyl alcohol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1204": {
+   "name": "Pullulan",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1205": {
+   "name": "Basic methacrylate copolymer",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1206": {
+   "name": "Neutral methacrylate copolymer",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1207": {
+   "name": "Anionic methacrylate copolymer",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1208": {
+   "name": "Polyvinylpyrrolidone-vinyl acetate copolymer",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1209": {
+   "name": "Polyvinyl alcohol-polyethylene glycol-graft-co-polymer",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1210": {
+   "name": "Carbomer",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1400": {
+   "name": "Dextrin",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1401": {
+   "name": "Acid-treated modified starch",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1402": {
+   "name": "Alkaline modified starch",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1403": {
+   "name": "Bleached starch",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1404": {
+   "name": "Oxidised starch",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1405": {
+   "name": "Enzyme treated starch",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1410": {
+   "name": "Monostarch phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1411": {
+   "name": "Distarch glycerol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1412": {
+   "name": "Distarch phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1413": {
+   "name": "Phosphated distarch phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1414": {
+   "name": "Acetylated distarch phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1420": {
+   "name": "Acetylated starch",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1421": {
+   "name": "mono starch acetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1422": {
+   "name": "Acetylated distarch adipate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1423": {
+   "name": "Acetylated distarch glycerol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1430": {
+   "name": "Distarch glycerine",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1440": {
+   "name": "Hydroxypropyl starch",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1441": {
+   "name": "Hydroxy propyl distarch glycerine",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1442": {
+   "name": "Hydroxypropyl distarch phosphate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1443": {
+   "name": "Hydroxy propyl distarch glycerol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1450": {
+   "name": "Starch sodium octenyl succinate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1451": {
+   "name": "Acetylated oxidised starch",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1452": {
+   "name": "Starch aluminium octenyl succinate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1503": {
+   "name": "Castor oil",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1504": {
+   "name": "ethyl acetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1505": {
+   "name": "Triethyl citrate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1510": {
+   "name": "Ethanol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1517": {
+   "name": "Glyceryl diacetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1518": {
+   "name": "Glyceryl triacetate",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1519": {
+   "name": "Benzyl alcohol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  },
+  "E1520": {
+   "name": "Propylene glycol",
+   "risk": "none",
+   "risk_from": "E1520",
+   "efsa_url": "https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2018.5235"
+  },
+  "E1521": {
+   "name": "Polyethylene glycol",
+   "risk": "unknown",
+   "risk_from": null,
+   "efsa_url": null
+  }
+ }
+}

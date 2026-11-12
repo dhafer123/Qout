@@ -4,6 +4,12 @@ Every threshold comes from docs/specs/ (see docs/specs/README.md). The Dart engi
 `app/` must give identical results on every `scoring-spec/golden/*.json` case.
 """
 
+from app.modules.scoring.additives import (
+    Additive,
+    OverexposureRisk,
+    additive,
+    additives_from_off,
+)
 from app.modules.scoring.conversions import kj_from_kcal, salt_from_sodium
 from app.modules.scoring.engine import REQUIRED_FIELDS, score
 from app.modules.scoring.models import (
@@ -21,6 +27,7 @@ from app.modules.scoring.nova import NovaGroup, nova_group_from_off
 __all__ = [
     "ENGINE_VERSION",
     "REQUIRED_FIELDS",
+    "Additive",
     "Breakdown",
     "Category",
     "Grade",
@@ -28,7 +35,10 @@ __all__ = [
     "NovaGroup",
     "NutriScore",
     "NutritionInput",
+    "OverexposureRisk",
     "ScoreResult",
+    "additive",
+    "additives_from_off",
     "kj_from_kcal",
     "nova_group_from_off",
     "salt_from_sodium",
