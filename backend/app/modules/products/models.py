@@ -15,7 +15,6 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     DateTime,
-    Enum,
     ForeignKey,
     Index,
     Integer,
@@ -30,7 +29,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.models import Base, IdTimestampMixin
+from app.core.models import Base, IdTimestampMixin, str_enum
 from app.modules.scoring.models import Category, Grade
 
 EAN_PATTERN = "^[0-9]{8,14}$"
@@ -66,19 +65,6 @@ class ScanOutcome(StrEnum):
     NOT_FOUND = "not_found"
 
 
-def _enum[E: StrEnum](enum: type[E], name: str) -> Enum:
-    """Stored as VARCHAR + CHECK (no native PG enum: easier to extend in migrations)."""
-    return Enum(
-        enum,
-        name=name,
-        native_enum=False,
-        create_constraint=True,
-        length=max(len(member.value) for member in enum),
-        values_callable=lambda members: [member.value for member in members],
-        validate_strings=True,
-    )
-
-
 class Product(IdTimestampMixin, Base):
     __tablename__ = "products"
     __table_args__ = (
@@ -89,14 +75,14 @@ class Product(IdTimestampMixin, Base):
     ean: Mapped[str] = mapped_column(String(14), unique=True)
     name: Mapped[str | None] = mapped_column(Text)
     brand: Mapped[str | None] = mapped_column(Text)
-    category: Mapped[Category | None] = mapped_column(_enum(Category, "product_category"))
+    category: Mapped[Category | None] = mapped_column(str_enum(Category, "product_category"))
     image_url: Mapped[str | None] = mapped_column(Text)
-    source: Mapped[DataSource] = mapped_column(_enum(DataSource, "product_source"))
+    source: Mapped[DataSource] = mapped_column(str_enum(DataSource, "product_source"))
     status: Mapped[ProductStatus] = mapped_column(
-        _enum(ProductStatus, "product_status"), server_default=ProductStatus.UNVERIFIED.value
+        str_enum(ProductStatus, "product_status"), server_default=ProductStatus.UNVERIFIED.value
     )
     quality_flag: Mapped[QualityFlag | None] = mapped_column(
-        _enum(QualityFlag, "product_quality_flag")
+        str_enum(QualityFlag, "product_quality_flag")
     )
     nova_group: Mapped[int | None] = mapped_column(SmallInteger)
     additives: Mapped[list[str]] = mapped_column(
@@ -145,8 +131,8 @@ class NutritionFacts(IdTimestampMixin, Base):
     # Indexed by the (product_id, version) unique constraint.
     product_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"))
     version: Mapped[int] = mapped_column(Integer)
-    basis: Mapped[NutritionBasis] = mapped_column(_enum(NutritionBasis, "nutrition_basis"))
-    source: Mapped[DataSource] = mapped_column(_enum(DataSource, "nutrition_source"))
+    basis: Mapped[NutritionBasis] = mapped_column(str_enum(NutritionBasis, "nutrition_basis"))
+    source: Mapped[DataSource] = mapped_column(str_enum(DataSource, "nutrition_source"))
     energy_kj: Mapped[Decimal | None] = mapped_column(Numeric)
     sugars_g: Mapped[Decimal | None] = mapped_column(Numeric)
     saturated_fat_g: Mapped[Decimal | None] = mapped_column(Numeric)
@@ -184,10 +170,10 @@ class Score(IdTimestampMixin, Base):
     )
     """None for water, which is graded without nutrition facts."""
     engine_version: Mapped[str] = mapped_column(String(32))
-    grade: Mapped[Grade | None] = mapped_column(_enum(Grade, "score_grade"))
+    grade: Mapped[Grade | None] = mapped_column(str_enum(Grade, "score_grade"))
     total: Mapped[int | None] = mapped_column(Integer)
     breakdown: Mapped[dict[str, Any]] = mapped_column(JSONB)
-    off_grade: Mapped[Grade | None] = mapped_column(_enum(Grade, "score_off_grade"))
+    off_grade: Mapped[Grade | None] = mapped_column(str_enum(Grade, "score_off_grade"))
     """Open Food Facts' own Nutri-Score grade, for the validation report (T16)."""
 
 
@@ -201,4 +187,4 @@ class ScanEvent(IdTimestampMixin, Base):
     product_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("products.id", ondelete="SET NULL")
     )
-    outcome: Mapped[ScanOutcome] = mapped_column(_enum(ScanOutcome, "scan_outcome"))
+    outcome: Mapped[ScanOutcome] = mapped_column(str_enum(ScanOutcome, "scan_outcome"))

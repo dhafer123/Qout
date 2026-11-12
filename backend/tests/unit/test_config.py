@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import Settings, get_settings
+from app.core.config import BACKEND_DIR, Settings, get_settings
 
 DB_URL = "postgresql+asyncpg://user:pw@db.example:5432/qout"
 REDIS_URL = "redis://cache.example:6379/0"
@@ -156,3 +156,75 @@ def test_off_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.off_user_agent == "Qout/0.1 (https://github.com/dhafer123/Qout)"
     assert (settings.off_timeout_seconds, settings.off_max_retries) == (10.0, 3)
     assert settings.off_rate_limit_per_minute == 100
+
+
+@pytest.fixture
+def required_env(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
+    monkeypatch.setenv("DATABASE_URL", DB_URL)
+    monkeypatch.setenv("REDIS_URL", REDIS_URL)
+    for name in (
+        "IMPORT_COUNTRIES",
+        "OFF_DELTA_URL",
+        "IMPORT_DELTA_CRON_HOUR",
+        "IMPORT_DOWNLOAD_DIR",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    return monkeypatch
+
+
+def test_import_defaults(required_env: pytest.MonkeyPatch) -> None:
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    assert settings.import_countries == {"en:tunisia"}
+    assert settings.import_batch_size == 500
+    assert settings.import_download_dir.parts[-2:] == ("var", "imports")
+    assert str(settings.off_export_url).endswith("/data/openfoodfacts-products.jsonl.gz")
+    assert str(settings.off_delta_url) == "https://static.openfoodfacts.org/data/delta/"
+    assert (settings.import_delta_cron_enabled, settings.import_delta_cron_hour) == (True, 4)
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("en:tunisia", {"en:tunisia"}),
+        (" Tunisia , en:algeria,,", {"en:tunisia", "en:algeria"}),
+        ("en:united-kingdom", {"en:united-kingdom"}),
+    ],
+)
+def test_import_countries_from_env(
+    required_env: pytest.MonkeyPatch, raw: str, expected: set[str]
+) -> None:
+    required_env.setenv("IMPORT_COUNTRIES", raw)
+    assert Settings(_env_file=None).import_countries == expected  # type: ignore[call-arg]
+
+
+@pytest.mark.parametrize("raw", ["", " , ", "en:tun isia", 'en:"x"', "en:"])
+def test_invalid_import_countries(required_env: pytest.MonkeyPatch, raw: str) -> None:
+    required_env.setenv("IMPORT_COUNTRIES", raw)
+    with pytest.raises(ValidationError, match="IMPORT_COUNTRIES"):
+        Settings(_env_file=None)  # type: ignore[call-arg]
+
+
+def test_import_countries_as_python_values(required_env: pytest.MonkeyPatch) -> None:
+    settings = Settings(_env_file=None, import_countries={"en:tunisia"})  # type: ignore[call-arg]
+    assert settings.import_countries == {"en:tunisia"}
+
+
+def test_delta_url_is_a_folder(required_env: pytest.MonkeyPatch) -> None:
+    required_env.setenv("OFF_DELTA_URL", "https://mirror.example/delta")
+    assert str(Settings(_env_file=None).off_delta_url) == "https://mirror.example/delta/"  # type: ignore[call-arg]
+
+
+@pytest.mark.parametrize("hour", ["-1", "24"])
+def test_invalid_cron_hour(required_env: pytest.MonkeyPatch, hour: str) -> None:
+    required_env.setenv("IMPORT_DELTA_CRON_HOUR", hour)
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)  # type: ignore[call-arg]
+
+
+def test_relative_download_dir_is_under_backend(
+    required_env: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    required_env.setenv("IMPORT_DOWNLOAD_DIR", "var/imports")
+    assert Settings(_env_file=None).import_download_dir == BACKEND_DIR / "var" / "imports"  # type: ignore[call-arg]
+    required_env.setenv("IMPORT_DOWNLOAD_DIR", str(tmp_path))
+    assert Settings(_env_file=None).import_download_dir == tmp_path  # type: ignore[call-arg]

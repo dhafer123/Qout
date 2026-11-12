@@ -2,9 +2,10 @@
 
 import uuid
 from datetime import datetime
+from enum import StrEnum
 from typing import Any, ClassVar
 
-from sqlalchemy import DateTime, MetaData, func
+from sqlalchemy import DateTime, Enum, MetaData, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 # Deterministic constraint names, so Alembic can generate (and drop) them reliably.
@@ -39,4 +40,18 @@ class IdTimestampMixin:
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.clock_timestamp()
+    )
+
+
+def str_enum[E: StrEnum](enum: type[E], name: str) -> Enum:
+    """Column type for a StrEnum: VARCHAR + CHECK (no native PG enum, easier to extend in
+    migrations). Stores the members' values."""
+    return Enum(
+        enum,
+        name=name,
+        native_enum=False,
+        create_constraint=True,
+        length=max(len(member.value) for member in enum),
+        values_callable=lambda members: [member.value for member in members],
+        validate_strings=True,
     )

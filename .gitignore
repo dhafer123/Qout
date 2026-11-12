@@ -24,6 +24,8 @@ dist/
 .coverage.*
 coverage.xml
 htmlcov/
+# Bulk import downloads (IMPORT_DOWNLOAD_DIR)
+backend/var/
 
 # ---------- Flutter / Dart ----------
 .dart_tool/
