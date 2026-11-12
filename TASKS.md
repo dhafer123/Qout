@@ -145,9 +145,12 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Follow-ups: extend the generator for request bodies (POST) when the contribution and auth endpoints arrive (T23+). Providing `QoutApi`/`Dio` to the app (base URL from `AppEnv`, timeouts) comes with the repository in T18.
 
 ### T18 · Local database and repository
-- [ ] drift DB: cached products, scan history, contribution outbox
-- [ ] `ProductRepository.get(ean)`: cache → API → cache write; stale-while-revalidate
+- [x] drift DB: cached products, scan history, contribution outbox
+- [x] `ProductRepository.get(ean)`: cache → API → cache write; stale-while-revalidate
 - Tests: **U** repository with fake API and in-memory drift: cache hit, miss, offline, API 404.
+- Done: 517 app tests. `core/database/database.dart` (drift, schema version 1): `cached_products` (EAN → `ProductDetail` JSON + `fetched_at`), `scan_history`, `contribution_outbox` (kind, JSON payload, attempts, last error), with DAOs. Times stored as ISO-8601 text (`build.yaml`), scan times in UTC. `features/product/`: `ProductRepository.get(ean)` is a stream: cached and younger than 6 h → served, no request; older → served at once (`refreshing`) then refreshed (`fresh`), or kept as `refreshFailed` when offline/server down, or removed on 404; not cached → fetched and cached under the scanned code and the API's EAN (UPC-A). Results: sealed `ProductResult` (found / notFound / invalidBarcode / unavailable with offline flag and Retry-After). Unreadable cached JSON (after an app update) is dropped and refetched. The generated `ProductDetail` is the app's product type (no separate domain model). Providers: `dioProvider` (base URL from `AppEnv`, 5 s connect, 15 s receive: a first lookup may wait for OFF), `qoutApiProvider`, `appDatabaseProvider` (overridden in tests), `productRepositoryProvider`. Debug APK verified: SQLite bundled for arm64, armv7 and x86_64. New dependencies: drift, drift_flutter, drift_dev (dev).
+- Changed on the way: `build_runner` must run with `--force-jit` (drift_dev depends on sqlite3, whose native build hooks the default AOT builder compilation rejects; a build_runner that falls back on its own needs a newer analyzer than freezed allows). Updated in CLAUDE.md, the app README and app CI.
+- Follow-ups: dump the drift schema (`drift_dev schema dump`) before the first schema change; with drift 2.34.4 the drift_dev 2.34.0 CLI doesn't compile (codegen works), so this waits for the analyzer constraint to allow a newer drift_dev. The product cache has no size limit yet (~3 KB per product). Nothing visible yet: the screens come in T19–T21.
 
 ### T19 · Scan feature
 - [ ] mobile_scanner limited to EAN-13/EAN-8/UPC-A/UPC-E; accept a code after N identical consecutive reads; checksum validation; haptic feedback; torch toggle; permission handling
