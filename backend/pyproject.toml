@@ -81,6 +81,9 @@ filterwarnings = ["error"]
 [tool.coverage.run]
 branch = true
 source = ["app"]
+# SQLAlchemy async runs IO through greenlets; without this, lines after a DB call can be
+# reported as not run.
+concurrency = ["greenlet", "thread"]
 
 [tool.coverage.report]
 fail_under = 85

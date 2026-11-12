@@ -13,6 +13,7 @@ from typing import Any, ClassVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.modules.products.ean import check_digit
 from app.modules.products.models import (
     DataSource,
     NutritionBasis,
@@ -67,6 +68,12 @@ class WidgetFactory(Factory[Widget]):
         return {"name": f"widget-{cls.next_n()}"}
 
 
+def _ean13(body: int) -> str:
+    """A valid EAN-13 (correct check digit) from a 12-digit body."""
+    digits = f"{body:012d}"
+    return f"{digits}{check_digit(digits)}"
+
+
 class ProductFactory(Factory[Product]):
     model = Product
 
@@ -74,7 +81,7 @@ class ProductFactory(Factory[Product]):
     def defaults(cls) -> dict[str, Any]:
         n = cls.next_n()
         return {
-            "ean": f"{2000000000000 + n}",  # 13 digits, restricted-use prefix 2
+            "ean": _ean13(200000000000 + n),  # restricted-use prefix 2
             "name": f"Product {n}",
             "source": DataSource.OPEN_FOOD_FACTS,
         }
