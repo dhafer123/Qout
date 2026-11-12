@@ -108,10 +108,12 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Done: 1046 backend tests (coverage 100 %), 451 app tests, parity identical on 4216 cases. The OFF normaliser follows automatically: the recorded cheese (D), cheese spread (D) and beef patty (B) are now complete and get exactly OFF's grade (12 of 12 complete fixtures agree). The planned separate ingestion-test commit was folded into the Python commit so every commit keeps the suite green.
 
 ### T14 · Product lookup endpoint
-- [ ] Service: DB → OFF → save + score → return; 404 for unknown; invalid EAN → 422
-- [ ] Redis cache for hot products (TTL, invalidated on update)
-- [ ] `GET /v1/products/{ean}` returns product, nutrients, score + breakdown, source, updated_at
+- [x] Service: DB → OFF → save + score → return; 404 for unknown; invalid EAN → 422
+- [x] Redis cache for hot products (TTL, invalidated on update)
+- [x] `GET /v1/products/{ean}` returns product, nutrients, score + breakdown, source, updated_at
 - Tests: **I** DB hit, OFF hit (respx) saved and scored, OFF miss → 404, OFF down → graceful 503/fallback, cache hit avoids DB, invalid EAN.
+- Done: 1081 backend tests, coverage 100 %. `products/lookup.py` (`ProductLookup`): cache → DB → OFF; OFF imports are normalised, stored (product, nutrition v1, score with OFF's grade) and committed. A stored product without a score for its latest nutrition and the current engine version is scored on read (OFF grade carried over); concurrent first lookups and concurrent rescoring are safe (unique constraints, the loser reads the winner's row). Unknown category → stored, `score: null`; no nutrition → insufficient data. Hidden products → 404. OFF down/rejecting → 503 + `Retry-After: 30` only when the product is not stored. `products/cache.py`: whole response JSON in Redis, key `qout:product:v{format}:{engine_version}:{ean}`, TTL 24 h; unknown barcodes remembered 10 min; `invalidate(ean)` for later writers (T15, T25, T31); any Redis error or 0.5 s timeout is logged and treated as a miss. Response: `ProductDetail` (additives with name and EFSA risk, nutrition with basis and version, score with breakdown, `updated_at` = latest of product/nutrition/score). New env vars: PRODUCT_CACHE_TTL_SECONDS, PRODUCT_NOT_FOUND_TTL_SECONDS. Also: `ProductFactory` EANs now have valid check digits; coverage measures greenlets (SQLAlchemy async), which had hidden covered lines. Scan events are not recorded yet: a DB write per lookup would defeat the cache; to be done through the worker queue (see follow-up below).
+- Follow-up: record `scan_events` asynchronously (arq job from the lookup) — fits T15's worker setup or a later analytics task.
 
 ### T15 · Worker and bulk import
 - [ ] arq worker setup; job: import OFF products for Tunisia (and configurable country list) from OFF export/delta files
