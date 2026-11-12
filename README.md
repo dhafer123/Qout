@@ -130,6 +130,38 @@ Logs are JSON lines on stdout. Every request gets an `X-Request-ID` (reused from
 request if valid, otherwise generated) that appears in the response and in log lines.
 Settings come from environment variables and `.env` (see `.env.example`).
 
+#### Worker and bulk import (arq)
+
+The worker imports Open Food Facts products sold in `IMPORT_COUNTRIES` (default
+`en:tunisia`) from OFF's bulk files: the **full export** (~14 GB JSONL, for seeding) and the
+**daily delta files** (imported every day at `IMPORT_DELTA_CRON_HOUR` UTC). Imports are
+idempotent: unchanged products stay untouched, changed ones get a new nutrition version
+and are rescored, and records older than the stored data are ignored. Products from
+contributions are never overwritten. Every file's progress is kept in `import_runs`; an
+interrupted import (worker stopped, crash, network) resumes from its last checkpoint.
+
+From `backend/`:
+
+```sh
+uv run arq app.worker.main.WorkerSettings            # start the worker (cron + queued jobs)
+uv run python -m app.worker enqueue deltas           # queue: new delta files
+uv run python -m app.worker enqueue export           # queue: full export (seed; hours)
+uv run python -m app.worker enqueue export --force   # re-import the same export version
+uv run python -m app.worker run deltas               # run now, in this process (no worker)
+```
+
+Only one import runs at a time (Postgres advisory lock); a queued job that finds another
+import running retries 10 minutes later. Downloads go to `IMPORT_DOWNLOAD_DIR`
+(`backend/var/imports`, git-ignored) and are deleted once imported.
+
+Inspect runs:
+
+```sql
+SELECT kind, source, status, checkpoint_line, inserted, updated, unchanged, skipped,
+       rejected, failed, error
+FROM import_runs ORDER BY created_at DESC LIMIT 20;
+```
+
 ### Run locally (placeholders until the corresponding tasks land)
 
 ```sh

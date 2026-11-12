@@ -5,6 +5,7 @@ description = "Qout backend: product lookup and explainable nutrition scoring AP
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "alembic>=1.20.1",
+    "arq>=0.28.0",
     "asyncpg>=0.32.0",
     "fastapi>=0.162.4",
     "httpx>=0.28.1",
@@ -28,6 +29,9 @@ dev = [
 
 [tool.uv]
 package = false
+# arq (all releases up to 0.28) pins redis<6, but works with redis-py 8: the worker is
+# covered end to end by tests/integration/worker. Drop when arq relaxes the pin.
+override-dependencies = ["redis>=8.1.0"]
 
 # ---------------------------------------------------------------- ruff
 [tool.ruff]
@@ -75,7 +79,14 @@ addopts = [
 markers = [
     "integration: needs the docker compose stack (Postgres, Redis)",
 ]
-filterwarnings = ["error"]
+filterwarnings = [
+    "error",
+    # arq's use of redis-py: `retry_on_timeout` (deprecated in redis-py 6; arq pins redis<6,
+    # see the override in [tool.uv]) and `close()` (deprecated since redis-py 5.0.1). Both
+    # harmless; filtered only when raised from arq.
+    "ignore:Call to '__init__' function with deprecated usage of input argument/s 'retry_on_timeout':DeprecationWarning",
+    "ignore:Call to deprecated close:DeprecationWarning:arq",
+]
 
 # ---------------------------------------------------------------- coverage
 [tool.coverage.run]
