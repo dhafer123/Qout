@@ -138,9 +138,11 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 ## Phase 3 — App core
 
 ### T17 · Generated API client
-- [ ] Export OpenAPI from backend; generate Dart client (openapi-generator or a small hand-written dio layer — propose one); script `scripts/gen_client.sh`
-- [ ] CI check: committed client matches the current spec
+- [x] Export OpenAPI from backend; generate Dart client (openapi-generator or a small hand-written dio layer — propose one); script `scripts/gen_client.sh`
+- [x] CI check: committed client matches the current spec
 - Tests: **U** client deserialises a recorded product response.
+- Done: backend 1242 tests (coverage 100 %), app 494 tests. Chosen: a small generator in the repo (`app/tool/api_generator.dart`), not openapi-generator (Java/Docker, extra packages, and its Dart generators turn OpenAPI 3.1 `anyOf [X, null]` into wrapper types) nor a hand-written layer (not checkable against the spec). Contract: `api/openapi.json`, exported by `python -m app.openapi` with fixed dummy settings; operation ids are the route names (`getProduct`); a backend test fails when the committed spec no longer matches the code. Client: `app/lib/core/api/qout_api.dart` (committed, analyzed like hand-written code): immutable models with fromJson/toJson, value equality and read-only collections; enums with an `unrecognized` member for values a newer backend adds; `QoutApi` on dio with typed errors `ApiNotFound` (404), `ApiInvalidRequest` (422), `ApiUnavailable` (503, `retryAfter`), `ApiConnectionError`, `ApiBadResponse` (other statuses, or a body that doesn't match). Only `/v1/` GET operations; anything the generator doesn't support (request bodies, other methods, `oneOf`, non-string enums, ...) stops it with an error naming the place. `scripts/gen_client.sh [spec|client|all]`; app CI regenerates the client and fails on a diff (and runs on `api/**` changes). Recorded responses from our own API in `app/test/fixtures/api/` (graded general food and beverage, water, insufficient data, unknown category, invalid barcode). New app dependency: dio 5.11.
+- Follow-ups: extend the generator for request bodies (POST) when the contribution and auth endpoints arrive (T23+). Providing `QoutApi`/`Dio` to the app (base URL from `AppEnv`, timeouts) comes with the repository in T18.
 
 ### T18 · Local database and repository
 - [ ] drift DB: cached products, scan history, contribution outbox
