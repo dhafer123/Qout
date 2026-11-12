@@ -5,6 +5,7 @@ Every threshold comes from docs/specs/ (see docs/specs/README.md). The Dart engi
 """
 
 from app.modules.scoring.conversions import kj_from_kcal, salt_from_sodium
+from app.modules.scoring.engine import REQUIRED_FIELDS, score
 from app.modules.scoring.models import (
     ENGINE_VERSION,
     Breakdown,
@@ -18,6 +19,7 @@ from app.modules.scoring.models import (
 
 __all__ = [
     "ENGINE_VERSION",
+    "REQUIRED_FIELDS",
     "Breakdown",
     "Category",
     "Grade",
@@ -27,4 +29,5 @@ __all__ = [
     "ScoreResult",
     "kj_from_kcal",
     "salt_from_sodium",
+    "score",
 ]
