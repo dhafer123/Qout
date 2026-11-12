@@ -1,0 +1,65 @@
+{
+  "ean": "9557062321136",
+  "name": "Jbs qtw",
+  "brand": "Mister Potato",
+  "image_url": null,
+  "category": "general",
+  "source": "open_food_facts",
+  "status": "unverified",
+  "quality_flag": "complete",
+  "nova_group": 4,
+  "additives": [
+    {
+      "code": "E320",
+      "name": "Butylated hydroxyanisole (bha)",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E330",
+      "name": "Citric acid",
+      "overexposure_risk": "unknown"
+    }
+  ],
+  "nutrition": {
+    "version": 1,
+    "basis": "per_100g",
+    "source": "open_food_facts",
+    "energy_kj": 2055.5,
+    "sugars_g": 1.0,
+    "saturated_fat_g": 12.5,
+    "total_fat_g": 25.0,
+    "salt_g": 1.23125,
+    "fibre_g": null,
+    "protein_g": 6.5,
+    "fvl_percent": 0.0,
+    "non_nutritive_sweeteners": null
+  },
+  "score": {
+    "engine_version": "nutriscore-2023.2",
+    "grade": "E",
+    "total": 22,
+    "breakdown": {
+      "grade": "E",
+      "score": 22,
+      "negative": {
+        "salt": 6,
+        "energy": 6,
+        "sugars": 0,
+        "saturated_fat": 10
+      },
+      "positive": {
+        "fvl": 0,
+        "fibre": 0,
+        "protein": 2
+      },
+      "assumed_zero": [
+        "fibre_g"
+      ],
+      "negative_total": 22,
+      "positive_total": 2,
+      "protein_counted": false
+    },
+    "computed_at": "2026-11-12T17:18:43.332419Z"
+  },
+  "updated_at": "2026-11-12T17:18:43.332419Z"
+}

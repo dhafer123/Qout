@@ -1,0 +1,36 @@
+{
+  "ean": "6194039501011",
+  "name": "Eau minérale naturelle",
+  "brand": "Hayet",
+  "image_url": null,
+  "category": "water",
+  "source": "open_food_facts",
+  "status": "unverified",
+  "quality_flag": "complete",
+  "nova_group": 1,
+  "additives": [],
+  "nutrition": {
+    "version": 2,
+    "basis": "per_100ml",
+    "source": "open_food_facts",
+    "energy_kj": 0.0,
+    "sugars_g": 0.0,
+    "saturated_fat_g": 0.0,
+    "total_fat_g": 0.0,
+    "salt_g": 0.003905,
+    "fibre_g": 0.0,
+    "protein_g": 0.0,
+    "fvl_percent": 0.0,
+    "non_nutritive_sweeteners": null
+  },
+  "score": {
+    "engine_version": "nutriscore-2023.2",
+    "grade": "A",
+    "total": null,
+    "breakdown": {
+      "grade": "A"
+    },
+    "computed_at": "2026-11-12T17:18:29.056280Z"
+  },
+  "updated_at": "2026-11-12T17:18:29.056280Z"
+}

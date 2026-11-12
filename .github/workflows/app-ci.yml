@@ -1,5 +1,6 @@
 # App CI: format, analyze, test and build the Flutter app.
-# Runs only when something under app/ (or this workflow) changes.
+# Runs only when something under app/, the API spec (api/), the client generator script
+# or this workflow changes.
 
 name: App CI
 
@@ -8,10 +9,14 @@ on:
     branches: [main]
     paths:
       - "app/**"
+      - "api/**"
+      - "scripts/gen_client.sh"
       - ".github/workflows/app-ci.yml"
   pull_request:
     paths:
       - "app/**"
+      - "api/**"
+      - "scripts/gen_client.sh"
       - ".github/workflows/app-ci.yml"
   workflow_dispatch:
 
@@ -68,6 +73,16 @@ jobs:
             git status --short -- .
             git diff -- .
             echo "::error::Generated code is stale: run build_runner and commit the result."
+            exit 1
+          fi
+
+      # The API client is generated from api/openapi.json; fail if it doesn't match.
+      - name: Check API client matches the spec
+        run: |
+          bash ../scripts/gen_client.sh client
+          if [ -n "$(git status --porcelain -- lib/core/api)" ]; then
+            git diff -- lib/core/api
+            echo "::error::API client is stale: run scripts/gen_client.sh client and commit."
             exit 1
           fi
 

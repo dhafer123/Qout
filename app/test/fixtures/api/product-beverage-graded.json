@@ -1,0 +1,98 @@
+{
+  "ean": "42094579",
+  "name": "Fanta tropical",
+  "brand": "Fanta",
+  "image_url": null,
+  "category": "beverage",
+  "source": "open_food_facts",
+  "status": "unverified",
+  "quality_flag": "complete",
+  "nova_group": 4,
+  "additives": [
+    {
+      "code": "E110",
+      "name": "Sunset yellow FCF",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E1450",
+      "name": "Starch sodium octenyl succinate",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E211",
+      "name": "Sodium benzoate",
+      "overexposure_risk": "high"
+    },
+    {
+      "code": "E330",
+      "name": "Citric acid",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E331",
+      "name": "Sodium citrates",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E444",
+      "name": "Sucrose acetate isobutyrate",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E445",
+      "name": "Glycerol esters of wood rosin",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E950",
+      "name": "Acesulfame k",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E955",
+      "name": "Sucralose",
+      "overexposure_risk": "unknown"
+    }
+  ],
+  "nutrition": {
+    "version": 2,
+    "basis": "per_100ml",
+    "source": "open_food_facts",
+    "energy_kj": 138.0,
+    "sugars_g": 7.8,
+    "saturated_fat_g": 0.0,
+    "total_fat_g": 0.0,
+    "salt_g": 0.02625,
+    "fibre_g": 0.0,
+    "protein_g": 0.0,
+    "fvl_percent": 0.0,
+    "non_nutritive_sweeteners": true
+  },
+  "score": {
+    "engine_version": "nutriscore-2023.2",
+    "grade": "E",
+    "total": 12,
+    "breakdown": {
+      "grade": "E",
+      "score": 12,
+      "negative": {
+        "salt": 0,
+        "energy": 2,
+        "sugars": 6,
+        "saturated_fat": 0,
+        "non_nutritive_sweeteners": 4
+      },
+      "positive": {
+        "fvl": 0,
+        "fibre": 0,
+        "protein": 0
+      },
+      "negative_total": 12,
+      "positive_total": 0,
+      "protein_counted": true
+    },
+    "computed_at": "2026-11-12T17:18:29.063645Z"
+  },
+  "updated_at": "2026-11-12T17:18:29.063645Z"
+}

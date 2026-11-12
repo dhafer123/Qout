@@ -1,0 +1,85 @@
+{
+  "ean": "6191416500452",
+  "name": null,
+  "brand": null,
+  "image_url": null,
+  "category": "general",
+  "source": "open_food_facts",
+  "status": "unverified",
+  "quality_flag": "incomplete",
+  "nova_group": 4,
+  "additives": [
+    {
+      "code": "E322",
+      "name": "Lecithins",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E322(i)",
+      "name": "Lecithin",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E450",
+      "name": "Diphosphates",
+      "overexposure_risk": "high"
+    },
+    {
+      "code": "E450(i)",
+      "name": "Disodium diphosphate",
+      "overexposure_risk": "high"
+    },
+    {
+      "code": "E500",
+      "name": "Sodium carbonates",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E500(ii)",
+      "name": "Sodium hydrogen carbonate",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E503",
+      "name": "Ammonium carbonates",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E503(ii)",
+      "name": "Ammonium hydrogen carbonate",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E965",
+      "name": "maltitol",
+      "overexposure_risk": "unknown"
+    }
+  ],
+  "nutrition": {
+    "version": 1,
+    "basis": "per_100g",
+    "source": "open_food_facts",
+    "energy_kj": 1852.2,
+    "sugars_g": null,
+    "saturated_fat_g": 1.6,
+    "total_fat_g": 22.2,
+    "salt_g": null,
+    "fibre_g": 6.1,
+    "protein_g": 7.7,
+    "fvl_percent": 0.0,
+    "non_nutritive_sweeteners": null
+  },
+  "score": {
+    "engine_version": "nutriscore-2023.2",
+    "grade": null,
+    "total": null,
+    "breakdown": {
+      "insufficient_data": [
+        "salt_g",
+        "sugars_g"
+      ]
+    },
+    "computed_at": "2026-11-12T17:18:17.973374Z"
+  },
+  "updated_at": "2026-11-12T17:18:17.973374Z"
+}
