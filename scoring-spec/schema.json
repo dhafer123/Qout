@@ -52,7 +52,7 @@
       },
       "then": {
         "properties": {
-          "input": { "required": ["energy_kj", "sugars_g", "saturated_fat_g", "salt_g", "fibre_g", "protein_g", "fvl_percent"], "not": { "anyOf": [{ "required": ["total_fat_g"] }, { "required": ["non_nutritive_sweeteners"] }] } },
+          "input": { "required": ["energy_kj", "sugars_g", "saturated_fat_g", "salt_g", "protein_g", "fvl_percent"], "not": { "anyOf": [{ "required": ["total_fat_g"] }, { "required": ["non_nutritive_sweeteners"] }] } },
           "expected": { "properties": { "negative": { "$ref": "#/$defs/negative_food" }, "positive": { "$ref": "#/$defs/positive_food" } } }
         }
       }
@@ -77,7 +77,7 @@
       },
       "then": {
         "properties": {
-          "input": { "required": ["total_fat_g", "sugars_g", "saturated_fat_g", "salt_g", "fibre_g", "protein_g", "fvl_percent"], "not": { "required": ["non_nutritive_sweeteners"] } },
+          "input": { "required": ["total_fat_g", "sugars_g", "saturated_fat_g", "salt_g", "protein_g", "fvl_percent"], "not": { "required": ["non_nutritive_sweeteners"] } },
           "expected": { "properties": { "negative": { "$ref": "#/$defs/negative_fats" }, "positive": { "$ref": "#/$defs/positive_food" } } }
         }
       }
@@ -91,7 +91,7 @@
       },
       "then": {
         "properties": {
-          "input": { "required": ["energy_kj", "sugars_g", "saturated_fat_g", "salt_g", "fibre_g", "protein_g", "fvl_percent", "non_nutritive_sweeteners"], "not": { "required": ["total_fat_g"] } },
+          "input": { "required": ["energy_kj", "sugars_g", "saturated_fat_g", "salt_g", "protein_g", "fvl_percent", "non_nutritive_sweeteners"], "not": { "required": ["total_fat_g"] } },
           "expected": {
             "properties": {
               "negative": { "$ref": "#/$defs/negative_beverage" },
@@ -101,6 +101,14 @@
             }
           }
         }
+      }
+    },
+    {
+      "if": { "properties": { "expected": { "required": ["score"] } }, "required": ["expected"] },
+      "then": {
+        "if": { "properties": { "input": { "required": ["fibre_g"] } } },
+        "then": { "properties": { "expected": { "not": { "required": ["assumed_zero"] } } } },
+        "else": { "properties": { "expected": { "required": ["assumed_zero"] } } }
       }
     },
     {
@@ -194,7 +202,14 @@
           "description": "False when the protein points are left out of the score (N >= 11 for foods, N >= 7 for fats)."
         },
         "score": { "type": "integer" },
-        "grade": { "enum": ["A", "B", "C", "D", "E"] }
+        "grade": { "enum": ["A", "B", "C", "D", "E"] },
+        "assumed_zero": {
+          "type": "array",
+          "items": { "const": "fibre_g" },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Undeclared inputs scored as 0 points (decision 8): fibre only."
+        }
       }
     },
     "water_result": {

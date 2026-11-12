@@ -1,0 +1,18 @@
+{
+  "id": "general--missing-fibre-and-protein",
+  "description": "Fibre and protein not declared: protein is still required, so no score; fibre is not listed (decision 8).",
+  "source": "decisions 5 and 8",
+  "category": "general",
+  "input": {
+    "energy_kj": 900,
+    "saturated_fat_g": 0,
+    "sugars_g": 5,
+    "salt_g": 0,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "insufficient_data": [
+      "protein_g"
+    ]
+  }
+}

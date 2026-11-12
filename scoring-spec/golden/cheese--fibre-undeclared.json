@@ -1,0 +1,35 @@
+{
+  "id": "cheese--fibre-undeclared",
+  "description": "Processed cheese declaring no fibre (values of a recorded OFF product, which OFF grades D with score 14). Energy 1269 -> 3, saturates 30.3 -> 10, salt 1 -> 4; N = 17; cheese keeps protein: 8.5 g -> 3.",
+  "source": "decision 8 + Q&A Tables 5-6 (cheese rule)",
+  "category": "cheese",
+  "input": {
+    "energy_kj": 1269,
+    "sugars_g": 0.18,
+    "saturated_fat_g": 30.3,
+    "salt_g": 1,
+    "protein_g": 8.5,
+    "fvl_percent": 0
+  },
+  "expected": {
+    "negative": {
+      "energy": 3,
+      "sugars": 0,
+      "saturated_fat": 10,
+      "salt": 4
+    },
+    "positive": {
+      "protein": 3,
+      "fibre": 0,
+      "fvl": 0
+    },
+    "negative_total": 17,
+    "positive_total": 3,
+    "protein_counted": true,
+    "score": 14,
+    "grade": "D",
+    "assumed_zero": [
+      "fibre_g"
+    ]
+  }
+}

@@ -42,6 +42,9 @@ File name = `id` = `<category>--<slug>.json`.
     `energy` and `saturated_fat`; beverages add `non_nutritive_sweeteners` (0 or 4);
   - `{"grade": "A"}` for water;
   - `{"insufficient_data": [...]}`: the missing (or unusable) inputs, sorted.
+- **Undeclared fibre** (decision 8): `fibre_g` may be absent from a scored case's input; it then
+  counts as 0 points and the result adds `"assumed_zero": ["fibre_g"]`. The key is present if
+  and only if fibre was undeclared.
 
 ## Where the cases come from
 

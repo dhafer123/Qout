@@ -49,12 +49,21 @@ golden case:
    covers it. The engine reports insufficient data instead of guessing.
 5. **Missing input → insufficient data.** The calculator returns "missing data" when any input
    used by the category is blank; engines list the missing fields instead of guessing.
+   Exception: fibre (decision 8).
 6. **Water** (mineral, spring, table water without additions) is always A and takes no inputs.
    Flavoured waters are beverages and cannot be A (Q&A p. 16).
 7. **Rounding:** none. Points use the declared values as given (Q&A p. 11–13).
    The calculator's "General foods" sheet alone rounds protein to 2 decimals before
    scoring (`ROUND(J, 2)`); we do not. Results differ only for protein declared with 3+
    decimals just above a threshold (e.g. 2.404 g: 1 point here, 0 in that sheet).
+8. **Undeclared fibre counts as 0 points** (decided 2026-11-12, not from the documents, which
+   do not cover it). Fibre is optional on EU labels (Regulation (EU) 1169/2011, Article 30) and
+   is usually left out of products with almost none (cheese, meat, soft drinks), so the strict
+   reading of decision 5 would leave many real products ungraded. Fibre points can only lower
+   the score, so 0 points gives the worst grade the declared values allow: the true grade is the
+   same or better, never worse. Results record the assumption (`assumed_zero: ["fibre_g"]`) so
+   it can be shown to users. Only fibre: any other missing input still gives insufficient data,
+   and then the missing list does not mention fibre. Engine version `nutriscore-2023.2`.
 
 ## Constants for later tasks
 
