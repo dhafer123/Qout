@@ -1,4 +1,4 @@
-"""Nutri-Score engine (updated algorithm, 2023). Pure functions, no I/O.
+"""Nutri-Score engine (updated algorithm, 2023) and extra signals (NOVA, additives).
 
 Every threshold comes from docs/specs/ (see docs/specs/README.md). The Dart engine in
 `app/` must give identical results on every `scoring-spec/golden/*.json` case.
@@ -16,6 +16,7 @@ from app.modules.scoring.models import (
     NutritionInput,
     ScoreResult,
 )
+from app.modules.scoring.nova import NovaGroup, nova_group_from_off
 
 __all__ = [
     "ENGINE_VERSION",
@@ -24,10 +25,12 @@ __all__ = [
     "Category",
     "Grade",
     "InsufficientData",
+    "NovaGroup",
     "NutriScore",
     "NutritionInput",
     "ScoreResult",
     "kj_from_kcal",
+    "nova_group_from_off",
     "salt_from_sodium",
     "score",
 ]
