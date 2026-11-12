@@ -65,12 +65,13 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Done: specs = Q&A V11, 2022 foods and 2023 beverages Scientific Committee reports, official calculator (2024-04-04); `docs/specs/README.md` lists sources, where each rule lives and 7 interpretation decisions. 57 golden cases: the calculator's 20 official examples (+ water) with official results, boundary cases for every table/grade edge/protein rule/red meat cap, and insufficient-data cases. Categories: `general`, `red_meat`, `cheese`, `fats_oils_nuts_seeds`, `beverage`, `water` (red meat added: it has its own rule). Expected values cross-checked with a throwaway reference that reproduces all official examples. Tests (`backend/tests/unit/test_golden_cases.py`, 130+ checks): schema validity, ids, category coverage, totals add up, schema rejects invalid cases. New dev dependency `jsonschema`. Backend CI also runs on `scoring-spec/**`.
 
 ### T09 · Nutri-Score engine (Python)
-- [ ] CI: add the ≥ 95 % coverage gate for `modules/scoring` (from T05)
-- [ ] `modules/scoring/`: pure functions; input dataclass (nutrients + category); output (grade, total, per-component points, engine_version)
-- [ ] Separate point tables per category, taken from `docs/specs/` only
-- [ ] Returns `InsufficientData` (listing missing fields) instead of guessing
-- [ ] Unit conversions in one place: kJ/kcal, sodium → salt
+- [x] CI: add the ≥ 95 % coverage gate for `modules/scoring` (from T05)
+- [x] `modules/scoring/`: pure functions; input dataclass (nutrients + category); output (grade, total, per-component points, engine_version)
+- [x] Separate point tables per category, taken from `docs/specs/` only
+- [x] Returns `InsufficientData` (listing missing fields) instead of guessing
+- [x] Unit conversions in one place: kJ/kcal, sodium → salt
 - Tests: **U** each component table at boundaries; all golden cases; **U (hypothesis)** monotonicity (more sugar/sat-fat/salt/energy never improves the score; more fibre/protein never worsens it, within the rules), determinism; missing-field cases. Coverage ≥ 95 %.
+- Done: 646 backend tests (388 for the engine), scoring coverage 100 %. API: `score(category, NutritionInput)` → `NutriScore` (grade, `Breakdown` with points per component, N/P totals, `protein_counted`, score; `engine_version`) or `InsufficientData` (sorted missing fields); water → A with no breakdown. `ENGINE_VERSION = "nutriscore-2023.1"`. Thresholds compared as exact decimals (`Decimal(repr(x))`) so float noise never moves a value across a threshold (e.g. 0.58 g / 1 g fat = 58 %, not 57.99…). Impossible inputs (negative, NaN, > 100 g per 100 g, > 100 %) raise `ValueError`. kJ = ROUND(kcal × 4.2) half up like Excel. Tests: every table threshold transcribed separately from the calculator, all 57 golden cases, rule tests, hypothesis properties (monotonicity, determinism, every result is a valid golden case). New dev dependency `hypothesis`. CI: extra `coverage report` step with the 95 % gate.
 
 ### T10 · Extra signals
 - [ ] NOVA group (taken from OFF data, not computed), additives list with a simple risk flag from a documented source file in `docs/specs/`
@@ -232,3 +233,4 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - 2026-11-11 (T06): stayed on Flutter 3.38.9. Follow-up when Flutter is upgraded: move to Riverpod 3 (blocked by the freezed/analyzer constraint on Dart 3.10). Seed color `#2E7D32` is a placeholder until the visual identity exists.
 - 2026-11-11 (T05): first push-triggered run was stuck in `queued` by a GitHub Actions outage; re-run via `workflow_dispatch` once it recovered.
 - 2026-11-11 (T08): the official calculator holds only ~20 example products (the rest are empty template rows). Decisions recorded in `docs/specs/README.md`: exact-threshold values get the lower points (calculator `<=`), except the fats saturates/fat ratio (`<`); beverage salt 3.2 g → 15 points (calculator typo); total fat 0 in the fats category → insufficient data. For T09: kcal→kJ factor 4.2 (calculator), sugar alcohols are not non-nutritive sweeteners, alcoholic drinks > 1.2 % are out of scope.
+- 2026-11-12 (T09): Dart port (T11) must also compare thresholds on exact decimals (e.g. integer scaling), not doubles, to keep parity. The calculator's general foods sheet rounds protein to 2 decimals; we don't (recorded in `docs/specs/README.md`, decision 7). Follow-up for T13: a missing fruit/vegetable/legume % gives `InsufficientData`, and OFF often lacks it; the normaliser must map OFF's estimate (e.g. `fruits-vegetables-legumes-estimate-from-ingredients`) or many products stay unscored.
