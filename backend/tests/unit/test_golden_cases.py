@@ -184,5 +184,23 @@ def test_schema_rejects_scored_case_with_missing_required_input(
     validator: Draft202012Validator, red_meat: Case
 ) -> None:
     case = copy.deepcopy(red_meat)
-    del case["input"]["fibre_g"]
+    del case["input"]["protein_g"]
     assert not validator.is_valid(case)
+
+
+def test_schema_ties_undeclared_fibre_to_assumed_zero(
+    validator: Draft202012Validator, red_meat: Case
+) -> None:
+    """Decision 8: fibre absent from a scored input <=> `assumed_zero: ["fibre_g"]`."""
+    without_fibre = copy.deepcopy(red_meat)
+    del without_fibre["input"]["fibre_g"]
+    assert not validator.is_valid(without_fibre)  # assumption not reported
+
+    without_fibre["expected"]["assumed_zero"] = ["fibre_g"]
+    assert validator.is_valid(without_fibre)
+
+    declared_but_assumed = broken(red_meat, ["expected", "assumed_zero"], ["fibre_g"])
+    assert not validator.is_valid(declared_but_assumed)
+
+    for wrong in ([], ["protein_g"], ["fibre_g", "fibre_g"]):
+        assert not validator.is_valid(broken(without_fibre, ["expected", "assumed_zero"], wrong))

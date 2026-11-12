@@ -29,7 +29,7 @@ def expected_to_spec(result: ScoreResult) -> dict[str, Any]:
     if result.breakdown is None:
         return {"grade": result.grade.value}
     b = result.breakdown
-    return {
+    expected: dict[str, Any] = {
         "negative": dict(b.negative),
         "positive": dict(b.positive),
         "negative_total": b.negative_total,
@@ -38,3 +38,6 @@ def expected_to_spec(result: ScoreResult) -> dict[str, Any]:
         "score": b.score,
         "grade": result.grade.value,
     }
+    if b.assumed_zero:
+        expected["assumed_zero"] = list(b.assumed_zero)
+    return expected

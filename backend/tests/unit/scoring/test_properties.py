@@ -145,3 +145,21 @@ def test_result_is_a_valid_golden_case(case: Case) -> None:
     expected = golden["expected"]
     assert expected["negative_total"] == sum(expected["negative"].values())
     assert expected["positive_total"] == sum(expected["positive"].values())
+
+
+def without_fibre(values: dict[str, Any]) -> dict[str, Any]:
+    return {k: v for k, v in values.items() if k != "fibre_g"}
+
+
+@given(CASES)
+def test_undeclared_fibre_scores_like_fibre_zero(case: Case) -> None:
+    """Decision 8: an undeclared fibre value counts as 0 points."""
+    category, values, _, _ = case
+    assert total(category, without_fibre(values)) == total(category, {**values, "fibre_g": 0.0})
+
+
+@given(CASES)
+def test_declaring_fibre_never_worsens_the_score(case: Case) -> None:
+    """So a grade with undeclared fibre is never better than the true one."""
+    category, values, _, _ = case
+    assert total(category, values) <= total(category, without_fibre(values))

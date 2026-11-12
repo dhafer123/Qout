@@ -11,7 +11,7 @@ from app.modules.scoring.additives import (
     additives_from_off,
 )
 from app.modules.scoring.conversions import kj_from_kcal, salt_from_sodium
-from app.modules.scoring.engine import REQUIRED_FIELDS, score
+from app.modules.scoring.engine import REQUIRED_FIELDS, ZERO_IF_UNDECLARED, score
 from app.modules.scoring.models import (
     ENGINE_VERSION,
     Breakdown,
@@ -27,6 +27,7 @@ from app.modules.scoring.nova import NovaGroup, nova_group_from_off
 __all__ = [
     "ENGINE_VERSION",
     "REQUIRED_FIELDS",
+    "ZERO_IF_UNDECLARED",
     "Additive",
     "Breakdown",
     "Category",

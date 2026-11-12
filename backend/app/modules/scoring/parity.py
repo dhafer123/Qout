@@ -22,7 +22,7 @@ from typing import Any
 
 from app.core.config import REPO_ROOT
 from app.modules.scoring import tables as t
-from app.modules.scoring.engine import REQUIRED_FIELDS, score
+from app.modules.scoring.engine import REQUIRED_FIELDS, ZERO_IF_UNDECLARED, score
 from app.modules.scoring.models import Category
 from app.modules.scoring.spec_json import expected_to_spec, nutrition_input_from_spec
 
@@ -148,7 +148,8 @@ def _random_cases(category: Category, rng: random.Random) -> list[Case]:
         product = _random_product(category, rng)
         roll = rng.random()
         if roll < 0.04:
-            for field in rng.sample(REQUIRED_FIELDS[category], rng.randint(1, 2)):
+            droppable = [*REQUIRED_FIELDS[category], *ZERO_IF_UNDECLARED]
+            for field in rng.sample(droppable, rng.randint(1, 2)):
                 del product[field]
         elif roll < 0.05 and category is Category.FATS_OILS_NUTS_SEEDS:
             product["total_fat_g"] = Decimal(0)

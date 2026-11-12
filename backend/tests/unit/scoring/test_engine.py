@@ -1,12 +1,14 @@
 """Score rules per category, missing data, water, and the shape of results."""
 
 import dataclasses
+from dataclasses import replace
 from typing import Any
 
 import pytest
 
 from app.modules.scoring import (
     REQUIRED_FIELDS,
+    ZERO_IF_UNDECLARED,
     Breakdown,
     Category,
     Grade,
@@ -62,7 +64,7 @@ def test_water_ignores_any_values() -> None:
 
 @pytest.mark.parametrize(
     ("category", "field"),
-    [(c, f) for c, base in BASE.items() for f in base],
+    [(c, f) for c, base in BASE.items() for f in base if f != "fibre_g"],
     ids=str,
 )
 def test_each_required_field_is_reported_when_missing(category: Category, field: str) -> None:
@@ -76,7 +78,35 @@ def test_nothing_declared_lists_every_required_field_sorted(category: Category) 
     result = score(category, NutritionInput())
     assert isinstance(result, InsufficientData)
     assert result.missing == tuple(sorted(REQUIRED_FIELDS[category]))
-    assert set(result.missing) == set(BASE[category])
+    assert set(result.missing) == set(BASE[category]) - {"fibre_g"}  # decision 8
+
+
+@pytest.mark.parametrize("category", list(BASE))
+def test_undeclared_fibre_counts_as_zero_and_is_reported(category: Category) -> None:
+    """Decision 8: same result as fibre 0, plus the assumption."""
+    values = {k: v for k, v in BASE[category].items() if k != "fibre_g"}
+    undeclared = score(category, NutritionInput(**values))
+    declared_zero = score(category, NutritionInput(**BASE[category]))
+    assert isinstance(undeclared, NutriScore)
+    assert isinstance(declared_zero, NutriScore)
+    assert undeclared.breakdown is not None
+    assert declared_zero.breakdown is not None
+    assert undeclared.breakdown.assumed_zero == ("fibre_g",)
+    assert declared_zero.breakdown.assumed_zero == ()
+    assert undeclared.grade == declared_zero.grade
+    assert replace(undeclared.breakdown, assumed_zero=()) == declared_zero.breakdown
+
+
+def test_fibre_is_not_listed_with_other_missing_fields() -> None:
+    values = {k: v for k, v in ZERO_FOOD.items() if k not in ("fibre_g", "protein_g")}
+    assert score(Category.GENERAL, NutritionInput(**values)) == InsufficientData(
+        Category.GENERAL, ("protein_g",)
+    )
+
+
+def test_fibre_is_not_required_anywhere() -> None:
+    assert ZERO_IF_UNDECLARED == ("fibre_g",)
+    assert all("fibre_g" not in fields for fields in REQUIRED_FIELDS.values())
 
 
 def test_fats_with_zero_total_fat_is_unusable() -> None:

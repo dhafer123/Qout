@@ -78,7 +78,7 @@ EXPECTED: dict[
         None,
         G,
         {"sugars_g": "0"},
-        ["missing: energy_kj, salt_g, fibre_g, protein_g, fvl_percent, non_nutritive_sweeteners"],
+        ["missing: energy_kj, salt_g, protein_g, fvl_percent, non_nutritive_sweeteners"],
     ),
     "beverage-sugary-cola": (
         Category.BEVERAGE,
@@ -103,25 +103,25 @@ EXPECTED: dict[
         Grade.E,
         G,
         {"energy_kj": "194"},
-        ["energy 194 kJ does not match 463 kcal", "missing: fibre_g"],
+        ["energy 194 kJ does not match 463 kcal"],
     ),
     "water-tunisian-safia": (Category.WATER, QC, Grade.A, M, {"salt_g": "0.0055"}, []),
     "water-tunisian-hayet": (Category.WATER, QC, Grade.A, M, {"salt_g": "0.003905"}, []),
     "cheese-tunisian-processed": (
         Category.CHEESE,
-        QI,
+        QC,
         Grade.D,
         G,
         {"saturated_fat_g": "30.3", "salt_g": "1"},
-        ["missing: fibre_g"],
+        [],
     ),
     "cheese-tunisian-spread": (
         Category.GENERAL,
-        QI,
+        QC,
         Grade.D,
         G,
         {"sugars_g": "2.5"},
-        ["missing: fibre_g"],
+        [],
     ),
     "cheese-tunisian-ricotta": (
         Category.CHEESE,
@@ -129,7 +129,7 @@ EXPECTED: dict[
         None,
         G,
         {"total_fat_g": "15"},
-        ["missing: sugars_g, saturated_fat_g, salt_g, fibre_g"],
+        ["missing: sugars_g, saturated_fat_g, salt_g"],
     ),
     "fats-tunisian-olive-oil": (
         Category.FATS_OILS_NUTS_SEEDS,
@@ -149,11 +149,11 @@ EXPECTED: dict[
     ),
     "red-meat-beef-patty": (
         Category.RED_MEAT,
-        QI,
+        QC,
         Grade.B,
         G,
         {"protein_g": "20"},
-        ["missing: fibre_g"],
+        [],
     ),
     "edited-garbage-values": (
         Category.GENERAL,
@@ -405,7 +405,7 @@ def test_empty_or_null_values_are_just_missing() -> None:
     off["nutriments"]["fiber_100g"] = ""
     result = normalize("6194001800104", off)
     assert result.product.quality_flag is QI
-    assert result.issues == ["missing: sugars_g, fibre_g"]
+    assert result.issues == ["missing: sugars_g"]  # undeclared fibre is fine (decision 8)
 
 
 def test_energy_has_no_100_limit_but_kcal_fallback_converts() -> None:

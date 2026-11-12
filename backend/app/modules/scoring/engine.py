@@ -6,10 +6,12 @@ Rules (Q&A V11 pp. 26-32; docs/specs/README.md "Where each rule lives"):
 - cheese: always N - P;
 - fats, oils, nuts and seeds: N < 7 -> N - P; otherwise N - fibre - FVL;
 - beverages: always N - P, sweeteners add 4 to N, never A;
-- water: always A, no inputs.
+- water: always A, no inputs;
+- undeclared fibre: 0 points, reported in `Breakdown.assumed_zero` (decision 8).
 """
 
 from collections.abc import Mapping
+from dataclasses import replace
 from decimal import Decimal
 from types import MappingProxyType
 
@@ -30,7 +32,6 @@ _FOOD_FIELDS = (
     "sugars_g",
     "saturated_fat_g",
     "salt_g",
-    "fibre_g",
     "protein_g",
     "fvl_percent",
 )
@@ -39,10 +40,12 @@ _FATS_FIELDS = (
     "sugars_g",
     "saturated_fat_g",
     "salt_g",
-    "fibre_g",
     "protein_g",
     "fvl_percent",
 )
+
+ZERO_IF_UNDECLARED = ("fibre_g",)
+"""Inputs scored as 0 points when undeclared, and reported as assumed (decision 8)."""
 
 REQUIRED_FIELDS: Mapping[Category, tuple[str, ...]] = MappingProxyType(
     {
@@ -54,7 +57,8 @@ REQUIRED_FIELDS: Mapping[Category, tuple[str, ...]] = MappingProxyType(
         Category.WATER: (),
     }
 )
-"""Inputs each category needs; any of them missing gives `InsufficientData` (decision 5)."""
+"""Inputs each category needs; any of them missing gives `InsufficientData` (decision 5).
+Fibre is not among them: see ZERO_IF_UNDECLARED."""
 
 
 def score(category: Category, nutrition: NutritionInput) -> ScoreResult:
@@ -73,13 +77,21 @@ def score(category: Category, nutrition: NutritionInput) -> ScoreResult:
         for name in REQUIRED_FIELDS[category]
         if name != "non_nutritive_sweeteners"
     }
+    assumed = tuple(name for name in ZERO_IF_UNDECLARED if getattr(nutrition, name) is None)
+    for name in ZERO_IF_UNDECLARED:
+        declared = getattr(nutrition, name)
+        values[name] = Decimal(0) if declared is None else to_decimal(declared)
+
     match category:
         case Category.FATS_OILS_NUTS_SEEDS:
-            return _score_fats(values)
+            result = _score_fats(values)
         case Category.BEVERAGE:
-            return _score_beverage(values, sweeteners=nutrition.non_nutritive_sweeteners is True)
+            result = _score_beverage(values, sweeteners=nutrition.non_nutritive_sweeteners is True)
         case _:
-            return _score_food(category, values)
+            result = _score_food(category, values)
+    if assumed and result.breakdown is not None:
+        result = replace(result, breakdown=replace(result.breakdown, assumed_zero=assumed))
+    return result
 
 
 def _score_food(category: Category, v: Mapping[str, Decimal]) -> NutriScore:

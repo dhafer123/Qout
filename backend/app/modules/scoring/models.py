@@ -9,7 +9,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, fields
 from enum import StrEnum
 
-ENGINE_VERSION = "nutriscore-2023.1"
+ENGINE_VERSION = "nutriscore-2023.2"
 """Algorithm version (updated Nutri-Score, 2023) plus our own revision.
 
 Bump the revision whenever the engine's output can change for the same input: stored scores
@@ -97,7 +97,8 @@ class Breakdown:
     """Points per component: the "why this score" part of a result.
 
     `positive_total` is the sum of all three positive components, even when protein is
-    left out of the score (`protein_counted` is False).
+    left out of the score (`protein_counted` is False). `assumed_zero` lists undeclared
+    inputs that were scored as 0 points (decision 8).
     """
 
     negative: Mapping[str, int]
@@ -106,6 +107,8 @@ class Breakdown:
     positive_total: int
     protein_counted: bool
     score: int
+    assumed_zero: tuple[str, ...] = ()
+    """Undeclared inputs scored as 0 points (decision 8: fibre only)."""
 
 
 @dataclass(frozen=True, slots=True)
