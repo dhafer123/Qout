@@ -98,3 +98,7 @@ jobs:
       # Coverage gate (fail_under) is configured in pyproject.toml.
       - name: Pytest
         run: uv run pytest
+
+      # Stricter gate for the scoring engine (CLAUDE.md), from the data pytest just wrote.
+      - name: Scoring coverage (>= 95 %)
+        run: uv run coverage report --include='app/modules/scoring/*' --fail-under=95
