@@ -1,0 +1,91 @@
+# Scoring parity: the Python (backend) and Dart (app) Nutri-Score engines must give
+# identical results on every golden case and on the generated parity inputs
+# (scoring-spec/README.md, "Parity between the engines").
+
+name: Scoring parity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/app/modules/scoring/**"
+      - "backend/uv.lock"
+      - "app/lib/scoring/**"
+      - "app/tool/scoring_parity.dart"
+      - "app/pubspec.lock"
+      - "scoring-spec/**"
+      - ".github/workflows/scoring-parity.yml"
+  pull_request:
+    paths:
+      - "backend/app/modules/scoring/**"
+      - "backend/uv.lock"
+      - "app/lib/scoring/**"
+      - "app/tool/scoring_parity.dart"
+      - "app/pubspec.lock"
+      - "scoring-spec/**"
+      - ".github/workflows/scoring-parity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scoring-parity-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scoring-parity:
+    name: Python and Dart engines agree
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    env:
+      UV_LOCKED: "1"
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          version: "0.13.7"
+          working-directory: backend
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2.23.0
+        with:
+          channel: stable
+          # Keep in sync with app-ci.yml and the local SDK.
+          flutter-version: "3.38.9"
+          cache: true
+          pub-cache: true
+
+      - name: Install dependencies
+        run: |
+          (cd backend && uv sync)
+          (cd app && flutter pub get --enforce-lockfile)
+
+      - name: Golden cases (Python)
+        working-directory: backend
+        run: uv run pytest tests/unit/scoring/test_golden.py -q --no-cov
+
+      - name: Golden cases (Dart)
+        working-directory: app
+        run: flutter test test/scoring/golden_test.dart
+
+      - name: Score parity inputs (Python)
+        working-directory: backend
+        run: uv run python -m app.modules.scoring.parity run "$RUNNER_TEMP/python.json"
+
+      - name: Score parity inputs (Dart)
+        working-directory: app
+        run: dart run tool/scoring_parity.dart "$RUNNER_TEMP/dart.json"
+
+      - name: Compare results
+        working-directory: backend
+        run: uv run python -m app.modules.scoring.parity compare "$RUNNER_TEMP/python.json" "$RUNNER_TEMP/dart.json"
