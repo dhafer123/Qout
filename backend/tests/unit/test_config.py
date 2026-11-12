@@ -135,3 +135,24 @@ def test_get_settings_is_cached(monkeypatch: pytest.MonkeyPatch) -> None:
         assert get_settings() is get_settings()
     finally:
         get_settings.cache_clear()
+
+
+@pytest.mark.parametrize("agent", ["", "   ", "Qout/0.1 (contact@example.com)"])
+def test_placeholder_off_user_agent_is_rejected(
+    monkeypatch: pytest.MonkeyPatch, agent: str
+) -> None:
+    monkeypatch.setenv("DATABASE_URL", "postgresql+asyncpg://u:p@localhost:5432/db")
+    monkeypatch.setenv("REDIS_URL", "redis://localhost:6379/0")
+    monkeypatch.setenv("OFF_USER_AGENT", agent)
+    with pytest.raises(ValidationError, match="OFF_USER_AGENT"):
+        Settings(_env_file=None)  # type: ignore[call-arg]
+
+
+def test_off_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("DATABASE_URL", "postgresql+asyncpg://u:p@localhost:5432/db")
+    monkeypatch.setenv("REDIS_URL", "redis://localhost:6379/0")
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    assert str(settings.off_base_url) == "https://world.openfoodfacts.org/"
+    assert settings.off_user_agent == "Qout/0.1 (https://github.com/dhafer123/Qout)"
+    assert (settings.off_timeout_seconds, settings.off_max_retries) == (10.0, 3)
+    assert settings.off_rate_limit_per_minute == 100
