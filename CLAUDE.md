@@ -71,7 +71,7 @@ Backend (run from `backend/`, uses uv):
 Infra (repo root): `docker compose up -d` · `docker compose down`
 
 App (run from `app/`):
-- `flutter pub get` · `dart run build_runner build --delete-conflicting-outputs`
+- `flutter pub get` · `dart run build_runner build --delete-conflicting-outputs --force-jit` (JIT: drift's sqlite3 has native build hooks, which AOT builder compilation rejects)
 - `flutter analyze` · `flutter test` · `flutter test integration_test`
 
 ## Testing conventions

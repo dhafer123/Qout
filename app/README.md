@@ -22,7 +22,7 @@ flutter run --flavor dev --dart-define=API_BASE_URL=http://192.168.1.20:8000
 
 ```sh
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs   # after changing freezed models
+dart run build_runner build --delete-conflicting-outputs --force-jit   # after changing freezed models or drift tables
 dart format --set-exit-if-changed .
 flutter analyze
 flutter test

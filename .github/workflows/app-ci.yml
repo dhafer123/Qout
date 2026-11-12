@@ -68,7 +68,7 @@ jobs:
       # Generated files (*.freezed.dart) are committed; fail if they are stale.
       - name: Check generated code is up to date
         run: |
-          dart run build_runner build --delete-conflicting-outputs
+          dart run build_runner build --delete-conflicting-outputs --force-jit
           if [ -n "$(git status --porcelain -- .)" ]; then
             git status --short -- .
             git diff -- .
