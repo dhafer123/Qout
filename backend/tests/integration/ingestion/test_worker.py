@@ -15,19 +15,24 @@ import pytest
 import respx
 from arq import Retry, Worker, create_pool
 from arq.connections import ArqRedis
+from arq.constants import in_progress_key_prefix, job_key_prefix, result_key_prefix
+from arq.jobs import Job
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from app.core.config import Settings
-from app.modules.products.models import Product
+from app.modules.products.models import Product, Score
+from app.modules.scoring import ENGINE_VERSION, Category
 from app.worker import cli, jobs
 from app.worker.settings import QUEUE_NAME, redis_settings, worker_settings
+from tests.factories import NutritionFactsFactory, ProductFactory
 from tests.integration.ingestion.conftest import TUNISIAN, export_lines
 
 Sessions = async_sessionmaker[AsyncSession]
 EXPORT_URL = "https://static.off.test/data/openfoodfacts-products.jsonl.gz"
 DELTA_URL = "https://static.off.test/data/delta/"
 DELTA = "openfoodfacts_products_1000_2000.json.gz"
+JOBS = ["import_off_export", "import_off_deltas", "rescore_products"]
 
 
 @pytest.fixture
@@ -65,6 +70,19 @@ async def pool(settings: Settings, queue_name: str) -> AsyncIterator[ArqRedis]:
     await redis.aclose()
 
 
+@pytest.fixture(autouse=True)
+async def forget_rescoring_job(pool: ArqRedis) -> AsyncIterator[None]:
+    """arq job keys are global to the Redis database (shared with dev): without this, a
+    finished test rescoring would stop a real worker from queuing it for a day."""
+    job_id = jobs.rescore_job_id()
+    keys = [
+        prefix + job_id for prefix in (job_key_prefix, result_key_prefix, in_progress_key_prefix)
+    ]
+    await pool.delete(*keys)
+    yield
+    await pool.delete(*keys)
+
+
 @pytest.fixture
 async def ctx(settings: Settings) -> AsyncIterator[jobs.Context]:
     context: jobs.Context = {"settings": settings}
@@ -93,7 +111,7 @@ async def product_count(sessions: Sessions) -> int:
 def test_worker_settings(settings: Settings) -> None:
     config = worker_settings(settings, queue_name="q")
 
-    assert [f.name for f in config["functions"]] == ["import_off_export", "import_off_deltas"]
+    assert [f.name for f in config["functions"]] == JOBS
     [cron_job] = config["cron_jobs"]
     assert (cron_job.name, cron_job.hour, cron_job.minute) == ("cron:import_off_deltas", {3}, {0})
     assert (config["queue_name"], config["timezone"]) == ("q", UTC)
@@ -108,10 +126,7 @@ def test_cron_can_be_disabled(make_settings: Callable[..., Settings]) -> None:
 
 def test_arq_entry_point() -> None:
     main = importlib.import_module("app.worker.main")
-    assert [f.name for f in main.WorkerSettings["functions"]] == [
-        "import_off_export",
-        "import_off_deltas",
-    ]
+    assert [f.name for f in main.WorkerSettings["functions"]] == JOBS
 
 
 # ---------------------------------------------------------------- through the queue
@@ -141,7 +156,36 @@ async def test_queued_delta_job_is_run_by_the_worker(
     assert (summary["source"], summary["status"]) == (DELTA, "completed")
     assert summary["stats"]["inserted"] == len(TUNISIAN)
     assert await product_count(sessions) == len(TUNISIAN)
-    assert (worker.jobs_complete, worker.jobs_failed) == (1, 0)
+    assert (worker.jobs_complete, worker.jobs_failed) == (2, 0)  # + rescoring at startup
+
+
+async def test_worker_start_queues_rescoring_once_per_engine_version(
+    settings: Settings, pool: ArqRedis, queue_name: str, sessions: Sessions
+) -> None:
+    async with sessions() as session:
+        product = await ProductFactory.create(session, category=Category.GENERAL)
+        await NutritionFactsFactory.create(session, product_id=product.id)
+        await session.commit()
+
+    for _ in range(2):  # a restart does not rescore again
+        worker = Worker(
+            **worker_settings(settings, queue_name=queue_name),
+            burst=True,
+            handle_signals=False,
+            poll_delay=0.01,
+        )
+        try:
+            await worker.main()
+        finally:
+            await worker.close()
+
+    job = Job(jobs.rescore_job_id(), pool, _queue_name=queue_name)
+    assert await job.result(timeout=5) == {"checked": 1, "rescored": 1, "failed": 0}
+    assert worker.jobs_complete == 0  # second start: already done for this version
+    async with sessions() as session:
+        stored = await session.scalar(select(Score).where(Score.product_id == product.id))
+    assert stored is not None
+    assert stored.engine_version == ENGINE_VERSION
 
 
 # ---------------------------------------------------------------- jobs
@@ -219,6 +263,17 @@ async def test_cli_runs_the_export_now(
 ) -> None:
     assert await cli.amain(["run", "export", "--force"], settings=settings) == 0
     assert json.loads(capsys.readouterr().out.splitlines()[-1])["status"] == "completed"
+
+
+async def test_cli_runs_rescoring_now(
+    settings: Settings, sessions: Sessions, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert await cli.amain(["run", "rescore"], settings=settings) == 0
+    assert json.loads(capsys.readouterr().out.splitlines()[-1]) == {
+        "checked": 0,
+        "rescored": 0,
+        "failed": 0,
+    }
 
 
 async def test_cli_reports_a_running_import(

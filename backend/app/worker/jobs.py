@@ -2,7 +2,9 @@
 
 Jobs stay thin: they build the services from the worker context and call them. Bulk
 imports run one at a time (a Postgres advisory lock), whichever worker picks them up; a
-job that finds another import running is retried later.
+job that finds another import running is retried later. Every worker start queues a
+rescoring for the current engine version (once per version: the job id says which), so
+deploying a new engine rescores outdated products.
 """
 
 import logging
@@ -25,12 +27,15 @@ from app.modules.ingestion.importer import ImportResult
 from app.modules.ingestion.off_client import RetryPolicy
 from app.modules.ingestion.off_import import ImportSettings, OffImport
 from app.modules.products.cache import ProductCache
+from app.modules.products.rescoring import Rescorer, RescoreStats
+from app.modules.scoring import ENGINE_VERSION
 
 logger = logging.getLogger(__name__)
 
 IMPORT_LOCK_KEY = 0x516F757401
 """Advisory lock id for bulk imports ("Qout" + 1)."""
 BUSY_RETRY_SECONDS = 600
+RESCORE_BATCH_SIZE = 500
 
 Context = dict[str, Any]
 
@@ -51,6 +56,18 @@ async def startup(ctx: Context) -> None:
     ctx["sessions"] = create_session_factory(engine)
     ctx["cache_redis"] = Redis.from_url(str(settings.redis_url))
     ctx["http"] = download_client(settings)
+
+
+async def worker_startup(ctx: Context) -> None:
+    """arq `on_startup`: connections, then the rescoring for this engine version."""
+    await startup(ctx)
+    queued = await ctx["redis"].enqueue_job("rescore_products", _job_id=rescore_job_id())
+    if queued is not None:
+        logger.info("rescoring queued", extra={"engine_version": ENGINE_VERSION})
+
+
+def rescore_job_id() -> str:
+    return f"rescore:{ENGINE_VERSION}"
 
 
 async def shutdown(ctx: Context) -> None:
@@ -81,6 +98,15 @@ async def import_off_deltas(ctx: Context) -> list[dict[str, Any]]:
     except ImportBusyError as error:
         raise Retry(defer=BUSY_RETRY_SECONDS) from error
     return [summary(result) for result in results]
+
+
+async def rescore_products(ctx: Context) -> dict[str, int]:
+    """Score every product without a score for the current engine version."""
+    return asdict(await run_rescore(ctx))
+
+
+async def run_rescore(ctx: Context) -> RescoreStats:
+    return await Rescorer(ctx["sessions"], batch_size=RESCORE_BATCH_SIZE).run()
 
 
 async def run_export(ctx: Context, *, force: bool = False) -> ImportResult:

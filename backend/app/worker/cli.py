@@ -1,8 +1,9 @@
-"""Command line for bulk imports: queue a job for the worker, or run it right here.
+"""Command line for worker jobs: queue a job for the worker, or run it right here.
 
 uv run python -m app.worker enqueue deltas          # the worker runs it
 uv run python -m app.worker enqueue export --force
 uv run python -m app.worker run deltas              # runs now, in this process
+uv run python -m app.worker run rescore             # score outdated products now
 """
 
 import argparse
@@ -10,6 +11,7 @@ import asyncio
 import json
 import sys
 from collections.abc import Sequence
+from dataclasses import asdict
 from typing import Any
 
 from arq import create_pool
@@ -18,13 +20,21 @@ from app.core.config import Settings, get_settings
 from app.worker import jobs
 from app.worker.settings import QUEUE_NAME, redis_settings
 
-_JOBS = {"export": "import_off_export", "deltas": "import_off_deltas"}
+_JOBS = {
+    "export": "import_off_export",
+    "deltas": "import_off_deltas",
+    "rescore": "rescore_products",
+}
 
 
 def parser() -> argparse.ArgumentParser:
     cli = argparse.ArgumentParser(prog="python -m app.worker", description=__doc__.split("\n")[0])
     cli.add_argument("action", choices=["enqueue", "run"], help="queue for the worker, or run now")
-    cli.add_argument("job", choices=sorted(_JOBS), help="full export, or new delta files")
+    cli.add_argument(
+        "job",
+        choices=sorted(_JOBS),
+        help="OFF full export, new OFF delta files, or rescore outdated products",
+    )
     cli.add_argument(
         "--force", action="store_true", help="export: import again even if already imported"
     )
@@ -69,6 +79,8 @@ async def _run(settings: Settings, job: str, *, force: bool) -> int:
     try:
         if job == "export":
             output: object = jobs.summary(await jobs.run_export(ctx, force=force))
+        elif job == "rescore":
+            output = asdict(await jobs.run_rescore(ctx))
         else:
             output = [jobs.summary(result) for result in await jobs.run_deltas(ctx)]
     except jobs.ImportBusyError:
