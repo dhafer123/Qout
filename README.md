@@ -2,6 +2,7 @@
 
 [![Backend CI](https://github.com/dhafer123/Qout/actions/workflows/backend-ci.yml/badge.svg?branch=main)](https://github.com/dhafer123/Qout/actions/workflows/backend-ci.yml)
 [![App CI](https://github.com/dhafer123/Qout/actions/workflows/app-ci.yml/badge.svg?branch=main)](https://github.com/dhafer123/Qout/actions/workflows/app-ci.yml)
+[![Scoring parity](https://github.com/dhafer123/Qout/actions/workflows/scoring-parity.yml/badge.svg?branch=main)](https://github.com/dhafer123/Qout/actions/workflows/scoring-parity.yml)
 
 **Qout** ("nourishment" in Arabic) is a mobile app that tells you what's really in your food.
 Scan a barcode or photograph a nutrition label and get an **explainable nutrition score**:
