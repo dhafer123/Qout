@@ -162,6 +162,24 @@ SELECT kind, source, status, checkpoint_line, inserted, updated, unchanged, skip
 FROM import_runs ORDER BY created_at DESC LIMIT 20;
 ```
 
+#### Rescoring and engine validation
+
+Scores belong to an engine version (`ENGINE_VERSION`). Each worker start queues
+`rescore_products` once per engine version, so deploying a new engine rescores every
+product whose latest nutrition has no score with it (old scores are kept). Run it by hand
+with `uv run python -m app.worker run rescore`.
+
+To check the engine against Open Food Facts' own grades (from `backend/`, on the data in
+`DATABASE_URL`):
+
+```sh
+uv run python -m scripts.validate_engine     # writes docs/reports/engine-validation-<version>-<date>.md
+```
+
+The report shows agreement (exact and within one grade), a confusion matrix, agreement
+by category and by whether OFF estimated inputs, the largest mismatches, and products OFF
+grades but we can't (insufficient data).
+
 ### Run locally (placeholders until the corresponding tasks land)
 
 ```sh
