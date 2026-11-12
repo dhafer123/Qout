@@ -30,9 +30,12 @@ Architecture decisions are recorded in [`docs/adr/`](docs/adr/), starting with
 ```
 backend/              FastAPI modular monolith (api, modules, core, worker)
 app/                  Flutter app (feature-first clean architecture)
+api/openapi.json      API contract: exported from the backend, the app's client is generated from it
 scoring-spec/golden/  Shared golden test cases for the Python and Dart scoring engines
 docs/specs/           Official scoring specifications (source of all thresholds)
 docs/adr/             Architecture decision records
+docs/reports/         Engine validation reports
+scripts/              Repo-wide scripts (gen_client.sh)
 .github/workflows/    CI pipelines
 .githooks/            Shared git hooks
 ```
@@ -179,6 +182,23 @@ uv run python -m scripts.validate_engine     # writes docs/reports/engine-valida
 The report shows agreement (exact and within one grade), a confusion matrix, agreement
 by category and by whether OFF estimated inputs, the largest mismatches, and products OFF
 grades but we can't (insufficient data).
+
+### API contract and generated client
+
+`api/openapi.json` is the contract between backend and app. The app's client
+(`app/lib/core/api/qout_api.dart`: models plus a dio-based `QoutApi`) is generated from it by
+`app/tool/api_generator.dart`; never edit it by hand. After changing the API:
+
+```sh
+scripts/gen_client.sh          # export the spec (uv) and regenerate the client (dart)
+scripts/gen_client.sh spec     # only the spec   (on Windows: inside WSL)
+scripts/gen_client.sh client   # only the client (on Windows: Git Bash)
+```
+
+Commit both files together. Backend CI fails if the spec doesn't match the code; app CI
+fails if the client doesn't match the spec. The generator supports what FastAPI emits for
+the app's GET endpoints and stops with an error on anything else (for example request
+bodies), so it has to be extended deliberately when the API grows.
 
 ### Run locally (placeholders until the corresponding tasks land)
 
