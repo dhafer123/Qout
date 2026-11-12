@@ -10,8 +10,9 @@ the same record twice changes nothing the second time. Rules:
 - Nutrition facts are versioned: a new version is added only when the declared values
   change, or when the category changes (same values, different scoring rules).
 - The product is (re)scored when its nutrition or category changed, or when it has no
-  score for the current engine yet. OFF's own grade is metadata for the validation report
-  (T16), so a change there is written onto the current score in place.
+  score for the current engine yet. OFF's own grade (and whether OFF estimated inputs for
+  it) is metadata for the validation report (T16), so a change there is written onto the
+  current score in place.
 
 Flushes only; the caller commits, and invalidates the product cache after committing.
 """
@@ -131,8 +132,12 @@ class ProductUpserter:
         facts_id = None if facts is None else facts.id
         if current is None or current.nutrition_facts_id != facts_id or category_changed:
             changed |= await self._add_score(product, facts, record)
-        elif current.off_grade != record.off_grade:
+        elif (current.off_grade, current.off_grade_estimated) != (
+            record.off_grade,
+            record.off_grade_estimated,
+        ):
             current.off_grade = record.off_grade
+            current.off_grade_estimated = record.off_grade_estimated
             await self._session.flush()
             changed = True
 
@@ -154,6 +159,7 @@ class ProductUpserter:
             product_id=product.id,
             nutrition_facts_id=None if facts is None else facts.id,
             off_grade=record.off_grade,
+            off_grade_estimated=record.off_grade_estimated,
         )
         try:
             async with self._session.begin_nested():

@@ -175,6 +175,8 @@ class Score(IdTimestampMixin, Base):
     breakdown: Mapped[dict[str, Any]] = mapped_column(JSONB)
     off_grade: Mapped[Grade | None] = mapped_column(str_enum(Grade, "score_off_grade"))
     """Open Food Facts' own Nutri-Score grade, for the validation report (T16)."""
+    off_grade_estimated: Mapped[bool | None] = mapped_column(Boolean)
+    """Whether OFF estimated some inputs of `off_grade` (e.g. the fruit/vegetable share)."""
 
 
 class ScanEvent(IdTimestampMixin, Base):

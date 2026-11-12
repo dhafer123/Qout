@@ -677,3 +677,24 @@ def test_old_shape_wins_when_both_are_present() -> None:
     off = minimal(nutrition={"aggregated_set": {"per": "100g", "preparation": "as_sold",
                                                 "nutrients": {"sugars": g(99)}}})  # fmt: skip
     assert normalize("6194001800104", off).nutrition.sugars_g == 5  # type: ignore[union-attr]
+
+
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        ("cheese-tunisian-processed", True),  # OFF estimated an input, e.g. fruit/veg share
+        ("general-complete-spread", False),
+        ("cheese-tunisian-ricotta", None),  # OFF has no grade
+    ],
+)
+def test_off_grade_estimated(name: str, expected: bool | None) -> None:
+    assert normalized(name).off_grade_estimated is expected
+
+
+@pytest.mark.parametrize(
+    ("estimated", "expected"), [(1, True), (0, False), (True, True), ("1", None), (None, None)]
+)
+def test_off_grade_estimated_values(estimated: Any, expected: bool | None) -> None:
+    data = {"category_available": 1, "data": {}, "estimated": estimated}
+    off = minimal(nutriscore={"2023": data}, nutriscore_version="2023", nutriscore_grade="c")
+    assert normalize("6194001800104", off).off_grade_estimated is expected

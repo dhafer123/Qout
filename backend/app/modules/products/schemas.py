@@ -132,6 +132,7 @@ class ScoreRead(_ReadSchema):
     breakdown: dict[str, Any]
     """The golden `expected` block: points per component, or `insufficient_data`."""
     off_grade: Grade | None
+    off_grade_estimated: bool | None
     created_at: datetime
 
 

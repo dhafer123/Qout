@@ -38,6 +38,7 @@ def score_row(
     product_id: uuid.UUID,
     nutrition_facts_id: uuid.UUID | None,
     off_grade: Grade | None = None,
+    off_grade_estimated: bool | None = None,
 ) -> Score:
     """A `scores` row for an engine result (not added to any session).
 
@@ -56,4 +57,5 @@ def score_row(
         total=total,
         breakdown=expected_to_spec(result),
         off_grade=off_grade,
+        off_grade_estimated=off_grade_estimated,
     )

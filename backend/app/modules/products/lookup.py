@@ -11,7 +11,6 @@ import logging
 from datetime import datetime
 from typing import Any, Protocol
 
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.ingestion.off_client import OffError
@@ -27,17 +26,16 @@ from app.modules.products.models import (
 from app.modules.products.repository import (
     NutritionFactsRepository,
     ProductRepository,
-    ScoreRepository,
 )
+from app.modules.products.rescoring import ensure_current_score
 from app.modules.products.schemas import (
     AdditiveDetail,
     NutritionDetail,
     ProductDetail,
     ScoreDetail,
 )
-from app.modules.products.scoring import score_row
-from app.modules.products.upsert import ProductUpserter, score_product
-from app.modules.scoring import ENGINE_VERSION, OverexposureRisk, additive
+from app.modules.products.upsert import ProductUpserter
+from app.modules.scoring import OverexposureRisk, additive
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +67,6 @@ class ProductLookup:
         self._cache = cache
         self._products = ProductRepository(session)
         self._nutrition = NutritionFactsRepository(session)
-        self._scores = ScoreRepository(session)
 
     async def lookup(self, code: str) -> ProductDetail:
         """Raises InvalidEanError, ProductNotFoundError, ProductSourceUnavailableError."""
@@ -119,37 +116,10 @@ class ProductLookup:
 
     async def _detail(self, product: Product) -> ProductDetail:
         facts = await self._nutrition.latest(product.id)
-        stored = await self._current_score(product, facts)
-        return product_detail(product, facts, stored)
-
-    async def _current_score(self, product: Product, facts: NutritionFacts | None) -> Score | None:
-        """The score of the latest nutrition with the current engine, computed if missing."""
-        if product.category is None:
-            return None  # unknown category: nothing to score with (older scores don't apply)
-        facts_id = None if facts is None else facts.id
-        latest = await self._scores.latest(product.id, engine_version=ENGINE_VERSION)
-        if latest is not None and latest.nutrition_facts_id == facts_id:
-            return latest
-        result = score_product(product, facts)
-        if result is None:  # pragma: no cover - category checked above
-            return None
-        previous = await self._scores.latest(product.id)
-        off_grade = (
-            previous.off_grade
-            if previous is not None and previous.nutrition_facts_id == facts_id
-            else None
-        )
-        row = score_row(
-            result, product_id=product.id, nutrition_facts_id=facts_id, off_grade=off_grade
-        )
-        try:
-            async with self._session.begin_nested():
-                await self._scores.add(row)
-        except IntegrityError:
-            # A concurrent lookup stored the same (nutrition, engine version) score.
-            return await self._scores.latest(product.id, engine_version=ENGINE_VERSION)
-        await self._session.commit()
-        return row
+        current = await ensure_current_score(self._session, product, facts)
+        if current.created:
+            await self._session.commit()
+        return product_detail(product, facts, current.score)
 
 
 # ---------------------------------------------------------------- response mapping

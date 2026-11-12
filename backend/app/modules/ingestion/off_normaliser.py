@@ -103,6 +103,9 @@ class NormalizedProduct(BaseModel):
     """None when OFF has no usable per-100 g values at all."""
     off_grade: Grade | None
     """OFF's own Nutri-Score grade, only when computed with the 2023 algorithm."""
+    off_grade_estimated: bool | None = None
+    """Whether OFF estimated some of its inputs (e.g. fruit/vegetable share from the
+    ingredients) for that grade; None without an OFF grade or when OFF does not say."""
     issues: list[str]
     """Why the quality flag is not `complete` (empty when it is): suspect values first."""
 
@@ -111,6 +114,7 @@ def normalize(ean: str, off: Mapping[str, Any]) -> NormalizedProduct:
     """Normalise the `product` object returned by `OffClient.get_product`."""
     report = _Report()
     off = _with_legacy_nutrition(off, report)
+    off_grade = _off_grade(off)
     category = _category(off)
     nutrition = _nutrition(off, category, report)
     _check_completeness(category, nutrition, report)
@@ -130,7 +134,8 @@ def normalize(ean: str, off: Mapping[str, Any]) -> NormalizedProduct:
     return NormalizedProduct(
         product=product,
         nutrition=nutrition,
-        off_grade=_off_grade(off),
+        off_grade=off_grade,
+        off_grade_estimated=None if off_grade is None else _off_estimated(off),
         issues=report.suspect + report.gaps,
     )
 
@@ -378,6 +383,11 @@ def _check_completeness(
 
 
 # ---------------------------------------------------------------- text and grade
+
+
+def _off_estimated(off: Mapping[str, Any]) -> bool | None:
+    estimated = _nutriscore_2023(off).get("estimated")
+    return bool(estimated) if estimated in (0, 1) else None  # also False/True
 
 
 def _off_grade(off: Mapping[str, Any]) -> Grade | None:

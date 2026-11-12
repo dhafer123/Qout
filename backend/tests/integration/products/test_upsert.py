@@ -217,6 +217,22 @@ async def test_only_off_grade_changed_updates_the_current_score(db_session: Asyn
     assert score.off_grade == Grade.D
 
 
+async def test_off_estimated_flag_is_stored_and_updated(db_session: AsyncSession) -> None:
+    def record(estimated: int) -> NormalizedProduct:
+        ns = {"2023": {"category_available": 1, "data": {}, "estimated": estimated}}
+        return off_record(nutriscore=ns)
+
+    await upsert(db_session, record(0))
+    [score] = await scores(db_session)
+    assert (score.off_grade, score.off_grade_estimated) == (Grade.C, False)
+
+    assert await upsert(db_session, record(1)) == UpsertOutcome.UPDATED
+
+    [score] = await scores(db_session)
+    await db_session.refresh(score)
+    assert score.off_grade_estimated is True
+
+
 async def test_product_fields_are_updated_status_is_kept(db_session: AsyncSession) -> None:
     await upsert(db_session, off_record())
     product = await stored(db_session)
