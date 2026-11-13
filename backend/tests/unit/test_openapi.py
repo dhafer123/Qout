@@ -29,6 +29,7 @@ def test_operation_ids_name_the_route_functions() -> None:
         "/health": "health",
         "/health/ready": "ready",
         "/v1/products/{ean}": "getProduct",
+        "/v1/products/{ean}/alternatives": "getProductAlternatives",
     }
 
 

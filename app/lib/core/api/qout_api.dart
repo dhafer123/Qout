@@ -6,6 +6,148 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show immutable;
 
+/// `GET /v1/products/{ean}/alternatives`: best first.
+@immutable
+class ProductAlternatives {
+  const ProductAlternatives({
+    required this.ean,
+    required this.items,
+  });
+
+  factory ProductAlternatives.fromJson(Map<String, Object?> json) =>
+      ProductAlternatives(
+        ean: json['ean']! as String,
+        items: List<AlternativeProduct>.unmodifiable(
+          (json['items']! as List<Object?>).map(
+            (item) =>
+                AlternativeProduct.fromJson(item! as Map<String, Object?>),
+          ),
+        ),
+      );
+
+  final String ean;
+
+  final List<AlternativeProduct> items;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'ean': ean,
+    'items': items.map((item) => item.toJson()).toList(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProductAlternatives &&
+          _deepEquals(ean, other.ean) &&
+          _deepEquals(items, other.items);
+
+  @override
+  int get hashCode => Object.hashAll([_deepHash(ean), _deepHash(items)]);
+
+  @override
+  String toString() => 'ProductAlternatives(${toJson()})';
+}
+
+/// A product with a better grade, of the same kind (`GET .../alternatives`).
+@immutable
+class AlternativeProduct {
+  const AlternativeProduct({
+    required this.ean,
+    required this.grade,
+    this.name,
+    this.brand,
+    this.total,
+    this.novaGroup,
+  });
+
+  factory AlternativeProduct.fromJson(Map<String, Object?> json) =>
+      AlternativeProduct(
+        ean: json['ean']! as String,
+        name: json['name'] == null ? null : json['name']! as String,
+        brand: json['brand'] == null ? null : json['brand']! as String,
+        grade: Grade.fromJson(json['grade']),
+        total: json['total'] == null ? null : json['total']! as int,
+        novaGroup: json['nova_group'] == null
+            ? null
+            : json['nova_group']! as int,
+      );
+
+  final String ean;
+
+  final String? name;
+
+  final String? brand;
+
+  final Grade grade;
+
+  final int? total;
+
+  final int? novaGroup;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'ean': ean,
+    'name': name,
+    'brand': brand,
+    'grade': grade.toJson(),
+    'total': total,
+    'nova_group': novaGroup,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AlternativeProduct &&
+          _deepEquals(ean, other.ean) &&
+          _deepEquals(name, other.name) &&
+          _deepEquals(brand, other.brand) &&
+          _deepEquals(grade, other.grade) &&
+          _deepEquals(total, other.total) &&
+          _deepEquals(novaGroup, other.novaGroup);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(ean),
+    _deepHash(name),
+    _deepHash(brand),
+    _deepHash(grade),
+    _deepHash(total),
+    _deepHash(novaGroup),
+  ]);
+
+  @override
+  String toString() => 'AlternativeProduct(${toJson()})';
+}
+
+enum Grade {
+  a('A'),
+  b('B'),
+  c('C'),
+  d('D'),
+  e('E'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const Grade(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory Grade.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('Grade: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
+}
+
 /// `GET /v1/products/{ean}`: everything the app shows for a scanned product.
 @immutable
 class ProductDetail {
@@ -542,36 +684,6 @@ class ScoreDetail {
   String toString() => 'ScoreDetail(${toJson()})';
 }
 
-enum Grade {
-  a('A'),
-  b('B'),
-  c('C'),
-  d('D'),
-  e('E'),
-
-  /// A value this app version does not know (from a newer backend).
-  unrecognized('')
-  ;
-
-  const Grade(this.value);
-
-  /// Values this app does not know become [unrecognized] instead of failing.
-  factory Grade.fromJson(Object? json) {
-    if (json is! String) {
-      throw FormatException('Grade: expected a string, got $json');
-    }
-    for (final member in values) {
-      if (member != unrecognized && member.value == json) return member;
-    }
-    return unrecognized;
-  }
-
-  /// The value sent by the API.
-  final String value;
-
-  String toJson() => value;
-}
-
 /// Calls the Qout API through [Dio] (base URL, timeouts and logging are the
 /// caller's configuration). Failures are [QoutApiException]s.
 class QoutApi {
@@ -587,6 +699,27 @@ class QoutApi {
   Future<ProductDetail> getProduct({required String ean}) async {
     final json = await _get('/v1/products/${Uri.encodeComponent(ean)}');
     return _parse(() => ProductDetail.fromJson(json! as Map<String, Object?>));
+  }
+
+  /// Better alternatives to a product
+  ///
+  /// Products of the same kind (Nutri-Score category and shared Open Food Facts
+  /// food categories) with a strictly better grade, closest nutrient profile
+  /// first. Reads our database only; the product must have been looked up
+  /// before. A product without a grade has no alternatives (empty list).
+  Future<ProductAlternatives> getProductAlternatives({
+    required String ean,
+    int? limit,
+  }) async {
+    final json = await _get(
+      '/v1/products/${Uri.encodeComponent(ean)}/alternatives',
+      queryParameters: <String, Object?>{
+        if (limit != null) 'limit': limit,
+      },
+    );
+    return _parse(
+      () => ProductAlternatives.fromJson(json! as Map<String, Object?>),
+    );
   }
 
   Future<Object?> _get(

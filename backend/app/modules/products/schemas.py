@@ -206,5 +206,25 @@ class ProductDetail(BaseModel):
     """Latest change to the product, its nutrition or its score."""
 
 
+class AlternativeProduct(BaseModel):
+    """A product with a better grade, of the same kind (`GET .../alternatives`)."""
+
+    ean: str
+    name: str | None
+    brand: str | None
+    grade: Grade
+    total: int | None
+    """Points (negative minus positive); lower is better."""
+    nova_group: int | None
+
+
+class ProductAlternatives(BaseModel):
+    """`GET /v1/products/{ean}/alternatives`: best first."""
+
+    ean: str
+    """The product they replace, as stored (UPC-A as EAN-13)."""
+    items: list[AlternativeProduct]
+
+
 class ErrorResponse(BaseModel):
     detail: str

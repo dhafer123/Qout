@@ -119,6 +119,73 @@
           }
         }
       }
+    },
+    "/v1/products/{ean}/alternatives": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Better alternatives to a product",
+        "description": "Products of the same kind (Nutri-Score category and shared Open Food Facts food categories) with a strictly better grade, closest nutrient profile first. Reads our database only; the product must have been looked up before. A product without a grade has no alternatives (empty list).",
+        "operationId": "getProductAlternatives",
+        "parameters": [
+          {
+            "name": "ean",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ean"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "description": "How many, at most",
+              "default": 5,
+              "title": "Limit"
+            },
+            "description": "How many, at most"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductAlternatives"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Not a valid barcode, or limit out of range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -151,6 +218,72 @@
           "overexposure_risk"
         ],
         "title": "AdditiveDetail"
+      },
+      "AlternativeProduct": {
+        "properties": {
+          "ean": {
+            "type": "string",
+            "title": "Ean"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          },
+          "grade": {
+            "$ref": "#/components/schemas/Grade"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          },
+          "nova_group": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nova Group"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ean",
+          "name",
+          "brand",
+          "grade",
+          "total",
+          "nova_group"
+        ],
+        "title": "AlternativeProduct",
+        "description": "A product with a better grade, of the same kind (`GET .../alternatives`)."
       },
       "Category": {
         "type": "string",
@@ -360,6 +493,28 @@
         ],
         "title": "OverexposureRisk",
         "description": "EFSA's risk that part of the population exceeds the acceptable daily intake."
+      },
+      "ProductAlternatives": {
+        "properties": {
+          "ean": {
+            "type": "string",
+            "title": "Ean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AlternativeProduct"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ean",
+          "items"
+        ],
+        "title": "ProductAlternatives",
+        "description": "`GET /v1/products/{ean}/alternatives`: best first."
       },
       "ProductDetail": {
         "properties": {
