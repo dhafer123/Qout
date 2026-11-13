@@ -20,6 +20,7 @@ class ProductCacheDaoManager {
 
 mixin _$ScanHistoryDaoMixin on DatabaseAccessor<AppDatabase> {
   $ScanHistoryTable get scanHistory => attachedDatabase.scanHistory;
+  $CachedProductsTable get cachedProducts => attachedDatabase.cachedProducts;
   ScanHistoryDaoManager get managers => ScanHistoryDaoManager(this);
 }
 
@@ -28,6 +29,11 @@ class ScanHistoryDaoManager {
   ScanHistoryDaoManager(this._db);
   $$ScanHistoryTableTableManager get scanHistory =>
       $$ScanHistoryTableTableManager(_db.attachedDatabase, _db.scanHistory);
+  $$CachedProductsTableTableManager get cachedProducts =>
+      $$CachedProductsTableTableManager(
+        _db.attachedDatabase,
+        _db.cachedProducts,
+      );
 }
 
 mixin _$OutboxDaoMixin on DatabaseAccessor<AppDatabase> {

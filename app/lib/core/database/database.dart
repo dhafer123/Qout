@@ -19,7 +19,8 @@ class CachedProducts extends Table {
   Set<Column<Object>> get primaryKey => {ean};
 }
 
-/// Barcodes the user scanned, newest last (screens in T19 and T21).
+/// Barcodes the user scanned (recorded by the scanner, listed on the home
+/// screen).
 @DataClassName('ScanHistoryRow')
 class ScanHistory extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -77,7 +78,7 @@ class ProductCacheDao extends DatabaseAccessor<AppDatabase>
   )..where((t) => t.ean.isIn(eans.toSet()))).go();
 }
 
-@DriftAccessor(tables: [ScanHistory])
+@DriftAccessor(tables: [ScanHistory, CachedProducts])
 class ScanHistoryDao extends DatabaseAccessor<AppDatabase>
     with _$ScanHistoryDaoMixin {
   ScanHistoryDao(super.attachedDatabase);
@@ -88,6 +89,39 @@ class ScanHistoryDao extends DatabaseAccessor<AppDatabase>
       into(scanHistory).insert(
         ScanHistoryCompanion.insert(ean: ean, scannedAt: scannedAt.toUtc()),
       );
+
+  /// A scan of [ean], replacing any earlier entry for it: the history lists
+  /// each product once, at its latest scan.
+  Future<int> record(String ean, {required DateTime scannedAt}) =>
+      transaction(() async {
+        await (delete(scanHistory)..where((t) => t.ean.equals(ean))).go();
+        return add(ean, scannedAt: scannedAt);
+      });
+
+  /// Newest first, each with the cached product for its barcode (null if not
+  /// cached); updates as scans or cached products change.
+  Stream<List<(ScanHistoryRow, CachedProductRow?)>> watchRecentWithProducts({
+    int limit = 100,
+  }) {
+    final query =
+        select(scanHistory).join([
+            leftOuterJoin(
+              cachedProducts,
+              cachedProducts.ean.equalsExp(scanHistory.ean),
+            ),
+          ])
+          ..orderBy([
+            OrderingTerm.desc(scanHistory.scannedAt),
+            OrderingTerm.desc(scanHistory.id),
+          ])
+          ..limit(limit);
+    return query.watch().map(
+      (rows) => [
+        for (final row in rows)
+          (row.readTable(scanHistory), row.readTableOrNull(cachedProducts)),
+      ],
+    );
+  }
 
   /// Newest first; updates as scans are added or deleted.
   Stream<List<ScanHistoryRow>> watchRecent({int limit = 100}) =>

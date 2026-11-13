@@ -81,6 +81,46 @@ void main() {
       final rows = await database.scanHistoryDao.watchRecent(limit: 2).first;
       expect(rows.map((r) => r.ean), ['4', '3']);
     });
+
+    test('record keeps one entry per barcode, at its latest scan', () async {
+      final history = database.scanHistoryDao;
+      await history.record('111', scannedAt: t0);
+      await history.record(
+        '222',
+        scannedAt: t0.add(const Duration(minutes: 1)),
+      );
+      await history.record(
+        '111',
+        scannedAt: t0.add(const Duration(minutes: 2)),
+      );
+
+      final rows = await history.watchRecent().first;
+      expect(rows.map((r) => (r.ean, r.scannedAt)), [
+        ('111', t0.add(const Duration(minutes: 2))),
+        ('222', t0.add(const Duration(minutes: 1))),
+      ]);
+    });
+
+    test('with products: joined from the cache, live', () async {
+      final history = database.scanHistoryDao;
+      final updates = history.watchRecentWithProducts().map(
+        (rows) => [
+          for (final (scan, product) in rows) (scan.ean, product?.json),
+        ],
+      );
+      await history.record('111', scannedAt: t0);
+      await history.record(
+        '222',
+        scannedAt: t0.add(const Duration(minutes: 1)),
+      );
+      expect(await updates.first, [('222', null), ('111', null)]);
+
+      await database.productCacheDao.save({'111'}, json: '{}', fetchedAt: t0);
+      expect(await updates.first, [('222', null), ('111', '{}')]);
+
+      final limited = await history.watchRecentWithProducts(limit: 1).first;
+      expect(limited.single.$1.ean, '222');
+    });
   });
 
   group('contribution outbox', () {
