@@ -36,6 +36,37 @@ Map<String, Object?> getOperation({
   },
 };
 
+Map<String, Object?> postOperation({
+  String id = 'createThing',
+  String status = '201',
+  bool required = true,
+  Map<String, Object?> body = const {r'$ref': '#/components/schemas/Part'},
+  Map<String, Object?> extra = const {},
+}) => {
+  'post': {
+    'operationId': id,
+    'summary': 'Create a thing',
+    'requestBody': {
+      'content': {
+        'application/json': {'schema': body},
+      },
+      'required': required,
+    },
+    'responses': {
+      status: status == '204'
+          ? <String, Object?>{}
+          : {
+              'content': {
+                'application/json': {
+                  'schema': {r'$ref': '#/components/schemas/Thing'},
+                },
+              },
+            },
+    },
+    ...extra,
+  },
+};
+
 const Map<String, Object?> thing = {
   'type': 'object',
   'description': 'A thing.',
@@ -222,6 +253,48 @@ void main() {
       expect(code, contains('/// Get a thing'));
     });
 
+    test('POST with a JSON body and a 201 response', () {
+      final code = generated(paths: {'/v1/things': postOperation()});
+      expect(code, contains('Future<Thing> createThing({required Part body})'));
+      expect(
+        code,
+        contains("await _send('post', '/v1/things', body: body.toJson())"),
+      );
+      expect(code, contains('Thing.fromJson('));
+      expect(code, contains('class Part {'));
+    });
+
+    test('a 204 response returns nothing', () {
+      final code = generated(
+        paths: {'/v1/things': postOperation(id: 'dropThing', status: '204')},
+      );
+      expect(code, contains('Future<void> dropThing({required Part body})'));
+      expect(code, contains("await _send('post', '/v1/things'"));
+      expect(code, isNot(contains('_parse(() => Thing')));
+    });
+
+    test('operations with security are marked for the access token', () {
+      final code = generated(
+        paths: {
+          '/v1/things/{id}': getOperation(
+            extra: {
+              'security': [
+                {'HTTPBearer': <Object?>[]},
+              ],
+            },
+          ),
+          '/v1/open': getOperation(id: 'getOpen'),
+        },
+      );
+      expect(code, contains('authenticated: true'));
+      expect(code, contains("_send('get', '/v1/open')"));
+      expect(code, contains('Needs a signed-in user'));
+      expect(
+        code,
+        contains("const authenticatedRequestKey = 'qout.authenticated';"),
+      );
+    });
+
     test('operations outside /v1/ are left out', () {
       final code = generated(
         paths: {
@@ -234,9 +307,32 @@ void main() {
 
     for (final (description, paths) in [
       (
-        'POST',
+        'PUT',
         {
-          '/v1/things': {'post': <String, Object?>{}},
+          '/v1/things': {
+            'put': {
+              'operationId': 'putThing',
+              'responses': <String, Object?>{},
+            },
+          },
+        },
+      ),
+      (
+        'an optional request body',
+        {
+          '/v1/things': postOperation(required: false),
+        },
+      ),
+      (
+        'an inline request body schema',
+        {
+          '/v1/things': postOperation(body: {'type': 'object'}),
+        },
+      ),
+      (
+        'no 200, 201 or 204 response',
+        {
+          '/v1/things': postOperation(status: '202'),
         },
       ),
       (

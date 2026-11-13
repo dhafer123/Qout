@@ -684,8 +684,13 @@ class ScoreDetail {
   String toString() => 'ScoreDetail(${toJson()})';
 }
 
-/// Calls the Qout API through [Dio] (base URL, timeouts and logging are the
-/// caller's configuration). Failures are [QoutApiException]s.
+/// `RequestOptions.extra` key: true on calls that need the signed-in user's
+/// access token (the app's auth interceptor adds it).
+const authenticatedRequestKey = 'qout.authenticated';
+
+/// Calls the Qout API through [Dio] (base URL, timeouts, logging and the
+/// auth interceptor are the caller's configuration). Failures are
+/// [QoutApiException]s.
 class QoutApi {
   QoutApi(this._dio);
 
@@ -697,7 +702,7 @@ class QoutApi {
   /// valid check digit. Served from the cache or our database; unknown barcodes
   /// are looked up on Open Food Facts, stored and scored.
   Future<ProductDetail> getProduct({required String ean}) async {
-    final json = await _get('/v1/products/${Uri.encodeComponent(ean)}');
+    final json = await _send('get', '/v1/products/${Uri.encodeComponent(ean)}');
     return _parse(() => ProductDetail.fromJson(json! as Map<String, Object?>));
   }
 
@@ -711,7 +716,8 @@ class QoutApi {
     required String ean,
     int? limit,
   }) async {
-    final json = await _get(
+    final json = await _send(
+      'get',
       '/v1/products/${Uri.encodeComponent(ean)}/alternatives',
       queryParameters: <String, Object?>{
         'limit': ?limit,
@@ -722,14 +728,22 @@ class QoutApi {
     );
   }
 
-  Future<Object?> _get(
+  Future<Object?> _send(
+    String method,
     String path, {
     Map<String, Object?>? queryParameters,
+    Object? body,
+    bool authenticated = false,
   }) async {
     try {
-      final response = await _dio.get<Object?>(
+      final response = await _dio.request<Object?>(
         path,
+        data: body,
         queryParameters: queryParameters,
+        options: Options(
+          method: method.toUpperCase(),
+          extra: {authenticatedRequestKey: authenticated},
+        ),
       );
       return response.data;
     } on DioException catch (error) {
@@ -757,13 +771,14 @@ sealed class QoutApiException implements Exception {
       return ApiConnectionError(error.message ?? error.type.name);
     }
     final message = _detail(response.data) ?? 'HTTP ${response.statusCode}';
+    final retryAfter = _seconds(response.headers.value('retry-after'));
     return switch (response.statusCode) {
+      401 => ApiUnauthorized(message),
       404 => ApiNotFound(message),
+      409 => ApiConflict(message),
       422 => ApiInvalidRequest(message),
-      503 => ApiUnavailable(
-        message,
-        retryAfter: _seconds(response.headers.value('retry-after')),
-      ),
+      429 => ApiTooManyRequests(message, retryAfter: retryAfter),
+      503 => ApiUnavailable(message, retryAfter: retryAfter),
       final status => ApiBadResponse(status, message),
     };
   }
@@ -773,7 +788,10 @@ sealed class QoutApiException implements Exception {
   @override
   String toString() {
     final kind = switch (this) {
+      ApiUnauthorized() => 'ApiUnauthorized',
       ApiNotFound() => 'ApiNotFound',
+      ApiConflict() => 'ApiConflict',
+      ApiTooManyRequests() => 'ApiTooManyRequests',
       ApiInvalidRequest() => 'ApiInvalidRequest',
       ApiUnavailable() => 'ApiUnavailable',
       ApiConnectionError() => 'ApiConnectionError',
@@ -781,6 +799,23 @@ sealed class QoutApiException implements Exception {
     };
     return '$kind: $message';
   }
+}
+
+/// 401: not signed in, wrong credentials, or an expired or used token.
+final class ApiUnauthorized extends QoutApiException {
+  const ApiUnauthorized(super.message);
+}
+
+/// 409: conflicts with what exists, e.g. an email already registered.
+final class ApiConflict extends QoutApiException {
+  const ApiConflict(super.message);
+}
+
+/// 429: too many attempts; try again after [retryAfter] if given.
+final class ApiTooManyRequests extends QoutApiException {
+  const ApiTooManyRequests(super.message, {this.retryAfter});
+
+  final Duration? retryAfter;
 }
 
 /// 404: e.g. a barcode nobody knows.

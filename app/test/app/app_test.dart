@@ -1,6 +1,8 @@
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/theme.dart';
+import 'package:qout/core/database/database.dart';
 import 'package:qout/core/env/app_env.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 
@@ -44,10 +46,14 @@ void main() {
   });
 
   testWidgets('shows the debug banner only outside prod', (tester) async {
-    await tester.pumpQoutApp();
+    // One database for both pumps (drift warns about two open at once).
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+
+    await tester.pumpQoutApp(database: database);
     expect(find.byType(CheckedModeBanner), findsOneWidget);
 
-    await tester.pumpQoutApp(flavor: AppFlavor.prod);
+    await tester.pumpQoutApp(flavor: AppFlavor.prod, database: database);
     expect(find.byType(CheckedModeBanner), findsNothing);
   });
 }

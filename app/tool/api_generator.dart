@@ -4,13 +4,18 @@
 /// Supports what FastAPI emits for the app's endpoints: objects with
 /// properties, nullable values (`anyOf: [X, {type: null}]`), `$ref`, string
 /// enums, string/integer/number/boolean, `date-time`, arrays and free-form
-/// objects; GET operations with path and query parameters and a JSON
-/// response. Anything else throws [UnsupportedError] naming where it was
-/// found, so a new endpoint never silently produces a wrong client.
+/// objects; GET and POST operations with path and query parameters, a JSON
+/// request body (POST, a `$ref` schema) and a JSON (200, 201) or empty (204)
+/// response. Operations with `security` are marked so the app's auth
+/// interceptor adds the access token to them, and only to them. Anything else
+/// throws [UnsupportedError] naming where it was found, so a new endpoint
+/// never silently produces a wrong client.
 library;
 
 /// Operations whose path starts with this are generated (not `/health`).
 const apiPathPrefix = '/v1/';
+
+const _methods = {'get', 'post'};
 
 const _header = '''
 // GENERATED CODE - DO NOT MODIFY BY HAND.
@@ -95,11 +100,15 @@ class _Generator {
       if (!path.startsWith(apiPathPrefix)) continue;
       final operations = _map(paths[path], 'paths.$path');
       for (final method in operations.keys.toList()..sort()) {
-        if (method != 'get') {
-          throw UnsupportedError('$method $path: only GET is supported');
+        if (!_methods.contains(method)) {
+          throw UnsupportedError('$method $path: only GET and POST');
         }
         methods.add(
-          _operation(path, _map(operations[method], 'paths.$path.$method')),
+          _operation(
+            method,
+            path,
+            _map(operations[method], 'paths.$path.$method'),
+          ),
         );
       }
     }
@@ -113,13 +122,35 @@ class _Generator {
     ...params.where((p) => !p.startsWith('required ')),
   ];
 
-  String _operation(String path, Map<String, Object?> operation) {
-    final where = 'GET $path';
-    if (operation.containsKey('requestBody')) {
-      throw UnsupportedError('$where: request bodies are not supported');
-    }
+  String _operation(
+    String method,
+    String path,
+    Map<String, Object?> operation,
+  ) {
+    final where = '${method.toUpperCase()} $path';
     final name = _string(operation['operationId'], '$where operationId');
     final params = <String>[];
+    String? bodyArgument;
+    if (operation['requestBody'] case final Object raw) {
+      if (method != 'post') {
+        throw UnsupportedError('$where: a request body needs POST');
+      }
+      final body = _map(raw, '$where requestBody');
+      if (body['required'] != true) {
+        throw UnsupportedError('$where: optional request bodies');
+      }
+      final content = _map(body['content'], '$where requestBody content');
+      final schema = _map(
+        _map(content['application/json'], '$where requestBody JSON')['schema'],
+        '$where requestBody schema',
+      );
+      if (!schema.containsKey(r'$ref')) {
+        throw UnsupportedError('$where: the request body must be a \$ref');
+      }
+      final type = _type(schema, '$where requestBody');
+      params.add('required ${type.declaration} body');
+      bodyArgument = 'body: body.toJson()';
+    }
     final query = <String>[];
     var url = path;
     for (final raw in _list(operation['parameters'] ?? <Object?>[], where)) {
@@ -148,28 +179,50 @@ class _Generator {
           );
       }
     }
-    final success = _map(
-      _map(operation['responses'], '$where responses')['200'],
-      '$where 200 response',
+    final responses = _map(operation['responses'], '$where responses');
+    final status = ['200', '201', '204'].firstWhere(
+      responses.containsKey,
+      orElse: () => throw UnsupportedError('$where: no 200, 201 or 204'),
     );
-    final schema = _map(
-      _map(
-        _map(success['content'], '$where 200 content')['application/json'],
-        '$where 200 JSON',
-      )['schema'],
-      '$where 200 schema',
-    );
-    final result = _type(schema, '$where 200 schema');
+    _Type? result;
+    if (status != '204') {
+      final success = _map(responses[status], '$where $status response');
+      final content = _map(success['content'], '$where $status content');
+      final schema = _map(
+        _map(content['application/json'], '$where $status JSON')['schema'],
+        '$where $status schema',
+      );
+      result = _type(schema, '$where $status schema');
+    }
+    final authenticated = operation['security'] != null;
     final docs = [
       if (operation['summary'] case final String summary) summary,
       if (operation['description'] case final String description) description,
+      if (authenticated)
+        'Needs a signed-in user: the auth interceptor adds the access token.',
     ];
-    final queryArgument = query.isEmpty
+    final arguments = [
+      "'$method'",
+      "'$url'",
+      if (query.isNotEmpty)
+        'queryParameters: <String, Object?>{${query.join(' ')}}',
+      ?bodyArgument,
+      if (authenticated) 'authenticated: true',
+    ].join(', ');
+    final signature = params.isEmpty
         ? ''
-        : ', queryParameters: <String, Object?>{${query.join(' ')}}';
+        : '{${_requiredFirst(params).join(', ')}}';
+    final docComment = _doc(docs.join('\n\n'), indent: 2);
+    if (result == null) {
+      return '''
+$docComment  Future<void> $name($signature) async {
+    await _send($arguments);
+  }
+''';
+    }
     return '''
-${_doc(docs.join('\n\n'), indent: 2)}  Future<${result.declaration}> $name(${params.isEmpty ? '' : '{${_requiredFirst(params).join(', ')}}'}) async {
-    final json = await _get('$url'$queryArgument);
+$docComment  Future<${result.declaration}> $name($signature) async {
+    final json = await _send($arguments);
     return _parse(() => ${result.decode('json')});
   }
 ''';
@@ -377,22 +430,35 @@ $declarations
 
   String _client(List<String> operations) =>
       '''
-/// Calls the Qout API through [Dio] (base URL, timeouts and logging are the
-/// caller's configuration). Failures are [QoutApiException]s.
+/// `RequestOptions.extra` key: true on calls that need the signed-in user's
+/// access token (the app's auth interceptor adds it).
+const authenticatedRequestKey = 'qout.authenticated';
+
+/// Calls the Qout API through [Dio] (base URL, timeouts, logging and the
+/// auth interceptor are the caller's configuration). Failures are
+/// [QoutApiException]s.
 class QoutApi {
   QoutApi(this._dio);
 
   final Dio _dio;
 
 ${operations.join('\n')}
-  Future<Object?> _get(
+  Future<Object?> _send(
+    String method,
     String path, {
     Map<String, Object?>? queryParameters,
+    Object? body,
+    bool authenticated = false,
   }) async {
     try {
-      final response = await _dio.get<Object?>(
+      final response = await _dio.request<Object?>(
         path,
+        data: body,
         queryParameters: queryParameters,
+        options: Options(
+          method: method.toUpperCase(),
+          extra: {authenticatedRequestKey: authenticated},
+        ),
       );
       return response.data;
     } on DioException catch (error) {
@@ -427,13 +493,14 @@ sealed class QoutApiException implements Exception {
       return ApiConnectionError(error.message ?? error.type.name);
     }
     final message = _detail(response.data) ?? 'HTTP ${response.statusCode}';
+    final retryAfter = _seconds(response.headers.value('retry-after'));
     return switch (response.statusCode) {
+      401 => ApiUnauthorized(message),
       404 => ApiNotFound(message),
+      409 => ApiConflict(message),
       422 => ApiInvalidRequest(message),
-      503 => ApiUnavailable(
-        message,
-        retryAfter: _seconds(response.headers.value('retry-after')),
-      ),
+      429 => ApiTooManyRequests(message, retryAfter: retryAfter),
+      503 => ApiUnavailable(message, retryAfter: retryAfter),
       final status => ApiBadResponse(status, message),
     };
   }
@@ -443,7 +510,10 @@ sealed class QoutApiException implements Exception {
   @override
   String toString() {
     final kind = switch (this) {
+      ApiUnauthorized() => 'ApiUnauthorized',
       ApiNotFound() => 'ApiNotFound',
+      ApiConflict() => 'ApiConflict',
+      ApiTooManyRequests() => 'ApiTooManyRequests',
       ApiInvalidRequest() => 'ApiInvalidRequest',
       ApiUnavailable() => 'ApiUnavailable',
       ApiConnectionError() => 'ApiConnectionError',
@@ -451,6 +521,23 @@ sealed class QoutApiException implements Exception {
     };
     return '$kind: $message';
   }
+}
+
+/// 401: not signed in, wrong credentials, or an expired or used token.
+final class ApiUnauthorized extends QoutApiException {
+  const ApiUnauthorized(super.message);
+}
+
+/// 409: conflicts with what exists, e.g. an email already registered.
+final class ApiConflict extends QoutApiException {
+  const ApiConflict(super.message);
+}
+
+/// 429: too many attempts; try again after [retryAfter] if given.
+final class ApiTooManyRequests extends QoutApiException {
+  const ApiTooManyRequests(super.message, {this.retryAfter});
+
+  final Duration? retryAfter;
 }
 
 /// 404: e.g. a barcode nobody knows.
