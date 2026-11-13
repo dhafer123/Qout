@@ -165,8 +165,10 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Follow-ups: decide whether to show kcal (needs a display factor from you). Product photos through our own storage (backend copies the OFF image), see T24.
 
 ### T21 · Scan history
-- [ ] List of past scans (offline), delete, tap to reopen
+- [x] List of past scans (offline), delete, tap to reopen
 - Tests: **U** history repository; **W** list and empty state.
+- Done: 636 app tests. Every accepted scan is recorded from the scan route (a failed write never blocks the result). `ScanHistoryDao.record` keeps one entry per barcode (a rescan moves it to the top, in one transaction; no schema change) and `watchRecentWithProducts` left-joins `cached_products`, so the list works offline and follows refreshes. `features/history/`: `HistoryEntry` (freezed) and `ScanHistoryRepository` (record, watch the 100 most recent, remove, restore for undo, clear; an unreadable cached product is shown without details). The home screen is the history: Scan button on top, then rows with grade badge, name, brand (or barcode) and scan time; tap reopens `/product/:ean`, swipe removes with Undo, "Clear history" in the menu after confirmation; empty state. The shown grade comes from `ScoreExplanation.displayGrade`, shared with the result header. Widget tests run on `FakeScanHistoryRepository` (default in `pumpQoutApp`, with an in-memory database): drift's live queries rely on timers that fake-async widget tests never complete, so real drift is covered by the repository and DAO unit tests.
+- Follow-ups: older history rows are never pruned (only the 100 most recent are shown); add pruning with the product cache size limit (T18 follow-up).
 
 ### T22 · Better alternatives
 - [ ] Backend: `GET /v1/products/{ean}/alternatives` — same category, better grade, nutrient similarity ranking
