@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
+import 'package:qout/features/product/data/product_repository.dart';
+import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/features/product/presentation/product_screen.dart';
 import 'package:qout/features/scan/presentation/scan_screen.dart';
 
+import '../../../helpers/fake_product_repository.dart';
 import '../../../helpers/fake_scanner_platform.dart';
+import '../../../helpers/fixtures.dart';
 import '../../../helpers/pump_app.dart';
 
 void main() {
@@ -36,7 +40,12 @@ void main() {
     tester,
   ) async {
     final scanner = installFakeScanner();
-    await tester.pumpQoutApp();
+    final repository = FakeProductRepository(
+      results: [recordedFound('product-water')],
+    );
+    await tester.pumpQoutApp(
+      overrides: [productRepositoryProvider.overrideWithValue(repository)],
+    );
     await tester.tap(find.text('Scan'));
     await tester.pumpAndSettle();
 
@@ -47,7 +56,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ProductScreen), findsOneWidget);
-    expect(find.text('6191234567897'), findsOneWidget);
+    expect(repository.requested, ['6191234567897']);
+    expect(find.text('Plain water is always graded A.'), findsOneWidget);
     expect(find.byType(ScanScreen), findsNothing);
 
     await tester.pageBack();
@@ -55,3 +65,9 @@ void main() {
     expect(find.byType(HomeScreen), findsOneWidget);
   });
 }
+
+ProductResult recordedFound(String fixture) => ProductResult.found(
+  product: recordedProduct(fixture),
+  fetchedAt: DateTime.utc(2026, 11, 13),
+  freshness: ProductFreshness.fresh,
+);

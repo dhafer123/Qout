@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,10 +7,7 @@ import 'package:qout/core/database/database.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 
-ProductDetail recorded(String name) => ProductDetail.fromJson(
-  jsonDecode(File('test/fixtures/api/$name.json').readAsStringSync())
-      as Map<String, Object?>,
-);
+import '../../../helpers/fixtures.dart';
 
 /// Answers `getProduct` from [responses] (a product or an exception) in order.
 class FakeQoutApi implements QoutApi {
@@ -36,7 +32,7 @@ void main() {
   late DateTime now;
   late ProductRepository repository;
 
-  final fanta = recorded('product-beverage-graded'); // EAN 42094579
+  final fanta = recordedProduct('product-beverage-graded'); // EAN 42094579
   final t0 = DateTime.utc(2026, 11, 12, 9);
 
   setUp(() {
