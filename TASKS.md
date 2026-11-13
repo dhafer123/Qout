@@ -235,6 +235,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 
 ### T33 · Android release pipeline
 - [ ] Release signing via GitHub Secrets; fastlane lane uploading AAB to Play internal testing on merge to `main`; build number from CI run
+- [ ] Declare `android.permission.INTERNET` in the main manifest: only the debug/profile manifests have it, so a release build has no network (found 2026-11-13). Release builds keep cleartext HTTP blocked (only debug allows it, for local backends)
 - Acceptance: merge → new internal test build. (I create the Play Console account and keystore.)
 
 ### T34 · Production release
