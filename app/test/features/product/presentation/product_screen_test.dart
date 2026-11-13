@@ -89,7 +89,7 @@ void main() {
       );
       // Nutrition per 100 g.
       expect(find.text('Nutrition per 100 g'), findsOneWidget);
-      expect(_row('Energy', '2056 kJ'), findsOneWidget);
+      expect(_row('Energy', '2056 kJ / 491 kcal'), findsOneWidget);
       expect(_row('Fat', '25 g'), findsOneWidget);
       expect(_row('of which saturated', '12.5 g'), findsOneWidget);
       expect(_row('Salt', '1.23 g'), findsOneWidget);

@@ -73,6 +73,9 @@ golden case:
 - Non-nutritive sweeteners: sugar alcohols E420, E421, E953, E956, E964, E965, E966, E967, E968
   do **not** count (calculator sheet "Non-nutritive sweeteners"; Q&A Appendix 3).
 - Alcoholic beverages above 1.2 % alcohol are out of scope (beverages report, p. 72).
+- **Display only:** the app shows energy as kJ and kcal, with kcal = kJ / 4.184 (the
+  thermochemical calorie, 1 kcal = 4.184 kJ exactly; decided 2026-11-13). Never used for
+  scoring, which takes kJ; for kcal→kJ inputs the calculator's 4.2 above still applies.
 
 # Additives and NOVA (T10)
 

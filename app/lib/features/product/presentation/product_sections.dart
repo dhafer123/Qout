@@ -229,9 +229,7 @@ class NutritionSection extends StatelessWidget {
         children: [
           _NutrientRow(
             'Energy',
-            n.energyKj == null
-                ? '–'
-                : '${formatAmount(n.energyKj!, decimals: 0)} kJ',
+            n.energyKj == null ? '–' : formatEnergy(n.energyKj!),
           ),
           _NutrientRow('Fat', grams(n.totalFatG)),
           _NutrientRow('of which saturated', grams(n.saturatedFatG)),

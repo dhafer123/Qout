@@ -73,6 +73,15 @@ String formatAmount(double value, {int decimals = 2}) {
   return fixed.replaceFirst(RegExp(r'\.?0+$'), '');
 }
 
+/// kJ per kcal for showing energy (docs/specs/README.md, "Display only");
+/// never used for scoring.
+const kjPerKcalForDisplay = 4.184;
+
+/// Energy as declared in kJ, with kcal next to it: `2056 kJ / 491 kcal`.
+String formatEnergy(double kj) =>
+    '${formatAmount(kj, decimals: 0)} kJ / '
+    '${formatAmount(kj / kjPerKcalForDisplay, decimals: 0)} kcal';
+
 /// A date and time in the phone's locale and time zone.
 String formatDateTime(BuildContext context, DateTime time) {
   final local = time.toLocal();
