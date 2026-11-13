@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/presentation/product_screen.dart';
 import 'package:qout/features/scan/presentation/scan_screen.dart';
@@ -23,9 +26,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.scan,
         builder: (context, state) => ScanScreen(
-          // Replace the scanner: back from the product goes home.
-          onScanned: (context, ean) =>
-              context.pushReplacement(AppRoutes.product(ean)),
+          onScanned: (context, ean) {
+            // History is a convenience: a failed write must not block the
+            // result.
+            unawaited(
+              ref
+                  .read(scanHistoryRepositoryProvider)
+                  .record(ean)
+                  .catchError((Object _) {}),
+            );
+            // Replace the scanner: back from the product goes home.
+            context.pushReplacement(AppRoutes.product(ean));
+          },
         ),
       ),
       GoRoute(

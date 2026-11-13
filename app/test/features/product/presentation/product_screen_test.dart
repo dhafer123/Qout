@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/core/database/database.dart';
-import 'package:qout/core/database/database_provider.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
@@ -49,10 +48,8 @@ void main() {
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpQoutApp(
-      overrides: [
-        productRepositoryProvider.overrideWithValue(repository),
-        appDatabaseProvider.overrideWithValue(database),
-      ],
+      database: database,
+      overrides: [productRepositoryProvider.overrideWithValue(repository)],
     );
     await tester.pushRoute(AppRoutes.product(ean));
   }
