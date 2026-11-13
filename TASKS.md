@@ -156,11 +156,13 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - [x] mobile_scanner limited to EAN-13/EAN-8/UPC-A/UPC-E; accept a code after N identical consecutive reads; checksum validation; haptic feedback; torch toggle; permission handling
 - Tests: **U** debounce/validation logic (extract it from the widget); **W** permission-denied state.
 - Done: 571 app tests. `features/scan/domain/`: `barcode.dart` (GTIN check digit as in the backend, GS1 UPC-E → UPC-A expansion, `normalizeScannedBarcode`: EAN-13/EAN-8 as read, UPC-A and UPC-E as EAN-13, null for a wrong length or check digit) and `scan_acceptor.dart` (`ScanAcceptor`, N = 3 by default: per camera frame; frames without a valid code neither count nor break the streak; another valid code restarts it; silent after acceptance until `reset()`). Both are free of the camera plugin. `ScanScreen` (`/scan`): reads every ~100 ms, medium haptic and camera stop on acceptance, torch button only when the camera has a torch; permission denied → explanation with "Try again" (no deep link to system settings, which would need another package); no camera / other errors have their own states; the camera stops when the app goes inactive and restarts on resume, except without permission (the permission dialog itself makes the app inactive, so restarting there would ask in a loop). An accepted code replaces the scanner with `/product/:ean`, a placeholder showing the barcode, so back returns home. Scans are not written to `scan_history` yet (T21). Widget tests drive the real `MobileScanner` widget on a fake `MobileScannerPlatform` (`test/helpers/fake_scanner_platform.dart`). The CAMERA permission comes from the plugin's manifest (camera feature not required). New dependency: mobile_scanner 7.5.
-- Follow-ups: T20 replaces the `/product/:ean` placeholder with the result screen. T21 records accepted scans in `scan_history`. Not yet tried on a real phone.
+- Follow-ups: T20 replaces the `/product/:ean` placeholder with the result screen. T21 records accepted scans in `scan_history`. Checked on a real phone (2026-11-13): a product barcode was read and matched the printed digits.
 
 ### T20 · Product result screen
-- [ ] Grade badge, "why this score" breakdown, nutrients per 100 g, NOVA, additives, source + date, "report an error", insufficient-data state, unknown-product state → "Add this product"
+- [x] Grade badge, "why this score" breakdown, nutrients per 100 g, NOVA, additives, source + date, "report an error", insufficient-data state, unknown-product state → "Add this product"
 - Tests: **W** each state (full, insufficient data, unknown, offline cached).
+- Done: 616 app tests. `ProductScreen` (`/product/:ean`, replaces T19's placeholder) on `productResultProvider` (auto-disposed stream family over `ProductRepository.get`; Retry invalidates it). `features/product/domain/score_explanation.dart` reads the API's untyped breakdown (golden format) into graded / water / grade-only (breakdown unreadable, e.g. newer backend) / insufficient data / not scored (unknown category); each component is shown against its scale from `lib/scoring/max_points.dart` (read from the point tables, tested against what the engine awards), with notes for protein not counted (N limit 11 or 7) and undeclared fibre (decision 8). Badge: Qout's own coloured letter, not the Nutri-Score logo (trademark). Nutrition per 100 g or 100 mL, energy in kJ only (no display factor for kcal in the specs). NOVA wording from `docs/specs/README.md`; additive risk `unknown` is "Not evaluated", explained as neither a warning nor a sign of safety. Source, verification status, update date, quality note. States: full, insufficient data, not scored, refreshing (bar under the app bar), offline cached and server-down cached (banner with the saved date), unknown product ("Add this product" says coming soon until T29, "Scan another barcode"), invalid barcode, unavailable (offline / server, Retry-After), unexpected error with Retry. "Report an error": reasons (name, nutrition, grade, additives, something else) + comment (≤ 500 characters, required for "something else"), queued in `contribution_outbox` as `error_report` with a client id; nothing sends it yet (see T25 and T30). Product photos are not shown: `image_url` points at Open Food Facts' image server, and the app never calls OFF.
+- Follow-ups: decide whether to show kcal (needs a display factor from you). Product photos through our own storage (backend copies the OFF image), see T24.
 
 ### T21 · Scan history
 - [ ] List of past scans (offline), delete, tap to reopen
@@ -182,11 +184,13 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 
 ### T24 · Photo uploads
 - [ ] Presigned upload URLs (S3/RustFS), size/type limits, key naming per contribution
+- [ ] Product photos for the result screen: copy the Open Food Facts front image into our storage on import and serve that URL (the app never calls OFF, so T20 shows no photo)
 - Tests: **I** presign against RustFS; rejects wrong content type.
 
 ### T25 · Contributions API and moderation states
 - [ ] `contributions` table (photos, OCR text, parsed fields, parser_used, status: pending/approved/rejected)
 - [ ] `POST /v1/contributions`; `POST /v1/score/preview`; approval creates/updates the product as verified and scores it
+- [ ] `POST /v1/reports`: "report an error" from the result screen (payload as queued by the app since T20: `client_id`, `ean`, `reasons`, `comment`, `product_updated_at`, `created_at`); duplicate-safe on `client_id`; listed for moderation (T31)
 - Tests: **I** submit → pending; preview scores without saving; approve → product verified; reject keeps product unchanged; auth required.
 
 ### T26 · Rule-based label parser
@@ -211,6 +215,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 
 ### T30 · Offline outbox
 - [ ] Contributions queued in drift when offline; background sync with retry/backoff; status shown in UI
+- [ ] Also sends the `error_report` entries queued since T20 (to `POST /v1/reports`)
 - Tests: **U** outbox sync (success, failure, retry, duplicate-safe via client-generated id).
 
 ### T31 · Admin panel
