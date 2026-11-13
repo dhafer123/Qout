@@ -714,7 +714,7 @@ class QoutApi {
     final json = await _get(
       '/v1/products/${Uri.encodeComponent(ean)}/alternatives',
       queryParameters: <String, Object?>{
-        if (limit != null) 'limit': limit,
+        'limit': ?limit,
       },
     );
     return _parse(

@@ -106,6 +106,13 @@ class _Generator {
     return methods;
   }
 
+  /// Required named parameters first (lint `always_put_required_named_
+  /// parameters_first`), otherwise in spec order.
+  static List<String> _requiredFirst(List<String> params) => [
+    ...params.where((p) => p.startsWith('required ')),
+    ...params.where((p) => !p.startsWith('required ')),
+  ];
+
   String _operation(String path, Map<String, Object?> operation) {
     final where = 'GET $path';
     if (operation.containsKey('requestBody')) {
@@ -133,7 +140,8 @@ class _Generator {
             '\${Uri.encodeComponent($text)}',
           );
         case 'query':
-          query.add("if ($dartName != null) '$paramName': $dartName,");
+          // Optional parameters are left out when null (null-aware entry).
+          query.add("'$paramName': ${required ? '' : '?'}$dartName,");
         default:
           throw UnsupportedError(
             '$where parameter $paramName: only path and query parameters',
@@ -160,7 +168,7 @@ class _Generator {
         ? ''
         : ', queryParameters: <String, Object?>{${query.join(' ')}}';
     return '''
-${_doc(docs.join('\n\n'), indent: 2)}  Future<${result.declaration}> $name(${params.isEmpty ? '' : '{${params.join(', ')}}'}) async {
+${_doc(docs.join('\n\n'), indent: 2)}  Future<${result.declaration}> $name(${params.isEmpty ? '' : '{${_requiredFirst(params).join(', ')}}'}) async {
     final json = await _get('$url'$queryArgument);
     return _parse(() => ${result.decode('json')});
   }

@@ -199,16 +199,26 @@ void main() {
                 'in': 'query',
                 'schema': {'type': 'integer'},
               },
+              {
+                'name': 'lang',
+                'in': 'query',
+                'required': true,
+                'schema': {'type': 'string'},
+              },
             ],
           ),
         },
       );
       expect(
         code,
-        contains('Future<Thing> getThing({required int id, int? pageSize})'),
+        contains(
+          'Future<Thing> getThing({required int id, required String lang, '
+          'int? pageSize})',
+        ),
       );
       expect(code, contains(r"'/v1/things/${Uri.encodeComponent('$id')}'"));
-      expect(code, contains("if (pageSize != null) 'page_size': pageSize,"));
+      expect(code, contains("'page_size': ?pageSize,"));
+      expect(code, contains("'lang': lang,"));
       expect(code, contains('/// Get a thing'));
     });
 
