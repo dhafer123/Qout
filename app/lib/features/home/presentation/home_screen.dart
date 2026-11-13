@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:qout/app/router.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -21,10 +23,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
-                // Scanner arrives in T19.
-                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Scanning is coming soon.')),
-                ),
+                onPressed: () => context.push(AppRoutes.scan),
                 icon: const Icon(Icons.qr_code_scanner),
                 label: const Text('Scan'),
               ),
