@@ -91,6 +91,10 @@ class _ProductView extends StatelessWidget {
           _StaleBanner(found),
         ProductHeader(product: product, explanation: explanation),
         ScoreSection(explanation: explanation),
+        AlternativesSection(
+          ean: product.ean,
+          grade: explanation.displayGrade,
+        ),
         NutritionSection(nutrition: product.nutrition),
         ProcessingSection(novaGroup: product.novaGroup),
         AdditivesSection(additives: product.additives),

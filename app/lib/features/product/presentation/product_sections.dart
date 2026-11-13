@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:qout/app/router.dart';
 import 'package:qout/core/api/qout_api.dart';
+import 'package:qout/features/product/data/alternatives_repository.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
 import 'package:qout/features/product/presentation/product_labels.dart';
@@ -371,6 +375,89 @@ class SourceSection extends StatelessWidget {
               child: Text(quality),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// "Better choices": products of the same kind with a better grade. Shown only
+/// when there are some; while loading, offline or on error it takes no space
+/// (a suggestion must never get in the way of the result).
+class AlternativesSection extends ConsumerWidget {
+  const AlternativesSection({
+    required this.ean,
+    required this.grade,
+    super.key,
+  });
+
+  /// The product's EAN as the API knows it.
+  final String ean;
+
+  /// The product's grade: nothing beats A, and without a grade there is
+  /// nothing to compare, so no request is made then.
+  final Grade? grade;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (grade == null || grade == Grade.a || grade == Grade.unrecognized) {
+      return const SizedBox.shrink();
+    }
+    final items = ref.watch(alternativesProvider(ean)).valueOrNull;
+    if (items == null || items.isEmpty) return const SizedBox.shrink();
+    return ProductSection(
+      title: 'Better choices',
+      child: SizedBox(
+        height: 132,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: items.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 8),
+          itemBuilder: (context, index) => _AlternativeCard(items[index]),
+        ),
+      ),
+    );
+  }
+}
+
+class _AlternativeCard extends StatelessWidget {
+  const _AlternativeCard(this.item);
+
+  final AlternativeProduct item;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return SizedBox(
+      width: 150,
+      child: Card.outlined(
+        margin: EdgeInsets.zero,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => context.push(AppRoutes.product(item.ean)),
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GradeBadge(grade: item.grade, size: 36),
+                const SizedBox(height: 8),
+                Text(
+                  item.name ?? 'Unnamed product',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodyMedium,
+                ),
+                if (item.brand case final brand?)
+                  Text(
+                    brand,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.bodySmall,
+                  ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

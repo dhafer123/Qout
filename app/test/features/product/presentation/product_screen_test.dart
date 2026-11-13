@@ -12,6 +12,7 @@ import 'package:qout/features/product/presentation/grade_badge.dart';
 import 'package:qout/features/product/presentation/product_screen.dart';
 import 'package:qout/features/scan/presentation/scan_screen.dart';
 
+import '../../../helpers/fake_alternatives_repository.dart';
 import '../../../helpers/fake_product_repository.dart';
 import '../../../helpers/fake_scanner_platform.dart';
 import '../../../helpers/fixtures.dart';
@@ -32,10 +33,12 @@ ProductResult _found(
 
 void main() {
   late FakeProductRepository repository;
+  late FakeAlternativesRepository alternatives;
   late AppDatabase database;
 
   setUp(() {
     repository = FakeProductRepository();
+    alternatives = FakeAlternativesRepository();
     database = AppDatabase(NativeDatabase.memory());
   });
 
@@ -49,6 +52,7 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpQoutApp(
       database: database,
+      alternatives: alternatives,
       overrides: [productRepositoryProvider.overrideWithValue(repository)],
     );
     await tester.pushRoute(AppRoutes.product(ean));
@@ -336,6 +340,88 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Plain water is always graded A.'), findsOneWidget);
     });
+  });
+
+  group('better choices', () {
+    const oats = AlternativeProduct(
+      ean: '6191234567897',
+      name: 'Oat crackers',
+      brand: 'Saida',
+      grade: Grade.b,
+    );
+    const rice = AlternativeProduct(
+      ean: '6191234567880',
+      name: 'Rice cakes',
+      grade: Grade.a,
+    );
+
+    testWidgets('shown with grade, name and brand', (tester) async {
+      repository.results = [_found('product-general-graded')];
+      alternatives.items = [oats, rice];
+      await openProduct(tester, '9557062321136');
+      await tester.pump();
+
+      expect(alternatives.requested, ['9557062321136']);
+      expect(find.text('Better choices'), findsOneWidget);
+      expect(find.text('Oat crackers'), findsOneWidget);
+      expect(find.text('Saida'), findsOneWidget);
+      expect(find.text('Rice cakes'), findsOneWidget);
+      expect(_badge(Grade.b), findsOneWidget);
+      expect(_badge(Grade.a), findsOneWidget);
+    });
+
+    testWidgets('tap opens the alternative', (tester) async {
+      repository.results = [_found('product-general-graded')];
+      alternatives.items = [oats];
+      await openProduct(tester, '9557062321136');
+      await tester.pump();
+
+      repository.results = [_found('product-water')];
+      await tester.tap(find.text('Oat crackers'));
+      await tester.pumpAndSettle();
+
+      expect(repository.requested, ['9557062321136', '6191234567897']);
+      expect(find.text('Plain water is always graded A.'), findsOneWidget);
+    });
+
+    testWidgets('hidden when there are none', (tester) async {
+      repository.results = [_found('product-general-graded')];
+      await openProduct(tester, '9557062321136');
+      await tester.pump();
+
+      expect(alternatives.requested, ['9557062321136']);
+      expect(find.text('Better choices'), findsNothing);
+    });
+
+    testWidgets('hidden when they cannot be fetched (offline)', (
+      tester,
+    ) async {
+      repository.results = [_found('product-general-graded')];
+      alternatives
+        ..items = [oats]
+        ..error = const ApiConnectionError('offline');
+      await openProduct(tester, '9557062321136');
+      await tester.pump();
+
+      expect(find.text('Better choices'), findsNothing);
+      expect(find.text('Jbs qtw'), findsOneWidget); // the result is unaffected
+    });
+
+    for (final (fixture, why) in [
+      ('product-water', 'grade A'),
+      ('product-insufficient-data', 'no grade'),
+      ('product-unknown-category', 'not scored'),
+    ]) {
+      testWidgets('not asked for: $why', (tester) async {
+        repository.results = [_found(fixture)];
+        alternatives.items = [oats];
+        await openProduct(tester);
+        await tester.pump();
+
+        expect(find.text('Better choices'), findsNothing);
+        expect(alternatives.requested, isEmpty);
+      });
+    }
   });
 
   group('report an error', () {
