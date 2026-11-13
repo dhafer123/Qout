@@ -6,6 +6,42 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show immutable;
 
+/// Registration and login. Emails are compared lower-cased.
+@immutable
+class Credentials {
+  const Credentials({
+    required this.email,
+    required this.password,
+  });
+
+  factory Credentials.fromJson(Map<String, Object?> json) => Credentials(
+    email: json['email']! as String,
+    password: json['password']! as String,
+  );
+
+  final String email;
+
+  final String password;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'email': email,
+    'password': password,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Credentials &&
+          _deepEquals(email, other.email) &&
+          _deepEquals(password, other.password);
+
+  @override
+  int get hashCode => Object.hashAll([_deepHash(email), _deepHash(password)]);
+
+  @override
+  String toString() => 'Credentials(${toJson()})';
+}
+
 /// `GET /v1/products/{ean}/alternatives`: best first.
 @immutable
 class ProductAlternatives {
@@ -626,6 +662,34 @@ enum QualityFlag {
 }
 
 @immutable
+class RefreshRequest {
+  const RefreshRequest({
+    required this.refreshToken,
+  });
+
+  factory RefreshRequest.fromJson(Map<String, Object?> json) => RefreshRequest(
+    refreshToken: json['refresh_token']! as String,
+  );
+
+  final String refreshToken;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'refresh_token': refreshToken,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RefreshRequest && _deepEquals(refreshToken, other.refreshToken);
+
+  @override
+  int get hashCode => Object.hashAll([_deepHash(refreshToken)]);
+
+  @override
+  String toString() => 'RefreshRequest(${toJson()})';
+}
+
+@immutable
 class ScoreDetail {
   const ScoreDetail({
     required this.engineVersion,
@@ -684,6 +748,148 @@ class ScoreDetail {
   String toString() => 'ScoreDetail(${toJson()})';
 }
 
+/// Send `access_token` as `Authorization: Bearer ...`; when it expires,
+/// exchange `refresh_token` (single use) at `/v1/auth/refresh` for a new pair.
+@immutable
+class TokenPair {
+  const TokenPair({
+    required this.accessToken,
+    required this.expiresIn,
+    required this.refreshToken,
+    required this.refreshExpiresIn,
+    this.tokenType,
+  });
+
+  factory TokenPair.fromJson(Map<String, Object?> json) => TokenPair(
+    accessToken: json['access_token']! as String,
+    tokenType: json['token_type'] == null
+        ? null
+        : json['token_type']! as String,
+    expiresIn: json['expires_in']! as int,
+    refreshToken: json['refresh_token']! as String,
+    refreshExpiresIn: json['refresh_expires_in']! as int,
+  );
+
+  final String accessToken;
+
+  final String? tokenType;
+
+  final int expiresIn;
+
+  final String refreshToken;
+
+  final int refreshExpiresIn;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'access_token': accessToken,
+    'token_type': tokenType,
+    'expires_in': expiresIn,
+    'refresh_token': refreshToken,
+    'refresh_expires_in': refreshExpiresIn,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TokenPair &&
+          _deepEquals(accessToken, other.accessToken) &&
+          _deepEquals(tokenType, other.tokenType) &&
+          _deepEquals(expiresIn, other.expiresIn) &&
+          _deepEquals(refreshToken, other.refreshToken) &&
+          _deepEquals(refreshExpiresIn, other.refreshExpiresIn);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(accessToken),
+    _deepHash(tokenType),
+    _deepHash(expiresIn),
+    _deepHash(refreshToken),
+    _deepHash(refreshExpiresIn),
+  ]);
+
+  @override
+  String toString() => 'TokenPair(${toJson()})';
+}
+
+@immutable
+class UserRead {
+  const UserRead({
+    required this.id,
+    required this.email,
+    required this.role,
+    required this.createdAt,
+  });
+
+  factory UserRead.fromJson(Map<String, Object?> json) => UserRead(
+    id: json['id']! as String,
+    email: json['email']! as String,
+    role: UserRole.fromJson(json['role']),
+    createdAt: DateTime.parse(json['created_at']! as String),
+  );
+
+  final String id;
+
+  final String email;
+
+  final UserRole role;
+
+  final DateTime createdAt;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'id': id,
+    'email': email,
+    'role': role.toJson(),
+    'created_at': createdAt.toIso8601String(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserRead &&
+          _deepEquals(id, other.id) &&
+          _deepEquals(email, other.email) &&
+          _deepEquals(role, other.role) &&
+          _deepEquals(createdAt, other.createdAt);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(id),
+    _deepHash(email),
+    _deepHash(role),
+    _deepHash(createdAt),
+  ]);
+
+  @override
+  String toString() => 'UserRead(${toJson()})';
+}
+
+enum UserRole {
+  contributor('contributor'),
+  admin('admin'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const UserRole(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory UserRole.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('UserRole: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
+}
+
 /// `RequestOptions.extra` key: true on calls that need the signed-in user's
 /// access token (the app's auth interceptor adds it).
 const authenticatedRequestKey = 'qout.authenticated';
@@ -695,6 +901,44 @@ class QoutApi {
   QoutApi(this._dio);
 
   final Dio _dio;
+
+  /// Sign in
+  Future<TokenPair> login({required Credentials body}) async {
+    final json = await _send('post', '/v1/auth/login', body: body.toJson());
+    return _parse(() => TokenPair.fromJson(json! as Map<String, Object?>));
+  }
+
+  /// Sign out (this device)
+  ///
+  /// Revokes the refresh token's session. Always succeeds.
+  Future<void> logout({required RefreshRequest body}) async {
+    await _send('post', '/v1/auth/logout', body: body.toJson());
+  }
+
+  /// The signed-in user
+  ///
+  /// Needs a signed-in user: the auth interceptor adds the access token.
+  Future<UserRead> getMe() async {
+    final json = await _send('get', '/v1/auth/me', authenticated: true);
+    return _parse(() => UserRead.fromJson(json! as Map<String, Object?>));
+  }
+
+  /// Exchange a refresh token for new tokens
+  ///
+  /// Each refresh token works once. Presenting one again signs out every device
+  /// that shares its session (the token was probably copied).
+  Future<TokenPair> refreshTokens({required RefreshRequest body}) async {
+    final json = await _send('post', '/v1/auth/refresh', body: body.toJson());
+    return _parse(() => TokenPair.fromJson(json! as Map<String, Object?>));
+  }
+
+  /// Create a contributor account
+  ///
+  /// Scanning needs no account; contributing does. Signs the new user in.
+  Future<TokenPair> register({required Credentials body}) async {
+    final json = await _send('post', '/v1/auth/register', body: body.toJson());
+    return _parse(() => TokenPair.fromJson(json! as Map<String, Object?>));
+  }
 
   /// Look up a product by barcode
   ///

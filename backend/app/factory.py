@@ -9,6 +9,7 @@ from fastapi.routing import APIRoute
 from redis.asyncio import Redis
 
 from app import __version__
+from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 from app.api.products import router as products_router
 from app.core.config import Settings, get_settings
@@ -53,6 +54,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(RequestIdMiddleware)
     app.include_router(health_router)
     app.include_router(products_router)
+    app.include_router(auth_router)
     return app
 
 

@@ -30,6 +30,11 @@ def test_operation_ids_name_the_route_functions() -> None:
         "/health/ready": "ready",
         "/v1/products/{ean}": "getProduct",
         "/v1/products/{ean}/alternatives": "getProductAlternatives",
+        "/v1/auth/register": "register",
+        "/v1/auth/login": "login",
+        "/v1/auth/refresh": "refreshTokens",
+        "/v1/auth/logout": "logout",
+        "/v1/auth/me": "getMe",
     }
 
 

@@ -9,7 +9,15 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Literal
 
-from pydantic import Field, HttpUrl, PostgresDsn, RedisDsn, field_validator
+from pydantic import (
+    Field,
+    HttpUrl,
+    PostgresDsn,
+    RedisDsn,
+    SecretStr,
+    field_validator,
+    model_validator,
+)
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -18,6 +26,10 @@ REPO_ROOT = BACKEND_DIR.parent
 _COUNTRY_TAG = re.compile(r"^[a-z]{2}:[a-z0-9-]+$")
 
 AppEnv = Literal["dev", "test", "staging", "prod"]
+
+DEV_JWT_SECRET = "dev-only-jwt-secret-never-use-in-staging-or-prod"  # noqa: S105 - refused outside dev/test
+"""Lets dev and tests run without configuration; refused in staging and prod."""
+_MIN_JWT_SECRET_LENGTH = 32
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 
@@ -68,6 +80,19 @@ class Settings(BaseSettings):
     import_delta_cron_hour: int = Field(default=4, ge=0, le=23)
     """Hour (UTC) of the daily delta import."""
 
+    # Auth (contributors only; scanning needs no account).
+    jwt_secret: SecretStr = SecretStr(DEV_JWT_SECRET)
+    """HS256 key for access tokens: at least 32 characters, a real secret outside dev/test."""
+    access_token_ttl_seconds: int = Field(default=900, ge=60, le=3600)
+    refresh_token_ttl_days: int = Field(default=30, ge=1, le=365)
+    login_max_failures_per_email: int = Field(default=5, ge=1, le=100)
+    """Failed logins for one email per window before 429."""
+    login_max_attempts_per_ip: int = Field(default=20, ge=1, le=1000)
+    """Login attempts (failed or not) from one IP per window before 429."""
+    login_window_seconds: int = Field(default=900, ge=1, le=86_400)
+    register_max_per_ip: int = Field(default=5, ge=1, le=1000)
+    register_window_seconds: int = Field(default=3600, ge=1, le=86_400)
+
     @field_validator("off_user_agent")
     @classmethod
     def _real_user_agent(cls, value: str) -> str:
@@ -105,6 +130,24 @@ class Settings(BaseSettings):
     def _folder_url(cls, value: HttpUrl) -> HttpUrl:
         text = str(value)
         return value if text.endswith("/") else HttpUrl(f"{text}/")
+
+    @field_validator("jwt_secret")
+    @classmethod
+    def _long_jwt_secret(cls, value: SecretStr) -> SecretStr:
+        if len(value.get_secret_value()) < _MIN_JWT_SECRET_LENGTH:
+            msg = f"JWT_SECRET must be at least {_MIN_JWT_SECRET_LENGTH} characters"
+            raise ValueError(msg)
+        return value
+
+    @model_validator(mode="after")
+    def _real_jwt_secret_when_deployed(self) -> "Settings":
+        secret = self.jwt_secret.get_secret_value()
+        if self.app_env in ("staging", "prod") and (
+            secret == DEV_JWT_SECRET or secret.startswith("change-me")
+        ):
+            msg = "JWT_SECRET: set a real random secret in staging and prod"
+            raise ValueError(msg)
+        return self
 
     @field_validator("log_level", mode="before")
     @classmethod

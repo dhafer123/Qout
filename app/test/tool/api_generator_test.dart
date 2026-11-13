@@ -126,6 +126,9 @@ void main() {
             as Map<String, Object?>;
     final code = generateClient(committed);
     expect(code, contains('Future<ProductDetail> getProduct('));
+    expect(code, contains('Future<TokenPair> register('));
+    expect(code, contains('Future<void> logout('));
+    expect(code, contains('Future<UserRead> getMe('));
     expect(code, isNot(contains('health'))); // only /v1/ operations
     expect(code, startsWith('// GENERATED CODE - DO NOT MODIFY BY HAND.'));
   });

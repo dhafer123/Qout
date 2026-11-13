@@ -18,8 +18,10 @@ from app.core.config import Settings
 from app.factory import create_app
 
 _SETTINGS = {
+    "app_env": "test",
     "database_url": "postgresql+asyncpg://openapi@localhost/openapi",
     "redis_url": "redis://localhost:6379/0",
+    "jwt_secret": "openapi-export-only-not-a-real-secret-0000",
 }
 
 

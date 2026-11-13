@@ -59,6 +59,7 @@ def test_reads_values_from_env_file(tmp_path: Path) -> None:
     env_file = write_env_file(
         tmp_path / ".env",
         APP_ENV="staging",
+        JWT_SECRET="s" * 40,
         LOG_LEVEL="debug",
         DATABASE_URL=DB_URL,
         REDIS_URL=REDIS_URL,
@@ -77,7 +78,11 @@ def test_environment_variables_override_env_file(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     env_file = write_env_file(
-        tmp_path / ".env", APP_ENV="staging", DATABASE_URL=DB_URL, REDIS_URL=REDIS_URL
+        tmp_path / ".env",
+        APP_ENV="staging",
+        JWT_SECRET="s" * 40,
+        DATABASE_URL=DB_URL,
+        REDIS_URL=REDIS_URL,
     )
     monkeypatch.setenv("APP_ENV", "prod")
 
