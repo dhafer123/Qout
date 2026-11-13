@@ -8,12 +8,14 @@ import 'package:qout/app/app.dart';
 import 'package:qout/core/database/database.dart';
 import 'package:qout/core/database/database_provider.dart';
 import 'package:qout/core/env/app_env.dart';
+import 'package:qout/features/auth/data/token_store.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/data/alternatives_repository.dart';
 
 import 'fake_alternatives_repository.dart';
 import 'fake_scan_history_repository.dart';
+import 'in_memory_token_store.dart';
 
 extension PumpQoutApp on WidgetTester {
   /// Pumps the full app with a fixed [AppEnv] (no build flavor in tests), a
@@ -25,6 +27,7 @@ extension PumpQoutApp on WidgetTester {
     AppDatabase? database,
     FakeScanHistoryRepository? history,
     FakeAlternativesRepository? alternatives,
+    InMemoryTokenStore? tokens,
     List<Override> overrides = const [],
   }) async {
     final db = database ?? _memoryDatabase();
@@ -38,6 +41,8 @@ extension PumpQoutApp on WidgetTester {
           scanHistoryRepositoryProvider.overrideWithValue(
             history ?? FakeScanHistoryRepository(),
           ),
+          // No platform secure storage in tests: signed out unless given.
+          tokenStoreProvider.overrideWithValue(tokens ?? InMemoryTokenStore()),
           // Never the network: no alternatives unless a test gives some.
           alternativesRepositoryProvider.overrideWithValue(
             alternatives ?? FakeAlternativesRepository(),
