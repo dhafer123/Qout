@@ -171,9 +171,12 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Follow-ups: older history rows are never pruned (only the 100 most recent are shown); add pruning with the product cache size limit (T18 follow-up).
 
 ### T22 · Better alternatives
-- [ ] Backend: `GET /v1/products/{ean}/alternatives` — same category, better grade, nutrient similarity ranking
-- [ ] App: alternatives row on the result screen
+- [x] Backend: `GET /v1/products/{ean}/alternatives` — same category, better grade, nutrient similarity ranking
+- [x] App: alternatives row on the result screen
 - Tests: **U** ranking function; **I** endpoint; **W** alternatives row.
+- Done: backend 1290 tests (coverage 100 %), app 645 tests. "Same category" also uses Open Food Facts food categories: the Nutri-Score category alone puts almost everything in `general`. New column `products.food_categories` (OFF `categories_tags`, general to specific, taxonomy-style ids only, at most 40, GIN index; migration `2eb004ea0be2`), filled by the normaliser for the API and bulk files. `products/alternatives.py`: candidates from our database only (never OFF): same Nutri-Score category, a strictly better grade from the score of their latest nutrition with the current engine, not hidden, sharing at least one food category when the product has any (at most 1000 ranked). Ranking: more shared food categories, then nutrient similarity (mean gap over energy, sugars, saturated fat, salt, protein, fibre, each divided by the top threshold of the category's point table, beverages on the beverage tables, a gap capped at 1, undeclared values skipped), then lower score, then EAN. Endpoint `GET /v1/products/{ean}/alternatives?limit=5` (1-20): `{ean, items: [{ean, name, brand, grade, total, nova_group}]}`; 404 unknown or hidden, 422 invalid barcode or limit; no grade, grade A or no category: empty list. App: `AlternativesRepository` + `alternativesProvider`; "Better choices" row under "Why this score" (grade badge, name, brand; tap opens the product), requested only for graded products below A, hidden while loading, when empty or on error/offline. The client generator now emits null-aware entries for optional query parameters and puts required named parameters first (lint).
+- Existing data: products stored before this task have no food categories until their OFF record is imported again (equal timestamps are re-imported). Dev database migrated; to backfill it: `DELETE FROM import_runs WHERE kind = 'delta';` then `uv run python -m app.worker run deltas` (re-downloads the delta files still listed by OFF), or reset the database and import again. No production data exists yet.
+- Follow-ups: alternatives are only as good as the products stored: run the full Tunisia export import (T16 follow-up) before judging them.
 
 ---
 
