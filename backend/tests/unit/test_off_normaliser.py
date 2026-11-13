@@ -698,3 +698,42 @@ def test_off_grade_estimated_values(estimated: Any, expected: bool | None) -> No
     data = {"category_available": 1, "data": {}, "estimated": estimated}
     off = minimal(nutriscore={"2023": data}, nutriscore_version="2023", nutriscore_grade="c")
     assert normalize("6194001800104", off).off_grade_estimated is expected
+
+
+# ---------------------------------------------------------------- food categories (T22)
+
+
+def test_food_categories_from_a_recorded_product() -> None:
+    # Taxonomy ids kept in OFF's order (general to specific); free text dropped.
+    assert normalized("general-complete-spread").product.food_categories == [
+        "en:breakfasts",
+        "en:spreads",
+        "en:sweet-spreads",
+        "fr:pates-a-tartiner",
+        "en:hazelnut-spreads",
+        "en:confectionary-based-spreads",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("tags", "expected"),
+    [
+        (None, []),
+        ("en:sauces", []),  # not a list
+        ([], []),
+        (["en:sauces", "en:sauces", "en:harissa-sauces"], ["en:sauces", "en:harissa-sauces"]),
+        (["fr:Harissa du Cap Bon", "en:Sauces", "sauces", "en:", "en:-x", "e:x"], []),
+        ([1, None, {"id": "en:sauces"}, "en:sauces"], ["en:sauces"]),
+        (["en:" + "a" * 125, "en:" + "a" * 126], ["en:" + "a" * 125]),  # 128 chars at most
+    ],
+)
+def test_food_categories_values(tags: Any, expected: list[str]) -> None:
+    off = minimal(categories_tags=tags)
+    assert normalize("6194001800104", off).product.food_categories == expected
+
+
+def test_food_categories_capped() -> None:
+    off = minimal(categories_tags=[f"en:c{i}" for i in range(60)])
+    assert normalize("6194001800104", off).product.food_categories == [
+        f"en:c{i}" for i in range(40)
+    ]

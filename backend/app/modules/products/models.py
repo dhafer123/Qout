@@ -70,6 +70,7 @@ class Product(IdTimestampMixin, Base):
     __table_args__ = (
         CheckConstraint(f"ean ~ '{EAN_PATTERN}'", name="ean_digits"),
         CheckConstraint("nova_group BETWEEN 1 AND 4", name="nova_group_range"),
+        Index("ix_products_food_categories", "food_categories", postgresql_using="gin"),
     )
 
     ean: Mapped[str] = mapped_column(String(14), unique=True)
@@ -89,6 +90,11 @@ class Product(IdTimestampMixin, Base):
         ARRAY(String(16)), server_default=text("'{}'::varchar[]")
     )
     """Additive codes as in the taxonomy (E330, E160a(i)); risk is looked up on read."""
+    food_categories: Mapped[list[str]] = mapped_column(
+        ARRAY(String(128)), server_default=text("'{}'::varchar[]")
+    )
+    """Open Food Facts category tags (`en:sauces`, `en:harissa-sauces`), general to specific.
+    What kind of food it is, for alternatives (T22); not the Nutri-Score `category`."""
     source_modified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     """When the source last changed the product (OFF `last_modified_t`). Imports never
     replace newer data with an older record."""

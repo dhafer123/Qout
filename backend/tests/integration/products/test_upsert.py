@@ -294,6 +294,21 @@ async def test_record_without_time_or_same_time_is_compared(
     )
 
 
+async def test_food_categories_filled_by_reimporting_the_same_record(
+    db_session: AsyncSession,
+) -> None:
+    # Products stored before T22 have none; the same OFF record imported again fills them
+    # in without a new nutrition version or score.
+    await upsert(db_session, off_record())
+    assert (await stored(db_session)).food_categories == []
+
+    tags = ["en:snacks", "en:biscuits"]
+    assert await upsert(db_session, off_record(categories_tags=tags)) == UpsertOutcome.UPDATED
+    assert (await stored(db_session)).food_categories == tags
+    assert len(await versions(db_session)) == 1
+    assert len(await scores(db_session)) == 1
+
+
 @pytest.mark.parametrize("source", [DataSource.CONTRIBUTION, DataSource.MANUAL])
 async def test_products_from_other_sources_are_not_overwritten(
     db_session: AsyncSession, source: DataSource

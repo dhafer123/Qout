@@ -81,6 +81,7 @@ def test_product_read_from_orm() -> None:
         status=ProductStatus.VERIFIED,
         nova_group=3,
         additives=["E330"],
+        food_categories=["en:condiments", "en:sauces"],
         created_at=NOW,
         updated_at=NOW,
     )
@@ -91,6 +92,7 @@ def test_product_read_from_orm() -> None:
         ProductStatus.VERIFIED,
         ["E330"],
     )
+    assert read.food_categories == ["en:condiments", "en:sauces"]
     assert read.model_dump(mode="json")["category"] == "general"
 
 

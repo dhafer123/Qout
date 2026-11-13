@@ -52,6 +52,8 @@ class ProductFields(_Schema):
     nova_group: NovaGroupValue | None = None
     additives: list[str] = Field(default_factory=list)
     """Taxonomy codes (E330, E160a(i))."""
+    food_categories: list[str] = Field(default_factory=list)
+    """Open Food Facts category tags, general to specific (`en:sauces`)."""
     source_modified_at: datetime | None = None
     """When the source last changed the product (OFF `last_modified_t`)."""
 
@@ -74,6 +76,7 @@ class ProductRead(_ReadSchema):
     quality_flag: QualityFlag | None
     nova_group: int | None
     additives: list[str]
+    food_categories: list[str]
     source_modified_at: datetime | None
     created_at: datetime
     updated_at: datetime

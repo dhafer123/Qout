@@ -17,6 +17,7 @@ Pure functions, no I/O. Decisions (TASKS.md, T13):
 """
 
 import math
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -69,6 +70,9 @@ _AGGREGATED_UNITS = {
     "fruits-vegetables-legumes": "%",
 }
 _ESTIMATED = frozenset({"fruits-vegetables-legumes"})
+_CATEGORY_TAG = re.compile(r"[a-z]{2}:[a-z0-9]+(?:-[a-z0-9]+)*")
+_MAX_CATEGORY_TAGS = 40  # OFF products carry ~2-15; a longer list is noise
+_MAX_CATEGORY_TAG_LENGTH = 128  # products.food_categories column width
 _FIRST_OFF_YEAR = 2012  # Open Food Facts started in 2012: earlier times are garbage
 
 # Data-quality heuristics (not scoring constants). EU energy factors (Regulation (EU)
@@ -128,6 +132,7 @@ def normalize(ean: str, off: Mapping[str, Any]) -> NormalizedProduct:
         image_url=_text(off.get("image_front_url")),
         nova_group=nova_group_from_off(off.get("nova_group")),
         additives=[a.code for a in additives_from_off(_list(off.get("additives_tags")))],
+        food_categories=_food_categories(off),
         quality_flag=report.flag(),
         source_modified_at=_modified_at(off),
     )
@@ -420,6 +425,22 @@ def _name(off: Mapping[str, Any]) -> str | None:
 def _brand(off: Mapping[str, Any]) -> str | None:
     brands = _text(off.get("brands"))
     return _text(brands.split(",")[0]) if brands else None
+
+
+def _food_categories(off: Mapping[str, Any]) -> list[str]:
+    """OFF category tags in their order (general to specific), duplicates dropped. Only
+    taxonomy-style ids (`en:harissa-sauces`): free text a contributor typed that matches no
+    taxonomy entry (`fr:Harissa du Cap Bon`) says nothing comparable."""
+    tags: list[str] = []
+    for value in _list(off.get("categories_tags")):
+        if (
+            isinstance(value, str)
+            and len(value) <= _MAX_CATEGORY_TAG_LENGTH
+            and _CATEGORY_TAG.fullmatch(value)
+            and value not in tags
+        ):
+            tags.append(value)
+    return tags[:_MAX_CATEGORY_TAGS]
 
 
 def _text(value: object) -> str | None:
