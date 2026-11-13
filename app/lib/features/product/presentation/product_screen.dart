@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/qout_api.dart';
+import 'package:qout/features/auth/data/auth_repository.dart';
+import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
 import 'package:qout/features/product/presentation/product_labels.dart';
@@ -140,13 +142,31 @@ class _StaleBanner extends StatelessWidget {
   }
 }
 
-class _NotFound extends StatelessWidget {
+class _NotFound extends ConsumerWidget {
   const _NotFound({required this.ean});
 
   final String ean;
 
+  /// Adding a product needs an account: sign in first if needed.
+  Future<void> _add(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final state = await ref.read(authRepositoryProvider).current();
+    if (state is! SignedIn) {
+      if (!context.mounted) return;
+      final signedIn = await context.push<bool>(
+        AppRoutes.signIn,
+        extra: 'Sign in to add products. Scanning works without an account.',
+      );
+      if (signedIn != true) return;
+    }
+    // The contribution flow comes in T29.
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Adding products is coming soon.')),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return _Message(
       icon: Icons.search_off,
       title: 'We do not know this product yet',
@@ -156,10 +176,7 @@ class _NotFound extends StatelessWidget {
       action: Column(
         children: [
           FilledButton.icon(
-            // The contribution flow comes in T29.
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Adding products is coming soon.')),
-            ),
+            onPressed: () => _add(context, ref),
             icon: const Icon(Icons.add_a_photo_outlined),
             label: const Text('Add this product'),
           ),

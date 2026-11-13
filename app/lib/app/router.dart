@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qout/features/auth/presentation/sign_in_screen.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/presentation/product_screen.dart';
@@ -12,6 +13,7 @@ abstract final class AppRoutes {
   static const home = '/';
   static const scan = '/scan';
   static const productPattern = '/product/:ean';
+  static const signIn = '/sign-in';
 
   static String product(String ean) => '/product/$ean';
 }
@@ -39,6 +41,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             context.pushReplacement(AppRoutes.product(ean));
           },
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.signIn,
+        builder: (context, state) =>
+            SignInScreen(reason: state.extra as String?),
       ),
       GoRoute(
         path: AppRoutes.productPattern,

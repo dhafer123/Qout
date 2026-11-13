@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qout/app/router.dart';
+import 'package:qout/features/auth/data/auth_repository.dart';
+import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/history/domain/history_entry.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
@@ -19,20 +21,31 @@ class HomeScreen extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     final history = ref.watch(scanHistoryProvider);
     final hasHistory = history.valueOrNull?.isNotEmpty ?? false;
+    final auth = ref.watch(authStateProvider).valueOrNull;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Qout'),
         actions: [
-          if (hasHistory)
-            PopupMenuButton<void>(
-              tooltip: 'More',
-              itemBuilder: (context) => [
+          PopupMenuButton<void>(
+            tooltip: 'More',
+            itemBuilder: (context) => [
+              if (auth case SignedIn(:final email))
+                PopupMenuItem(
+                  onTap: () => unawaited(_signOut(context, ref)),
+                  child: Text('Sign out ($email)'),
+                )
+              else
+                PopupMenuItem(
+                  onTap: () => context.push(AppRoutes.signIn),
+                  child: const Text('Sign in'),
+                ),
+              if (hasHistory)
                 PopupMenuItem(
                   onTap: () => unawaited(_confirmClear(context, ref)),
                   child: const Text('Clear history'),
                 ),
-              ],
-            ),
+            ],
+          ),
         ],
       ),
       body: Column(
@@ -69,6 +82,12 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    await ref.read(authRepositoryProvider).signOut();
+    messenger.showSnackBar(const SnackBar(content: Text('Signed out')));
   }
 
   Future<void> _confirmClear(BuildContext context, WidgetRef ref) async {

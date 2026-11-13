@@ -103,7 +103,10 @@ void main() {
         find.text('Scanned products appear here, also offline.'),
         findsOneWidget,
       );
-      expect(find.byTooltip('More'), findsNothing);
+      await tester.tap(find.byTooltip('More'));
+      await tester.pumpAndSettle();
+      expect(find.text('Clear history'), findsNothing);
+      expect(find.text('Sign in'), findsOneWidget);
     });
 
     testWidgets('newest first, with grade, name and brand', (tester) async {

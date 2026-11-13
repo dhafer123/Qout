@@ -4,8 +4,11 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
+import 'package:qout/core/api/api_providers.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/core/database/database.dart';
+import 'package:qout/features/auth/domain/auth_session.dart';
+import 'package:qout/features/auth/presentation/sign_in_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
@@ -13,9 +16,11 @@ import 'package:qout/features/product/presentation/product_screen.dart';
 import 'package:qout/features/scan/presentation/scan_screen.dart';
 
 import '../../../helpers/fake_alternatives_repository.dart';
+import '../../../helpers/fake_auth_api.dart';
 import '../../../helpers/fake_product_repository.dart';
 import '../../../helpers/fake_scanner_platform.dart';
 import '../../../helpers/fixtures.dart';
+import '../../../helpers/in_memory_token_store.dart';
 import '../../../helpers/pump_app.dart';
 
 final _fetchedAt = DateTime.utc(2026, 11, 12, 18);
@@ -35,10 +40,14 @@ void main() {
   late FakeProductRepository repository;
   late FakeAlternativesRepository alternatives;
   late AppDatabase database;
+  late InMemoryTokenStore tokens;
+  late FakeAuthApi authApi;
 
   setUp(() {
     repository = FakeProductRepository();
     alternatives = FakeAlternativesRepository();
+    tokens = InMemoryTokenStore();
+    authApi = FakeAuthApi();
     database = AppDatabase(NativeDatabase.memory());
   });
 
@@ -53,7 +62,11 @@ void main() {
     await tester.pumpQoutApp(
       database: database,
       alternatives: alternatives,
-      overrides: [productRepositoryProvider.overrideWithValue(repository)],
+      tokens: tokens,
+      overrides: [
+        productRepositoryProvider.overrideWithValue(repository),
+        qoutApiProvider.overrideWithValue(authApi),
+      ],
     );
     await tester.pushRoute(AppRoutes.product(ean));
   }
@@ -237,7 +250,9 @@ void main() {
   });
 
   group('no product', () {
-    testWidgets('unknown product: offers to add it', (tester) async {
+    testWidgets('unknown product: adding it needs an account', (
+      tester,
+    ) async {
       repository.results = [const ProductResult.notFound(ean: '6191234567897')];
       await openProduct(tester, '6191234567897');
 
@@ -245,7 +260,61 @@ void main() {
       expect(find.textContaining('Barcode 6191234567897'), findsOneWidget);
 
       await tester.tap(find.text('Add this product'));
-      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SignInScreen), findsOneWidget);
+      expect(find.textContaining('Sign in to add products'), findsOneWidget);
+      expect(find.text('Adding products is coming soon.'), findsNothing);
+
+      // Back without signing in: nothing else happens.
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('We do not know this product yet'), findsOneWidget);
+      expect(find.text('Adding products is coming soon.'), findsNothing);
+    });
+
+    testWidgets('unknown product: after signing in, adding continues', (
+      tester,
+    ) async {
+      repository.results = [const ProductResult.notFound(ean: '6191234567897')];
+      authApi.loginResults.add(pair('1'));
+      await openProduct(tester, '6191234567897');
+      await tester.tap(find.text('Add this product'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email'),
+        'a@example.tn',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Password'),
+        'a long password',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SignInScreen), findsNothing);
+      expect(find.text('We do not know this product yet'), findsOneWidget);
+      expect(find.text('Adding products is coming soon.'), findsOneWidget);
+    });
+
+    testWidgets('unknown product: signed in already, no detour', (
+      tester,
+    ) async {
+      tokens.session = AuthSession(
+        email: 'a@example.tn',
+        accessToken: 'access',
+        accessExpiresAt: DateTime.now().add(const Duration(minutes: 15)),
+        refreshToken: 'refresh',
+        refreshExpiresAt: DateTime.now().add(const Duration(days: 30)),
+      );
+      repository.results = [const ProductResult.notFound(ean: '6191234567897')];
+      await openProduct(tester, '6191234567897');
+
+      await tester.tap(find.text('Add this product'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SignInScreen), findsNothing);
       expect(find.text('Adding products is coming soon.'), findsOneWidget);
     });
 
