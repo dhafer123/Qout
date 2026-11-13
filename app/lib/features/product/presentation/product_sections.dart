@@ -44,17 +44,11 @@ class ProductHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final grade = switch (explanation) {
-      GradedExplanation(:final grade) ||
-      GradeOnlyExplanation(:final grade) => grade,
-      WaterExplanation() => Grade.a,
-      InsufficientDataExplanation() || NotScoredExplanation() => null,
-    };
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         children: [
-          GradeBadge(grade: grade),
+          GradeBadge(grade: explanation.displayGrade),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

@@ -243,4 +243,27 @@ void main() {
       );
     });
   });
+
+  test('the grade to show', () {
+    expect(
+      explainScore(recordedProduct('product-general-graded')).displayGrade,
+      Grade.e,
+    );
+    expect(
+      explainScore(recordedProduct('product-water')).displayGrade,
+      Grade.a,
+    );
+    expect(
+      explainScore(withScore(const {'grade': 'B'})).displayGrade,
+      Grade.b,
+    );
+    expect(
+      explainScore(recordedProduct('product-insufficient-data')).displayGrade,
+      isNull,
+    );
+    expect(
+      explainScore(recordedProduct('product-unknown-category')).displayGrade,
+      isNull,
+    );
+  });
 }

@@ -69,6 +69,16 @@ extension GradedExplanationPoints on GradedExplanation {
                 .fold(0, (sum, c) => sum + c.points);
 }
 
+extension ScoreExplanationGrade on ScoreExplanation {
+  /// The grade to show (water is A); null when there is none.
+  Grade? get displayGrade => switch (this) {
+    GradedExplanation(:final grade) ||
+    GradeOnlyExplanation(:final grade) => grade,
+    WaterExplanation() => Grade.a,
+    InsufficientDataExplanation() || NotScoredExplanation() => null,
+  };
+}
+
 /// Display order of the components; unknown ones follow in API order.
 const _negativeOrder = [
   'energy',
