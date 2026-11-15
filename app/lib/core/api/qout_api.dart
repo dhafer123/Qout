@@ -812,6 +812,159 @@ class TokenPair {
 }
 
 @immutable
+class UploadRequest {
+  const UploadRequest({
+    required this.contributionId,
+    required this.kind,
+    required this.contentType,
+    required this.sizeBytes,
+  });
+
+  factory UploadRequest.fromJson(Map<String, Object?> json) => UploadRequest(
+    contributionId: json['contribution_id']! as String,
+    kind: PhotoKind.fromJson(json['kind']),
+    contentType: PhotoContentType.fromJson(json['content_type']),
+    sizeBytes: json['size_bytes']! as int,
+  );
+
+  final String contributionId;
+
+  final PhotoKind kind;
+
+  final PhotoContentType contentType;
+
+  final int sizeBytes;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'contribution_id': contributionId,
+    'kind': kind.toJson(),
+    'content_type': contentType.toJson(),
+    'size_bytes': sizeBytes,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UploadRequest &&
+          _deepEquals(contributionId, other.contributionId) &&
+          _deepEquals(kind, other.kind) &&
+          _deepEquals(contentType, other.contentType) &&
+          _deepEquals(sizeBytes, other.sizeBytes);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(contributionId),
+    _deepHash(kind),
+    _deepHash(contentType),
+    _deepHash(sizeBytes),
+  ]);
+
+  @override
+  String toString() => 'UploadRequest(${toJson()})';
+}
+
+enum PhotoContentType {
+  imageJpeg('image/jpeg'),
+  imagePng('image/png'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const PhotoContentType(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory PhotoContentType.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('PhotoContentType: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
+}
+
+/// Which side of the package a contribution photo shows.
+enum PhotoKind {
+  front('front'),
+  nutrition('nutrition'),
+  ingredients('ingredients'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const PhotoKind(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory PhotoKind.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('PhotoKind: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
+}
+
+/// Upload the file with `PUT url`, sending exactly the requested `Content-Type`
+/// and `Content-Length` (both are signed: storage rejects anything else). Then
+/// refer to the photo by `key` when submitting the contribution.
+@immutable
+class UploadTicket {
+  const UploadTicket({
+    required this.key,
+    required this.url,
+    required this.expiresAt,
+  });
+
+  factory UploadTicket.fromJson(Map<String, Object?> json) => UploadTicket(
+    key: json['key']! as String,
+    url: json['url']! as String,
+    expiresAt: DateTime.parse(json['expires_at']! as String),
+  );
+
+  final String key;
+
+  final String url;
+
+  final DateTime expiresAt;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'key': key,
+    'url': url,
+    'expires_at': expiresAt.toIso8601String(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UploadTicket &&
+          _deepEquals(key, other.key) &&
+          _deepEquals(url, other.url) &&
+          _deepEquals(expiresAt, other.expiresAt);
+
+  @override
+  int get hashCode =>
+      Object.hashAll([_deepHash(key), _deepHash(url), _deepHash(expiresAt)]);
+
+  @override
+  String toString() => 'UploadTicket(${toJson()})';
+}
+
+@immutable
 class UserRead {
   const UserRead({
     required this.id,
@@ -970,6 +1123,24 @@ class QoutApi {
     return _parse(
       () => ProductAlternatives.fromJson(json! as Map<String, Object?>),
     );
+  }
+
+  /// Get a URL to upload a contribution photo
+  ///
+  /// Returns a presigned URL for one `PUT` of the photo, valid for a few
+  /// minutes. The upload must send exactly the declared `Content-Type` and
+  /// `Content-Length`; storage rejects anything else. JPEG or PNG, up to the
+  /// server's size limit.
+  ///
+  /// Needs a signed-in user: the auth interceptor adds the access token.
+  Future<UploadTicket> createUpload({required UploadRequest body}) async {
+    final json = await _send(
+      'post',
+      '/v1/uploads',
+      body: body.toJson(),
+      authenticated: true,
+    );
+    return _parse(() => UploadTicket.fromJson(json! as Map<String, Object?>));
   }
 
   Future<Object?> _send(

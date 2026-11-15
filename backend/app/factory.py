@@ -12,11 +12,13 @@ from app import __version__
 from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 from app.api.products import router as products_router
+from app.api.uploads import router as uploads_router
 from app.core.config import Settings, get_settings
 from app.core.db import create_engine, create_session_factory
 from app.core.health import ReadinessCheck, check_database, check_redis
 from app.core.logging import configure_logging
 from app.core.request_id import RequestIdMiddleware
+from app.core.storage import open_storage
 from app.modules.ingestion.off_client import OffClient
 
 
@@ -38,7 +40,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.redis = redis
         app.state.off_client = OffClient.from_settings(settings)
         try:
-            yield
+            async with open_storage(settings) as storage:
+                app.state.storage = storage
+                yield
         finally:
             await app.state.off_client.aclose()
             await redis.aclose()
@@ -55,6 +59,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health_router)
     app.include_router(products_router)
     app.include_router(auth_router)
+    app.include_router(uploads_router)
     return app
 
 

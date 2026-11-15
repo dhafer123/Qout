@@ -69,7 +69,7 @@ cp .env.example .env
 | `postgres` | `postgres:16.15-alpine` | `localhost:5432` | Databases `qout` and `qout_test` |
 | `redis` | `redis:7.4.12-alpine` | `localhost:6379` | AOF persistence |
 | `rustfs` | `rustfs/rustfs:1.0.5` | API `localhost:9000`, console http://localhost:9001 | S3-compatible; log in with `S3_ACCESS_KEY` / `S3_SECRET_KEY` |
-| `s3-init` | `amazon/aws-cli:2.40.0` | – | One-shot: creates `S3_BUCKET`, then exits 0 |
+| `s3-init` | `amazon/aws-cli:2.40.0` | – | One-shot: creates `S3_BUCKET` (private) and `S3_PUBLIC_BUCKET` (anyone can read an object, nobody can list), then exits 0 |
 
 ```sh
 docker compose up -d        # start (data kept in named volumes)
@@ -128,6 +128,20 @@ freely and still start clean. Build test data with the factories in
 |---|---|
 | `GET /health` | Liveness: always 200 while the process runs |
 | `GET /health/ready` | Readiness: 200 if Postgres and Redis respond, else 503 with the failing checks |
+
+#### Object storage and photo uploads
+
+Photos live in S3-compatible storage (RustFS locally, ADR 0002), in two buckets:
+`S3_BUCKET` (private: contribution photos) and `S3_PUBLIC_BUCKET` (product photos, served
+from `MEDIA_BASE_URL`). The app uploads contribution photos straight to storage:
+`POST /v1/uploads` (signed in) returns a presigned URL for one `PUT` of exactly the
+declared type (JPEG or PNG) and size (`UPLOAD_MAX_BYTES`), under
+`contributions/{user}/{contribution}/{kind}-{random}.{ext}`.
+
+On a real phone, storage must be reachable from the phone: set `S3_PUBLIC_ENDPOINT_URL`
+(and `MEDIA_BASE_URL`) to the PC's LAN address, and bind RustFS's port to it in
+`docker-compose.yml` (it listens on 127.0.0.1 only by default). Integration tests use their
+own buckets (`qout-test-uploads`, `qout-test-public`), created on the first run.
 
 Logs are JSON lines on stdout. Every request gets an `X-Request-ID` (reused from the
 request if valid, otherwise generated) that appears in the response and in log lines.

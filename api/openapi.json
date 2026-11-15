@@ -432,6 +432,73 @@
           }
         ]
       }
+    },
+    "/v1/uploads": {
+      "post": {
+        "tags": [
+          "contributions"
+        ],
+        "summary": "Get a URL to upload a contribution photo",
+        "description": "Returns a presigned URL for one `PUT` of the photo, valid for a few minutes. The upload must send exactly the declared `Content-Type` and `Content-Length`; storage rejects anything else. JPEG or PNG, up to the server's size limit.",
+        "operationId": "createUpload",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadTicket"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Not JPEG or PNG, too large, or an invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many uploads; see Retry-After",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -775,6 +842,24 @@
         "title": "OverexposureRisk",
         "description": "EFSA's risk that part of the population exceeds the acceptable daily intake."
       },
+      "PhotoContentType": {
+        "type": "string",
+        "enum": [
+          "image/jpeg",
+          "image/png"
+        ],
+        "title": "PhotoContentType"
+      },
+      "PhotoKind": {
+        "type": "string",
+        "enum": [
+          "front",
+          "nutrition",
+          "ingredients"
+        ],
+        "title": "PhotoKind",
+        "description": "Which side of the package a contribution photo shows."
+      },
       "ProductAlternatives": {
         "properties": {
           "ean": {
@@ -1071,6 +1156,60 @@
         ],
         "title": "TokenPair",
         "description": "Send `access_token` as `Authorization: Bearer ...`; when it expires, exchange\n`refresh_token` (single use) at `/v1/auth/refresh` for a new pair."
+      },
+      "UploadRequest": {
+        "properties": {
+          "contribution_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Contribution Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PhotoKind"
+          },
+          "content_type": {
+            "$ref": "#/components/schemas/PhotoContentType"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Size Bytes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "contribution_id",
+          "kind",
+          "content_type",
+          "size_bytes"
+        ],
+        "title": "UploadRequest"
+      },
+      "UploadTicket": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "url",
+          "expires_at"
+        ],
+        "title": "UploadTicket",
+        "description": "Upload the file with `PUT url`, sending exactly the requested `Content-Type` and\n`Content-Length` (both are signed: storage rejects anything else). Then refer to the\nphoto by `key` when submitting the contribution."
       },
       "UserRead": {
         "properties": {

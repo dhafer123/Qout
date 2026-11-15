@@ -35,6 +35,7 @@ def test_operation_ids_name_the_route_functions() -> None:
         "/v1/auth/refresh": "refreshTokens",
         "/v1/auth/logout": "logout",
         "/v1/auth/me": "getMe",
+        "/v1/uploads": "createUpload",
     }
 
 
