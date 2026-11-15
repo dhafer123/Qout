@@ -19,8 +19,8 @@ from app.modules.scoring import ENGINE_VERSION
 
 logger = logging.getLogger(__name__)
 
-CACHE_FORMAT = 1
-"""Bump when `ProductDetail` changes shape."""
+CACHE_FORMAT = 2
+"""Bump when `ProductDetail` changes shape or meaning (2: `image_url` is our copy)."""
 _NOT_FOUND = b"not_found"
 _TIMEOUT_SECONDS = 0.5
 

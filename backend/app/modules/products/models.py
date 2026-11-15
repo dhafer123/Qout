@@ -77,7 +77,13 @@ class Product(IdTimestampMixin, Base):
     name: Mapped[str | None] = mapped_column(Text)
     brand: Mapped[str | None] = mapped_column(Text)
     category: Mapped[Category | None] = mapped_column(str_enum(Category, "product_category"))
-    image_url: Mapped[str | None] = mapped_column(Text)
+    source_image_url: Mapped[str | None] = mapped_column(Text)
+    """The source's front photo (OFF). Never sent to the app: the app never calls OFF."""
+    image_key: Mapped[str | None] = mapped_column(Text)
+    """Our copy of the front photo in the public bucket, served at `MEDIA_BASE_URL`."""
+    image_copied_from: Mapped[str | None] = mapped_column(Text)
+    """The `source_image_url` last copied (or found unusable, then `image_key` is null):
+    a product needs copying while the two differ."""
     source: Mapped[DataSource] = mapped_column(str_enum(DataSource, "product_source"))
     status: Mapped[ProductStatus] = mapped_column(
         str_enum(ProductStatus, "product_status"), server_default=ProductStatus.UNVERIFIED.value

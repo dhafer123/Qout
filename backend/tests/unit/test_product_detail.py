@@ -12,6 +12,7 @@ from app.modules.scoring import ENGINE_VERSION, Category, Grade, OverexposureRis
 from tests.factories import NutritionFactsFactory, ProductFactory, ScoreFactory
 
 T0 = datetime(2026, 11, 12, 9, 0, tzinfo=UTC)
+MEDIA = "https://media.qout.example/"
 
 
 def stored_facts(product_id: uuid.UUID, created_at: datetime) -> NutritionFacts:
@@ -50,7 +51,7 @@ def test_full_product() -> None:
     facts = stored_facts(product.id, T0 + timedelta(seconds=1))
     score = stored_score(product.id, facts.id, T0 + timedelta(seconds=2))
 
-    detail = product_detail(product, facts, score)
+    detail = product_detail(product, facts, score, media_base_url=MEDIA)
 
     assert detail.ean == "3017620422003"
     assert detail.updated_at == T0 + timedelta(seconds=2)
@@ -82,7 +83,7 @@ def test_without_nutrition_or_score_updated_at_is_the_product() -> None:
         created_at=T0,
         updated_at=T0 + timedelta(hours=1),
     )
-    detail = product_detail(product, None, None)
+    detail = product_detail(product, None, None, media_base_url=MEDIA)
     assert (detail.nutrition, detail.score) == (None, None)
     assert detail.updated_at == T0 + timedelta(hours=1)
 
@@ -92,7 +93,35 @@ def test_json_round_trip_keeps_amounts_as_numbers() -> None:
         id=uuid.uuid4(), status=ProductStatus.UNVERIFIED, additives=[], updated_at=T0
     )
     facts = stored_facts(product.id, T0)
-    detail = product_detail(product, facts, None)
+    detail = product_detail(product, facts, None, media_base_url=MEDIA)
     body = json.loads(detail.model_dump_json())
     assert body["nutrition"]["salt_g"] == 0.107
     assert ProductDetail.model_validate_json(detail.model_dump_json()) == detail
+
+
+def test_photo_is_our_copy_never_the_source() -> None:
+    product = ProductFactory.build(
+        id=uuid.uuid4(),
+        status=ProductStatus.UNVERIFIED,
+        additives=[],
+        updated_at=T0,
+        source_image_url="https://images.openfoodfacts.org/images/products/1/front_fr.3.400.jpg",
+        image_key="products/3017620422003/front-0123456789abcdef.jpg",
+    )
+
+    detail = product_detail(product, None, None, media_base_url=MEDIA)
+
+    assert detail.image_url == f"{MEDIA}products/3017620422003/front-0123456789abcdef.jpg"
+
+
+def test_no_photo_until_copied() -> None:
+    product = ProductFactory.build(
+        id=uuid.uuid4(),
+        status=ProductStatus.UNVERIFIED,
+        additives=[],
+        updated_at=T0,
+        source_image_url="https://images.openfoodfacts.org/images/products/1/front_fr.3.400.jpg",
+        image_key=None,
+    )
+
+    assert product_detail(product, None, None, media_base_url=MEDIA).image_url is None

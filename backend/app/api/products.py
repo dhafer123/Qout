@@ -37,7 +37,12 @@ def get_product_lookup(request: Request, session: SessionDep) -> ProductLookup:
         ttl_seconds=settings.product_cache_ttl_seconds,
         not_found_ttl_seconds=settings.product_not_found_ttl_seconds,
     )
-    return ProductLookup(session, request.app.state.off_client, cache)
+    return ProductLookup(
+        session,
+        request.app.state.off_client,
+        cache,
+        media_base_url=str(settings.media_base_url),
+    )
 
 
 @router.get(

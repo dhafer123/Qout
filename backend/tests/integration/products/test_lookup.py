@@ -37,6 +37,7 @@ FIXTURES = Path(__file__).resolve().parents[2] / "fixtures" / "off"
 OFF_BASE = "https://off.test"
 OFF_PRODUCT = re.compile(r"https://off\.test/api/v2/product/(?P<ean>\d+)\.json")
 CACHE_PATTERN = "qout:product:*"
+MEDIA = "http://media.test/"
 
 NUTELLA = "3017620422003"  # general-complete-spread
 WATER = "6194039501011"  # water-tunisian-hayet
@@ -187,6 +188,40 @@ async def test_off_hit_is_saved_scored_and_then_served_from_the_db(
     assert again.json() == body
     assert off.calls == 1
     assert await count(sessions, Score) == 1
+
+
+async def test_off_photo_is_stored_but_never_served(
+    api: httpx.AsyncClient, off: FakeOff, sessions: async_sessionmaker[AsyncSession]
+) -> None:
+    off.serve("general-complete-spread")
+
+    body = (await api.get(f"/v1/products/{NUTELLA}")).json()
+
+    assert body["image_url"] is None
+    async with sessions() as session:
+        product = await session.scalar(select(Product).where(Product.ean == NUTELLA))
+    assert product is not None
+    assert product.source_image_url is not None
+    assert product.source_image_url.startswith("https://images.openfoodfacts.org/")
+    assert (product.image_key, product.image_copied_from) == (None, None)
+
+
+async def test_copied_photo_is_served_from_our_media_url(
+    api: httpx.AsyncClient, lookup_settings: Settings, sessions: async_sessionmaker[AsyncSession]
+) -> None:
+    async with sessions() as session:
+        product = await ProductFactory.create(
+            session,
+            source_image_url="https://images.openfoodfacts.org/images/products/x/front_fr.1.400.jpg",
+            image_key="products/x/front-0123456789abcdef.jpg",
+        )
+        await session.commit()
+
+    body = (await api.get(f"/v1/products/{product.ean}")).json()
+
+    assert body["image_url"] == (
+        f"{lookup_settings.media_base_url}products/x/front-0123456789abcdef.jpg"
+    )
 
 
 async def test_water_is_graded_a_without_points(api: httpx.AsyncClient, off: FakeOff) -> None:
@@ -435,7 +470,7 @@ async def test_concurrent_first_lookups_store_one_product(
 
     async def lookup() -> Any:
         async with sessions() as session:
-            return await ProductLookup(session, source, cache).lookup(ean)
+            return await ProductLookup(session, source, cache, media_base_url=MEDIA).lookup(ean)
 
     first, second = await asyncio.wait_for(asyncio.gather(lookup(), lookup()), timeout=10)
 
@@ -480,7 +515,9 @@ async def test_concurrent_rescoring_keeps_the_first_score(
 
         async def second_lookup() -> Any:
             async with sessions() as session:
-                return await ProductLookup(session, NoSource(), cache).lookup(product.ean)
+                return await ProductLookup(session, NoSource(), cache, media_base_url=MEDIA).lookup(
+                    product.ean
+                )
 
         second = asyncio.create_task(second_lookup())
         await wait_for_lock_wait(sessions)  # its insert waits on the unique constraint

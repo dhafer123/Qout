@@ -47,7 +47,7 @@ class ProductFields(_Schema):
     name: str | None = None
     brand: str | None = None
     category: Category | None = None
-    image_url: str | None = None
+    source_image_url: str | None = None
     quality_flag: QualityFlag | None = None
     nova_group: NovaGroupValue | None = None
     additives: list[str] = Field(default_factory=list)
@@ -70,7 +70,8 @@ class ProductRead(_ReadSchema):
     name: str | None
     brand: str | None
     category: Category | None
-    image_url: str | None
+    source_image_url: str | None
+    image_key: str | None
     source: DataSource
     status: ProductStatus
     quality_flag: QualityFlag | None
@@ -193,6 +194,7 @@ class ProductDetail(BaseModel):
     name: str | None
     brand: str | None
     image_url: str | None
+    """Front photo in our storage (JPEG); null when there is none or it isn't copied yet."""
     category: Category | None
     source: DataSource
     status: ProductStatus

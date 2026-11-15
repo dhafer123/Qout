@@ -118,6 +118,11 @@ class Settings(BaseSettings):
     """Upload URLs one user may request per window before 429."""
     upload_window_seconds: int = Field(default=3600, ge=1, le=86_400)
 
+    # Product photos: copied from Open Food Facts into the public bucket (worker).
+    product_image_max_bytes: int = Field(default=2 * 1024 * 1024, ge=1024, le=20 * 1024 * 1024)
+    product_images_cron_enabled: bool = True
+    """Copy new and changed product photos every 15 minutes."""
+
     @field_validator("off_user_agent")
     @classmethod
     def _real_user_agent(cls, value: str) -> str:

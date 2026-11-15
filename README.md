@@ -165,6 +165,7 @@ uv run python -m app.worker enqueue deltas           # queue: new delta files
 uv run python -m app.worker enqueue export           # queue: full export (seed; hours)
 uv run python -m app.worker enqueue export --force   # re-import the same export version
 uv run python -m app.worker run deltas               # run now, in this process (no worker)
+uv run python -m app.worker run images               # copy product photos now
 ```
 
 Only one import runs at a time (Postgres advisory lock); a queued job that finds another
@@ -178,6 +179,17 @@ SELECT kind, source, status, checkpoint_line, inserted, updated, unchanged, skip
        rejected, failed, error
 FROM import_runs ORDER BY created_at DESC LIMIT 20;
 ```
+
+#### Product photos
+
+The app never calls Open Food Facts, so product photos are served from our storage. The
+importer and the lookup store OFF's front photo URL (`source_image_url`; bulk files only
+list the selected photos, so the URL is built from them). The `copy_product_images` job
+(every 15 minutes, `PRODUCT_IMAGES_CRON_ENABLED`) downloads new and changed photos (OFF's
+User-Agent and rate limit, at most `PRODUCT_IMAGE_MAX_BYTES`, JPEG or PNG only) into
+`S3_PUBLIC_BUCKET` as `products/{ean}/front-{hash}.jpg`, and the API returns
+`MEDIA_BASE_URL` + that key as `image_url` (null until copied). Photos OFF no longer has
+are deleted; unusable ones are not fetched again until OFF's URL changes.
 
 #### Rescoring and engine validation
 

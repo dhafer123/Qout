@@ -32,7 +32,7 @@ Sessions = async_sessionmaker[AsyncSession]
 EXPORT_URL = "https://static.off.test/data/openfoodfacts-products.jsonl.gz"
 DELTA_URL = "https://static.off.test/data/delta/"
 DELTA = "openfoodfacts_products_1000_2000.json.gz"
-JOBS = ["import_off_export", "import_off_deltas", "rescore_products"]
+JOBS = ["import_off_export", "import_off_deltas", "copy_product_images", "rescore_products"]
 
 
 @pytest.fixture
@@ -112,15 +112,20 @@ def test_worker_settings(settings: Settings) -> None:
     config = worker_settings(settings, queue_name="q")
 
     assert [f.name for f in config["functions"]] == JOBS
-    [cron_job] = config["cron_jobs"]
-    assert (cron_job.name, cron_job.hour, cron_job.minute) == ("cron:import_off_deltas", {3}, {0})
+    deltas, images = config["cron_jobs"]
+    assert (deltas.name, deltas.hour, deltas.minute) == ("cron:import_off_deltas", {3}, {0})
+    assert (images.name, images.hour, images.minute) == (
+        "cron:copy_product_images",
+        None,
+        {0, 15, 30, 45},
+    )
     assert (config["queue_name"], config["timezone"]) == ("q", UTC)
     assert config["ctx"] == {"settings": settings}
     assert worker_settings(settings)["queue_name"] == QUEUE_NAME
 
 
 def test_cron_can_be_disabled(make_settings: Callable[..., Settings]) -> None:
-    settings = make_settings(import_delta_cron_enabled=False)
+    settings = make_settings(import_delta_cron_enabled=False, product_images_cron_enabled=False)
     assert worker_settings(settings)["cron_jobs"] == []
 
 
@@ -276,6 +281,18 @@ async def test_cli_runs_rescoring_now(
     }
 
 
+async def test_cli_copies_product_images_now(
+    settings: Settings, sessions: Sessions, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert await cli.amain(["run", "images"], settings=settings) == 0
+    assert json.loads(capsys.readouterr().out.splitlines()[-1]) == {
+        "copied": 0,
+        "removed": 0,
+        "unusable": 0,
+        "failed": 0,
+    }
+
+
 async def test_cli_reports_a_running_import(
     settings: Settings,
     sessions: Sessions,
@@ -283,7 +300,7 @@ async def test_cli_reports_a_running_import(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     assert await cli.amain(["run", "deltas"], settings=settings) == 1
-    assert "another bulk import is running" in capsys.readouterr().err
+    assert "another run of this job is in progress" in capsys.readouterr().err
 
 
 async def test_cli_enqueues_jobs(

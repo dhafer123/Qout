@@ -15,6 +15,7 @@ EXPORT_TIMEOUT = timedelta(hours=12)
 """Download (~14 GB) plus a pass over every line of the export."""
 DELTA_TIMEOUT = timedelta(hours=2)
 RESCORE_TIMEOUT = timedelta(hours=2)
+IMAGES_TIMEOUT = timedelta(hours=2)
 KEEP_RESULT = timedelta(days=1)
 MAX_TRIES = 5
 """Runs of a job interrupted by a worker restart, or retried because another import was
@@ -40,6 +41,16 @@ def worker_settings(settings: Settings, *, queue_name: str = QUEUE_NAME) -> dict
                 unique=True,
             )
         )
+    if settings.product_images_cron_enabled:
+        cron_jobs.append(
+            cron(
+                jobs.copy_product_images,
+                minute={0, 15, 30, 45},
+                second={0},
+                timeout=IMAGES_TIMEOUT,
+                unique=True,
+            )
+        )
     return {
         "functions": [
             func(
@@ -54,6 +65,7 @@ def worker_settings(settings: Settings, *, queue_name: str = QUEUE_NAME) -> dict
                 keep_result=KEEP_RESULT,
                 max_tries=MAX_TRIES,
             ),
+            func(jobs.copy_product_images, timeout=IMAGES_TIMEOUT, keep_result=KEEP_RESULT),
             func(
                 jobs.rescore_products,
                 timeout=RESCORE_TIMEOUT,

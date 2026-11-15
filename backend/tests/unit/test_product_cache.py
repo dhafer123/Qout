@@ -78,7 +78,7 @@ def detail(ean: str = EAN) -> ProductDetail:
 
 
 def test_key_holds_format_engine_version_and_ean() -> None:
-    assert cache_key(EAN) == f"qout:product:v1:{ENGINE_VERSION}:{EAN}"
+    assert cache_key(EAN) == f"qout:product:v2:{ENGINE_VERSION}:{EAN}"
 
 
 async def test_miss_then_hit() -> None:

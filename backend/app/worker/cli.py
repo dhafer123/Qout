@@ -4,6 +4,7 @@ uv run python -m app.worker enqueue deltas          # the worker runs it
 uv run python -m app.worker enqueue export --force
 uv run python -m app.worker run deltas              # runs now, in this process
 uv run python -m app.worker run rescore             # score outdated products now
+uv run python -m app.worker run images              # copy product photos now
 """
 
 import argparse
@@ -24,6 +25,7 @@ _JOBS = {
     "export": "import_off_export",
     "deltas": "import_off_deltas",
     "rescore": "rescore_products",
+    "images": "copy_product_images",
 }
 
 
@@ -33,7 +35,7 @@ def parser() -> argparse.ArgumentParser:
     cli.add_argument(
         "job",
         choices=sorted(_JOBS),
-        help="OFF full export, new OFF delta files, or rescore outdated products",
+        help="OFF full export, new OFF delta files, rescore outdated products, copy photos",
     )
     cli.add_argument(
         "--force", action="store_true", help="export: import again even if already imported"
@@ -81,10 +83,12 @@ async def _run(settings: Settings, job: str, *, force: bool) -> int:
             output: object = jobs.summary(await jobs.run_export(ctx, force=force))
         elif job == "rescore":
             output = asdict(await jobs.run_rescore(ctx))
+        elif job == "images":
+            output = asdict(await jobs.run_copy_images(ctx))
         else:
             output = [jobs.summary(result) for result in await jobs.run_deltas(ctx)]
     except jobs.ImportBusyError:
-        print("another bulk import is running; try again later", file=sys.stderr)
+        print("another run of this job is in progress; try again later", file=sys.stderr)
         return 1
     finally:
         await jobs.shutdown(ctx)

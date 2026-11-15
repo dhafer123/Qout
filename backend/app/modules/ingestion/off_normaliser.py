@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel
 
@@ -73,6 +74,10 @@ _ESTIMATED = frozenset({"fruits-vegetables-legumes"})
 _CATEGORY_TAG = re.compile(r"[a-z]{2}:[a-z0-9]+(?:-[a-z0-9]+)*")
 _MAX_CATEGORY_TAGS = 40  # OFF products carry ~2-15; a longer list is noise
 _MAX_CATEGORY_TAG_LENGTH = 128  # products.food_categories column width
+OFF_IMAGES_URL = "https://images.openfoodfacts.org/images/products"
+_OFF_IMAGE_HOST = re.compile(r"^([a-z0-9-]+\.)*openfoodfacts\.org$")
+_IMAGE_LANG = re.compile(r"^[a-z]{2}$")
+_IMAGE_REV = re.compile(r"^[0-9]{1,9}$")
 _FIRST_OFF_YEAR = 2012  # Open Food Facts started in 2012: earlier times are garbage
 
 # Data-quality heuristics (not scoring constants). EU energy factors (Regulation (EU)
@@ -129,7 +134,7 @@ def normalize(ean: str, off: Mapping[str, Any]) -> NormalizedProduct:
         name=_name(off),
         brand=_brand(off),
         category=category,
-        image_url=_text(off.get("image_front_url")),
+        source_image_url=front_image_url(off, ean),
         nova_group=nova_group_from_off(off.get("nova_group")),
         additives=[a.code for a in additives_from_off(_list(off.get("additives_tags")))],
         food_categories=_food_categories(off),
@@ -441,6 +446,42 @@ def _food_categories(off: Mapping[str, Any]) -> list[str]:
         ):
             tags.append(value)
     return tags[:_MAX_CATEGORY_TAGS]
+
+
+def front_image_url(off: Mapping[str, Any], ean: str) -> str | None:
+    """OFF's front photo (400 px), as an https URL on an openfoodfacts.org host.
+
+    The API gives `image_front_url`; the bulk files (product schema 1004) only list the
+    selected photos (`images.selected.front.<lang>.rev`), so the URL is built the way OFF
+    builds it: the product's language first, else the first language with a front photo.
+    """
+    given = _text(off.get("image_front_url"))
+    if given is not None:
+        parts = urlsplit(given)
+        host_ok = parts.hostname is not None and _OFF_IMAGE_HOST.match(parts.hostname)
+        return given if parts.scheme == "https" and host_ok else None
+    images = off.get("images")
+    selected = images.get("selected") if isinstance(images, Mapping) else None
+    front = selected.get("front") if isinstance(selected, Mapping) else None
+    if not isinstance(front, Mapping):
+        return None
+    lang = off.get("lang")
+    langs = [lang] if isinstance(lang, str) and lang in front else []
+    langs += sorted(key for key in front if isinstance(key, str) and key not in langs)
+    for code in langs:
+        photo = front.get(code)
+        rev = photo.get("rev") if isinstance(photo, Mapping) else None
+        valid_rev = isinstance(rev, (str, int)) and not isinstance(rev, bool)
+        if _IMAGE_LANG.match(code) and valid_rev and _IMAGE_REV.match(str(rev)):
+            return f"{OFF_IMAGES_URL}/{product_folder(ean)}/front_{code}.{rev}.400.jpg"
+    return None
+
+
+def product_folder(code: str) -> str:
+    """OFF's image folder for a barcode: padded to 13 digits, split 3/3/3/rest
+    (`6191507220214` -> `619/150/722/0214`)."""
+    padded = code.zfill(13)
+    return f"{padded[:3]}/{padded[3:6]}/{padded[6:9]}/{padded[9:]}"
 
 
 def _text(value: object) -> str | None:

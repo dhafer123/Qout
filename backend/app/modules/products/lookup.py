@@ -61,10 +61,18 @@ class ProductSource(Protocol):
 
 
 class ProductLookup:
-    def __init__(self, session: AsyncSession, off: ProductSource, cache: ProductCache) -> None:
+    def __init__(
+        self,
+        session: AsyncSession,
+        off: ProductSource,
+        cache: ProductCache,
+        *,
+        media_base_url: str,
+    ) -> None:
         self._session = session
         self._off = off
         self._cache = cache
+        self._media_base_url = media_base_url
         self._products = ProductRepository(session)
         self._nutrition = NutritionFactsRepository(session)
 
@@ -119,15 +127,21 @@ class ProductLookup:
         current = await ensure_current_score(self._session, product, facts)
         if current.created:
             await self._session.commit()
-        return product_detail(product, facts, current.score)
+        return product_detail(product, facts, current.score, media_base_url=self._media_base_url)
 
 
 # ---------------------------------------------------------------- response mapping
 
 
 def product_detail(
-    product: Product, facts: NutritionFacts | None, stored: Score | None
+    product: Product,
+    facts: NutritionFacts | None,
+    stored: Score | None,
+    *,
+    media_base_url: str,
 ) -> ProductDetail:
+    """The API response. The photo is our copy (`media_base_url` + key), never the
+    source's URL: the app never calls Open Food Facts."""
     changes: list[datetime] = [product.updated_at]
     changes += [] if facts is None else [facts.created_at]
     changes += [] if stored is None else [stored.created_at]
@@ -135,7 +149,7 @@ def product_detail(
         ean=product.ean,
         name=product.name,
         brand=product.brand,
-        image_url=product.image_url,
+        image_url=None if product.image_key is None else f"{media_base_url}{product.image_key}",
         category=product.category,
         source=product.source,
         status=product.status,

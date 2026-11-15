@@ -274,8 +274,8 @@ def test_product_fields() -> None:
         "TERRA DELYSSA",
         2,
     )
-    assert oil.image_url is not None
-    assert oil.image_url.startswith("https://images.openfoodfacts.org/")
+    assert oil.source_image_url is not None
+    assert oil.source_image_url.startswith("https://images.openfoodfacts.org/")
 
     cola = normalized("beverage-sweetened-cola-zero")
     assert cola.product.additives == ["E150d", "E331", "E338", "E950", "E951"]
