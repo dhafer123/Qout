@@ -73,6 +73,18 @@ golden case:
 - Non-nutritive sweeteners: sugar alcohols E420, E421, E953, E956, E964, E965, E966, E967, E968
   do **not** count (calculator sheet "Non-nutritive sweeteners"; Q&A Appendix 3).
 - Alcoholic beverages above 1.2 % alcohol are out of scope (beverages report, p. 72).
+- **Label parser energy check (T26; data quality, never scoring):** energy conversion
+  factors from Regulation (EU) 1169/2011, Annex XIV: carbohydrate (except polyols) 17 kJ /
+  4 kcal per g, protein 17 kJ / 4 kcal, fat 37 kJ / 9 kcal, fibre 8 kJ / 2 kcal. Expected
+  energy = factors × declared carbohydrate, protein, fat and fibre (fibre 0 if undeclared);
+  the declared energy passes if within ±15 % of itself or ±20 kcal (84 kJ, by the 4.2
+  factor above), whichever is larger (decided 2026-11-15: labels round each value, and
+  polyols, alcohol and organic acids are rarely declared). kJ is checked against the kJ
+  factors when kcal is not declared. Further parser heuristics (decided 2026-11-15): each
+  amount ≤ 100 g; sugars ≤ carbohydrate; saturates ≤ fat; fat + carbohydrate + protein +
+  fibre + salt ≤ 102 g (2 g for rounding); a value written "< x" is read as x and marked
+  approximate; "traces" is read as 0 and marked approximate; values declared per portion
+  only are refused, not converted.
 - **Display only:** the app shows energy as kJ and kcal, with kcal = kJ / 4.184 (the
   thermochemical calorie, 1 kcal = 4.184 kJ exactly; decided 2026-11-13). Never used for
   scoring, which takes kJ; for kcal→kJ inputs the calculator's 4.2 above still applies.
