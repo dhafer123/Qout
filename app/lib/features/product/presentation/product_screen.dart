@@ -8,6 +8,7 @@ import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
 import 'package:qout/features/product/presentation/product_labels.dart';
+import 'package:qout/features/product/presentation/product_photo.dart';
 import 'package:qout/features/product/presentation/product_providers.dart';
 import 'package:qout/features/product/presentation/product_sections.dart';
 import 'package:qout/features/product/presentation/report_error_sheet.dart';
@@ -91,6 +92,7 @@ class _ProductView extends StatelessWidget {
       children: [
         if (found.freshness == ProductFreshness.refreshFailed)
           _StaleBanner(found),
+        ProductPhoto(imageUrl: product.imageUrl, name: product.name),
         ProductHeader(product: product, explanation: explanation),
         ScoreSection(explanation: explanation),
         AlternativesSection(

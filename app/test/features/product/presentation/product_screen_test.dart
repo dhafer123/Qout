@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/api_providers.dart';
@@ -12,6 +14,7 @@ import 'package:qout/features/auth/presentation/sign_in_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
+import 'package:qout/features/product/presentation/product_photo.dart';
 import 'package:qout/features/product/presentation/product_screen.dart';
 import 'package:qout/features/scan/presentation/scan_screen.dart';
 
@@ -54,7 +57,11 @@ void main() {
   tearDown(() => database.close());
 
   /// Opens the result screen for [ean] on a tall screen (whole page built).
-  Future<void> openProduct(WidgetTester tester, [String ean = '123']) async {
+  Future<void> openProduct(
+    WidgetTester tester, [
+    String ean = '123',
+    List<Override> overrides = const [],
+  ]) async {
     tester.view
       ..physicalSize = const Size(800, 4000)
       ..devicePixelRatio = 1;
@@ -66,12 +73,48 @@ void main() {
       overrides: [
         productRepositoryProvider.overrideWithValue(repository),
         qoutApiProvider.overrideWithValue(authApi),
+        ...overrides,
       ],
     );
     await tester.pushRoute(AppRoutes.product(ean));
   }
 
   group('product found', () {
+    testWidgets('photo from our storage above the name', (tester) async {
+      const url = 'https://media.qout.example/products/9557062321136/front.jpg';
+      final json = recordedProductJson('product-general-graded')
+        ..['image_url'] = url;
+      repository.results = [
+        ProductResult.found(
+          product: ProductDetail.fromJson(json),
+          fetchedAt: _fetchedAt,
+          freshness: ProductFreshness.fresh,
+        ),
+      ];
+      final requested = <String>[];
+      await openProduct(tester, '9557062321136', [
+        productImageProvider.overrideWithValue((url) {
+          requested.add(url);
+          return const _NoImage();
+        }),
+      ]);
+
+      expect(requested, [url]);
+      final photo = find.byType(ProductPhoto);
+      expect(photo, findsOneWidget);
+      expect(
+        tester.getTopLeft(photo).dy,
+        lessThan(tester.getTopLeft(find.text('Jbs qtw')).dy),
+      );
+    });
+
+    testWidgets('no photo URL: no photo', (tester) async {
+      repository.results = [_found('product-general-graded')];
+      await openProduct(tester, '9557062321136');
+
+      expect(find.byType(Image), findsNothing);
+    });
+
     testWidgets('full result: grade, breakdown, nutrition, NOVA, additives', (
       tester,
     ) async {
@@ -573,3 +616,16 @@ final Finder _refreshBar = find.descendant(
   of: find.byType(AppBar),
   matching: find.byType(LinearProgressIndicator),
 );
+
+/// An image that never finishes loading (the test checks layout only).
+class _NoImage extends ImageProvider<_NoImage> {
+  const _NoImage();
+
+  @override
+  Future<_NoImage> obtainKey(ImageConfiguration configuration) =>
+      SynchronousFuture(this);
+
+  @override
+  ImageStreamCompleter loadImage(_NoImage key, ImageDecoderCallback decode) =>
+      OneFrameImageStreamCompleter(Completer<ImageInfo>().future);
+}
