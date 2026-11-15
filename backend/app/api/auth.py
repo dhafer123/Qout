@@ -7,7 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.api.deps import SessionDep
 from app.core.config import Settings
-from app.modules.auth.models import User
+from app.modules.auth.models import User, UserRole
 from app.modules.auth.rate_limit import RateLimiter
 from app.modules.auth.schemas import Credentials, RefreshRequest, TokenPair, UserRead
 from app.modules.auth.service import (
@@ -52,6 +52,33 @@ async def get_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+async def get_admin_user(user: CurrentUser) -> User:
+    """The signed-in user if they are an admin (moderator), else 403."""
+    if user.role != UserRole.ADMIN:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "moderators only")
+    return user
+
+
+AdminUser = Annotated[User, Depends(get_admin_user)]
+
+
+async def get_optional_user(
+    service: AuthServiceDep,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+) -> User | None:
+    """The signed-in user, or None: no token, or one that is invalid or expired (the call
+    is then anonymous, never refused)."""
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        return None
+    try:
+        return await service.current_user(credentials.credentials)
+    except NotAuthenticatedError:
+        return None
+
+
+OptionalUser = Annotated[User | None, Depends(get_optional_user)]
+
+
 @router.post(
     "/register",
     status_code=status.HTTP_201_CREATED,
@@ -68,7 +95,7 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 )
 async def register(body: Credentials, request: Request, service: AuthServiceDep) -> TokenPair:
     try:
-        tokens = await service.register(body.email, body.password, client_ip=_ip(request))
+        tokens = await service.register(body.email, body.password, client_ip=client_ip(request))
     except ValueError as error:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
     except EmailTakenError as error:
@@ -93,7 +120,7 @@ async def register(body: Credentials, request: Request, service: AuthServiceDep)
 )
 async def login(body: Credentials, request: Request, service: AuthServiceDep) -> TokenPair:
     try:
-        tokens = await service.login(body.email, body.password, client_ip=_ip(request))
+        tokens = await service.login(body.email, body.password, client_ip=client_ip(request))
     except InvalidCredentialsError as error:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "wrong email or password") from error
     except RateLimitedError as error:
@@ -147,7 +174,7 @@ def _pair(tokens: Tokens) -> TokenPair:
     )
 
 
-def _ip(request: Request) -> str:
+def client_ip(request: Request) -> str:
     # The direct peer. Behind a reverse proxy this needs the forwarded address (T32/T35).
     return request.client.host if request.client is not None else "unknown"
 

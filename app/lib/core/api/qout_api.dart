@@ -6,6 +6,403 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show immutable;
 
+@immutable
+class ContributionCreate {
+  const ContributionCreate({
+    required this.clientId,
+    required this.ean,
+    required this.category,
+    required this.basis,
+    required this.nutrition,
+    required this.photos,
+    required this.parserUsed,
+    this.name,
+    this.brand,
+    this.ocrText,
+  });
+
+  factory ContributionCreate.fromJson(Map<String, Object?> json) =>
+      ContributionCreate(
+        clientId: json['client_id']! as String,
+        ean: json['ean']! as String,
+        name: json['name'] == null ? null : json['name']! as String,
+        brand: json['brand'] == null ? null : json['brand']! as String,
+        category: Category.fromJson(json['category']),
+        basis: NutritionBasis.fromJson(json['basis']),
+        nutrition: NutritionValues.fromJson(
+          json['nutrition']! as Map<String, Object?>,
+        ),
+        photos: ContributionPhotos.fromJson(
+          json['photos']! as Map<String, Object?>,
+        ),
+        ocrText: json['ocr_text'] == null
+            ? null
+            : ContributionOcr.fromJson(
+                json['ocr_text']! as Map<String, Object?>,
+              ),
+        parserUsed: ParserUsed.fromJson(json['parser_used']),
+      );
+
+  final String clientId;
+
+  final String ean;
+
+  final String? name;
+
+  final String? brand;
+
+  final Category category;
+
+  final NutritionBasis basis;
+
+  final NutritionValues nutrition;
+
+  final ContributionPhotos photos;
+
+  final ContributionOcr? ocrText;
+
+  final ParserUsed parserUsed;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'client_id': clientId,
+    'ean': ean,
+    'name': name,
+    'brand': brand,
+    'category': category.toJson(),
+    'basis': basis.toJson(),
+    'nutrition': nutrition.toJson(),
+    'photos': photos.toJson(),
+    'ocr_text': ocrText?.toJson(),
+    'parser_used': parserUsed.toJson(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ContributionCreate &&
+          _deepEquals(clientId, other.clientId) &&
+          _deepEquals(ean, other.ean) &&
+          _deepEquals(name, other.name) &&
+          _deepEquals(brand, other.brand) &&
+          _deepEquals(category, other.category) &&
+          _deepEquals(basis, other.basis) &&
+          _deepEquals(nutrition, other.nutrition) &&
+          _deepEquals(photos, other.photos) &&
+          _deepEquals(ocrText, other.ocrText) &&
+          _deepEquals(parserUsed, other.parserUsed);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(clientId),
+    _deepHash(ean),
+    _deepHash(name),
+    _deepHash(brand),
+    _deepHash(category),
+    _deepHash(basis),
+    _deepHash(nutrition),
+    _deepHash(photos),
+    _deepHash(ocrText),
+    _deepHash(parserUsed),
+  ]);
+
+  @override
+  String toString() => 'ContributionCreate(${toJson()})';
+}
+
+/// Scoring category. Choosing it is the caller's job (see
+/// docs/specs/README.md).
+enum Category {
+  general('general'),
+  redMeat('red_meat'),
+  cheese('cheese'),
+  fatsOilsNutsSeeds('fats_oils_nuts_seeds'),
+  beverage('beverage'),
+  water('water'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const Category(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory Category.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('Category: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
+}
+
+@immutable
+class ContributionList {
+  const ContributionList({
+    required this.items,
+  });
+
+  factory ContributionList.fromJson(Map<String, Object?> json) =>
+      ContributionList(
+        items: List<ContributionRead>.unmodifiable(
+          (json['items']! as List<Object?>).map(
+            (item) => ContributionRead.fromJson(item! as Map<String, Object?>),
+          ),
+        ),
+      );
+
+  final List<ContributionRead> items;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'items': items.map((item) => item.toJson()).toList(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ContributionList && _deepEquals(items, other.items);
+
+  @override
+  int get hashCode => Object.hashAll([_deepHash(items)]);
+
+  @override
+  String toString() => 'ContributionList(${toJson()})';
+}
+
+/// Text read from each photo on the phone.
+@immutable
+class ContributionOcr {
+  const ContributionOcr({
+    this.front,
+    this.nutrition,
+    this.ingredients,
+  });
+
+  factory ContributionOcr.fromJson(Map<String, Object?> json) =>
+      ContributionOcr(
+        front: json['front'] == null ? null : json['front']! as String,
+        nutrition: json['nutrition'] == null
+            ? null
+            : json['nutrition']! as String,
+        ingredients: json['ingredients'] == null
+            ? null
+            : json['ingredients']! as String,
+      );
+
+  final String? front;
+
+  final String? nutrition;
+
+  final String? ingredients;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'front': front,
+    'nutrition': nutrition,
+    'ingredients': ingredients,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ContributionOcr &&
+          _deepEquals(front, other.front) &&
+          _deepEquals(nutrition, other.nutrition) &&
+          _deepEquals(ingredients, other.ingredients);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(front),
+    _deepHash(nutrition),
+    _deepHash(ingredients),
+  ]);
+
+  @override
+  String toString() => 'ContributionOcr(${toJson()})';
+}
+
+/// Keys returned by `POST /v1/uploads` for this contribution, once uploaded.
+@immutable
+class ContributionPhotos {
+  const ContributionPhotos({
+    required this.front,
+    required this.nutrition,
+    this.ingredients,
+  });
+
+  factory ContributionPhotos.fromJson(Map<String, Object?> json) =>
+      ContributionPhotos(
+        front: json['front']! as String,
+        nutrition: json['nutrition']! as String,
+        ingredients: json['ingredients'] == null
+            ? null
+            : json['ingredients']! as String,
+      );
+
+  final String front;
+
+  final String nutrition;
+
+  final String? ingredients;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'front': front,
+    'nutrition': nutrition,
+    'ingredients': ingredients,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ContributionPhotos &&
+          _deepEquals(front, other.front) &&
+          _deepEquals(nutrition, other.nutrition) &&
+          _deepEquals(ingredients, other.ingredients);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(front),
+    _deepHash(nutrition),
+    _deepHash(ingredients),
+  ]);
+
+  @override
+  String toString() => 'ContributionPhotos(${toJson()})';
+}
+
+/// A contribution as its contributor sees it.
+@immutable
+class ContributionRead {
+  const ContributionRead({
+    required this.id,
+    required this.clientId,
+    required this.ean,
+    required this.category,
+    required this.status,
+    required this.createdAt,
+    this.name,
+    this.brand,
+    this.reviewNote,
+    this.reviewedAt,
+  });
+
+  factory ContributionRead.fromJson(Map<String, Object?> json) =>
+      ContributionRead(
+        id: json['id']! as String,
+        clientId: json['client_id']! as String,
+        ean: json['ean']! as String,
+        name: json['name'] == null ? null : json['name']! as String,
+        brand: json['brand'] == null ? null : json['brand']! as String,
+        category: Category.fromJson(json['category']),
+        status: ContributionStatus.fromJson(json['status']),
+        reviewNote: json['review_note'] == null
+            ? null
+            : json['review_note']! as String,
+        createdAt: DateTime.parse(json['created_at']! as String),
+        reviewedAt: json['reviewed_at'] == null
+            ? null
+            : DateTime.parse(json['reviewed_at']! as String),
+      );
+
+  final String id;
+
+  final String clientId;
+
+  final String ean;
+
+  final String? name;
+
+  final String? brand;
+
+  final Category category;
+
+  final ContributionStatus status;
+
+  final String? reviewNote;
+
+  final DateTime createdAt;
+
+  final DateTime? reviewedAt;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'id': id,
+    'client_id': clientId,
+    'ean': ean,
+    'name': name,
+    'brand': brand,
+    'category': category.toJson(),
+    'status': status.toJson(),
+    'review_note': reviewNote,
+    'created_at': createdAt.toIso8601String(),
+    'reviewed_at': reviewedAt?.toIso8601String(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ContributionRead &&
+          _deepEquals(id, other.id) &&
+          _deepEquals(clientId, other.clientId) &&
+          _deepEquals(ean, other.ean) &&
+          _deepEquals(name, other.name) &&
+          _deepEquals(brand, other.brand) &&
+          _deepEquals(category, other.category) &&
+          _deepEquals(status, other.status) &&
+          _deepEquals(reviewNote, other.reviewNote) &&
+          _deepEquals(createdAt, other.createdAt) &&
+          _deepEquals(reviewedAt, other.reviewedAt);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(id),
+    _deepHash(clientId),
+    _deepHash(ean),
+    _deepHash(name),
+    _deepHash(brand),
+    _deepHash(category),
+    _deepHash(status),
+    _deepHash(reviewNote),
+    _deepHash(createdAt),
+    _deepHash(reviewedAt),
+  ]);
+
+  @override
+  String toString() => 'ContributionRead(${toJson()})';
+}
+
+enum ContributionStatus {
+  pending('pending'),
+  approved('approved'),
+  rejected('rejected'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const ContributionStatus(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory ContributionStatus.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('ContributionStatus: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
+}
+
 /// Registration and login. Emails are compared lower-cased.
 @immutable
 class Credentials {
@@ -40,6 +437,170 @@ class Credentials {
 
   @override
   String toString() => 'Credentials(${toJson()})';
+}
+
+enum NutritionBasis {
+  per100g('per_100g'),
+  per100ml('per_100ml'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const NutritionBasis(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory NutritionBasis.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('NutritionBasis: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
+}
+
+/// Per 100 g or 100 mL, as declared on the label; null or missing: not
+/// declared.
+@immutable
+class NutritionValues {
+  const NutritionValues({
+    this.energyKj,
+    this.sugarsG,
+    this.saturatedFatG,
+    this.totalFatG,
+    this.saltG,
+    this.fibreG,
+    this.proteinG,
+    this.fvlPercent,
+    this.nonNutritiveSweeteners,
+  });
+
+  factory NutritionValues.fromJson(Map<String, Object?> json) =>
+      NutritionValues(
+        energyKj: json['energy_kj'] == null
+            ? null
+            : (json['energy_kj']! as num).toDouble(),
+        sugarsG: json['sugars_g'] == null
+            ? null
+            : (json['sugars_g']! as num).toDouble(),
+        saturatedFatG: json['saturated_fat_g'] == null
+            ? null
+            : (json['saturated_fat_g']! as num).toDouble(),
+        totalFatG: json['total_fat_g'] == null
+            ? null
+            : (json['total_fat_g']! as num).toDouble(),
+        saltG: json['salt_g'] == null
+            ? null
+            : (json['salt_g']! as num).toDouble(),
+        fibreG: json['fibre_g'] == null
+            ? null
+            : (json['fibre_g']! as num).toDouble(),
+        proteinG: json['protein_g'] == null
+            ? null
+            : (json['protein_g']! as num).toDouble(),
+        fvlPercent: json['fvl_percent'] == null
+            ? null
+            : (json['fvl_percent']! as num).toDouble(),
+        nonNutritiveSweeteners: json['non_nutritive_sweeteners'] == null
+            ? null
+            : json['non_nutritive_sweeteners']! as bool,
+      );
+
+  final double? energyKj;
+
+  final double? sugarsG;
+
+  final double? saturatedFatG;
+
+  final double? totalFatG;
+
+  final double? saltG;
+
+  final double? fibreG;
+
+  final double? proteinG;
+
+  final double? fvlPercent;
+
+  final bool? nonNutritiveSweeteners;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'energy_kj': energyKj,
+    'sugars_g': sugarsG,
+    'saturated_fat_g': saturatedFatG,
+    'total_fat_g': totalFatG,
+    'salt_g': saltG,
+    'fibre_g': fibreG,
+    'protein_g': proteinG,
+    'fvl_percent': fvlPercent,
+    'non_nutritive_sweeteners': nonNutritiveSweeteners,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NutritionValues &&
+          _deepEquals(energyKj, other.energyKj) &&
+          _deepEquals(sugarsG, other.sugarsG) &&
+          _deepEquals(saturatedFatG, other.saturatedFatG) &&
+          _deepEquals(totalFatG, other.totalFatG) &&
+          _deepEquals(saltG, other.saltG) &&
+          _deepEquals(fibreG, other.fibreG) &&
+          _deepEquals(proteinG, other.proteinG) &&
+          _deepEquals(fvlPercent, other.fvlPercent) &&
+          _deepEquals(nonNutritiveSweeteners, other.nonNutritiveSweeteners);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(energyKj),
+    _deepHash(sugarsG),
+    _deepHash(saturatedFatG),
+    _deepHash(totalFatG),
+    _deepHash(saltG),
+    _deepHash(fibreG),
+    _deepHash(proteinG),
+    _deepHash(fvlPercent),
+    _deepHash(nonNutritiveSweeteners),
+  ]);
+
+  @override
+  String toString() => 'NutritionValues(${toJson()})';
+}
+
+/// What filled in the fields before the contributor reviewed them.
+enum ParserUsed {
+  rules('rules'),
+  llm('llm'),
+  manual('manual'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const ParserUsed(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory ParserUsed.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('ParserUsed: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
 }
 
 /// `GET /v1/products/{ean}/alternatives`: best first.
@@ -357,39 +918,6 @@ class AdditiveDetail {
   String toString() => 'AdditiveDetail(${toJson()})';
 }
 
-/// Scoring category. Choosing it is the caller's job (see
-/// docs/specs/README.md).
-enum Category {
-  general('general'),
-  redMeat('red_meat'),
-  cheese('cheese'),
-  fatsOilsNutsSeeds('fats_oils_nuts_seeds'),
-  beverage('beverage'),
-  water('water'),
-
-  /// A value this app version does not know (from a newer backend).
-  unrecognized('')
-  ;
-
-  const Category(this.value);
-
-  /// Values this app does not know become [unrecognized] instead of failing.
-  factory Category.fromJson(Object? json) {
-    if (json is! String) {
-      throw FormatException('Category: expected a string, got $json');
-    }
-    for (final member in values) {
-      if (member != unrecognized && member.value == json) return member;
-    }
-    return unrecognized;
-  }
-
-  /// The value sent by the API.
-  final String value;
-
-  String toJson() => value;
-}
-
 enum DataSource {
   openFoodFacts('open_food_facts'),
   contribution('contribution'),
@@ -547,33 +1075,6 @@ class NutritionDetail {
   String toString() => 'NutritionDetail(${toJson()})';
 }
 
-enum NutritionBasis {
-  per100g('per_100g'),
-  per100ml('per_100ml'),
-
-  /// A value this app version does not know (from a newer backend).
-  unrecognized('')
-  ;
-
-  const NutritionBasis(this.value);
-
-  /// Values this app does not know become [unrecognized] instead of failing.
-  factory NutritionBasis.fromJson(Object? json) {
-    if (json is! String) {
-      throw FormatException('NutritionBasis: expected a string, got $json');
-    }
-    for (final member in values) {
-      if (member != unrecognized && member.value == json) return member;
-    }
-    return unrecognized;
-  }
-
-  /// The value sent by the API.
-  final String value;
-
-  String toJson() => value;
-}
-
 /// EFSA's risk that part of the population exceeds the acceptable daily intake.
 enum OverexposureRisk {
   high('high'),
@@ -689,6 +1190,141 @@ class RefreshRequest {
   String toString() => 'RefreshRequest(${toJson()})';
 }
 
+/// As queued by the app (T20).
+@immutable
+class ReportCreate {
+  const ReportCreate({
+    required this.clientId,
+    required this.ean,
+    required this.reasons,
+    required this.productUpdatedAt,
+    required this.createdAt,
+    this.comment,
+  });
+
+  factory ReportCreate.fromJson(Map<String, Object?> json) => ReportCreate(
+    clientId: json['client_id']! as String,
+    ean: json['ean']! as String,
+    reasons: List<ReportReason>.unmodifiable(
+      (json['reasons']! as List<Object?>).map(ReportReason.fromJson),
+    ),
+    comment: json['comment'] == null ? null : json['comment']! as String,
+    productUpdatedAt: DateTime.parse(json['product_updated_at']! as String),
+    createdAt: DateTime.parse(json['created_at']! as String),
+  );
+
+  final String clientId;
+
+  final String ean;
+
+  final List<ReportReason> reasons;
+
+  final String? comment;
+
+  final DateTime productUpdatedAt;
+
+  final DateTime createdAt;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'client_id': clientId,
+    'ean': ean,
+    'reasons': reasons.map((item) => item.toJson()).toList(),
+    'comment': comment,
+    'product_updated_at': productUpdatedAt.toIso8601String(),
+    'created_at': createdAt.toIso8601String(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReportCreate &&
+          _deepEquals(clientId, other.clientId) &&
+          _deepEquals(ean, other.ean) &&
+          _deepEquals(reasons, other.reasons) &&
+          _deepEquals(comment, other.comment) &&
+          _deepEquals(productUpdatedAt, other.productUpdatedAt) &&
+          _deepEquals(createdAt, other.createdAt);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(clientId),
+    _deepHash(ean),
+    _deepHash(reasons),
+    _deepHash(comment),
+    _deepHash(productUpdatedAt),
+    _deepHash(createdAt),
+  ]);
+
+  @override
+  String toString() => 'ReportCreate(${toJson()})';
+}
+
+enum ReportReason {
+  name('name'),
+  nutrition('nutrition'),
+  grade('grade'),
+  additives('additives'),
+  other('other'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const ReportReason(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory ReportReason.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('ReportReason: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
+}
+
+@immutable
+class ReportReceipt {
+  const ReportReceipt({
+    required this.clientId,
+    required this.receivedAt,
+  });
+
+  factory ReportReceipt.fromJson(Map<String, Object?> json) => ReportReceipt(
+    clientId: json['client_id']! as String,
+    receivedAt: DateTime.parse(json['received_at']! as String),
+  );
+
+  final String clientId;
+
+  final DateTime receivedAt;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'client_id': clientId,
+    'received_at': receivedAt.toIso8601String(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ReportReceipt &&
+          _deepEquals(clientId, other.clientId) &&
+          _deepEquals(receivedAt, other.receivedAt);
+
+  @override
+  int get hashCode =>
+      Object.hashAll([_deepHash(clientId), _deepHash(receivedAt)]);
+
+  @override
+  String toString() => 'ReportReceipt(${toJson()})';
+}
+
 @immutable
 class ScoreDetail {
   const ScoreDetail({
@@ -746,6 +1382,99 @@ class ScoreDetail {
 
   @override
   String toString() => 'ScoreDetail(${toJson()})';
+}
+
+/// The score the product would get, computed by the server's engine; nothing is
+/// saved. Same fields as a product's score.
+@immutable
+class ScorePreview {
+  const ScorePreview({
+    required this.engineVersion,
+    required this.breakdown,
+    this.grade,
+    this.total,
+  });
+
+  factory ScorePreview.fromJson(Map<String, Object?> json) => ScorePreview(
+    engineVersion: json['engine_version']! as String,
+    grade: json['grade'] == null ? null : Grade.fromJson(json['grade']),
+    total: json['total'] == null ? null : json['total']! as int,
+    breakdown: Map<String, Object?>.unmodifiable(json['breakdown']! as Map),
+  );
+
+  final String engineVersion;
+
+  final Grade? grade;
+
+  final int? total;
+
+  final Map<String, Object?> breakdown;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'engine_version': engineVersion,
+    'grade': grade?.toJson(),
+    'total': total,
+    'breakdown': breakdown,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ScorePreview &&
+          _deepEquals(engineVersion, other.engineVersion) &&
+          _deepEquals(grade, other.grade) &&
+          _deepEquals(total, other.total) &&
+          _deepEquals(breakdown, other.breakdown);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(engineVersion),
+    _deepHash(grade),
+    _deepHash(total),
+    _deepHash(breakdown),
+  ]);
+
+  @override
+  String toString() => 'ScorePreview(${toJson()})';
+}
+
+@immutable
+class ScorePreviewRequest {
+  const ScorePreviewRequest({
+    required this.category,
+    required this.nutrition,
+  });
+
+  factory ScorePreviewRequest.fromJson(Map<String, Object?> json) =>
+      ScorePreviewRequest(
+        category: Category.fromJson(json['category']),
+        nutrition: NutritionValues.fromJson(
+          json['nutrition']! as Map<String, Object?>,
+        ),
+      );
+
+  final Category category;
+
+  final NutritionValues nutrition;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'category': category.toJson(),
+    'nutrition': nutrition.toJson(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ScorePreviewRequest &&
+          _deepEquals(category, other.category) &&
+          _deepEquals(nutrition, other.nutrition);
+
+  @override
+  int get hashCode =>
+      Object.hashAll([_deepHash(category), _deepHash(nutrition)]);
+
+  @override
+  String toString() => 'ScorePreviewRequest(${toJson()})';
 }
 
 /// Send `access_token` as `Authorization: Bearer ...`; when it expires,
@@ -1093,6 +1822,63 @@ class QoutApi {
     return _parse(() => TokenPair.fromJson(json! as Map<String, Object?>));
   }
 
+  /// My contributions
+  ///
+  /// The signed-in user's contributions with their moderation status.
+  ///
+  /// Needs a signed-in user: the auth interceptor adds the access token.
+  Future<ContributionList> listMyContributions({int? limit}) async {
+    final json = await _send(
+      'get',
+      '/v1/contributions',
+      queryParameters: <String, Object?>{
+        'limit': ?limit,
+      },
+      authenticated: true,
+    );
+    return _parse(
+      () => ContributionList.fromJson(json! as Map<String, Object?>),
+    );
+  }
+
+  /// Submit a product
+  ///
+  /// A product from label photos, as reviewed by the contributor. Upload the
+  /// photos first (`POST /v1/uploads`, same `client_id`). Stored as `pending`
+  /// until a moderator decides. Sending the same `client_id` again returns the
+  /// stored contribution (200).
+  ///
+  /// Needs a signed-in user: the auth interceptor adds the access token.
+  Future<ContributionRead> submitContribution({
+    required ContributionCreate body,
+  }) async {
+    final json = await _send(
+      'post',
+      '/v1/contributions',
+      body: body.toJson(),
+      authenticated: true,
+    );
+    return _parse(
+      () => ContributionRead.fromJson(json! as Map<String, Object?>),
+    );
+  }
+
+  /// One of my contributions
+  ///
+  /// Needs a signed-in user: the auth interceptor adds the access token.
+  Future<ContributionRead> getMyContribution({
+    required String contributionId,
+  }) async {
+    final json = await _send(
+      'get',
+      '/v1/contributions/${Uri.encodeComponent(contributionId)}',
+      authenticated: true,
+    );
+    return _parse(
+      () => ContributionRead.fromJson(json! as Map<String, Object?>),
+    );
+  }
+
   /// Look up a product by barcode
   ///
   /// Barcode: EAN-8, UPC-A (returned as EAN-13), EAN-13 or GTIN-14, with a
@@ -1123,6 +1909,39 @@ class QoutApi {
     return _parse(
       () => ProductAlternatives.fromJson(json! as Map<String, Object?>),
     );
+  }
+
+  /// Report an error on a product
+  ///
+  /// No account needed; the user is recorded when a valid token is sent.
+  /// Sending the same `client_id` again is acknowledged (200) without storing
+  /// it twice.
+  ///
+  /// Needs a signed-in user: the auth interceptor adds the access token.
+  Future<ReportReceipt> reportError({required ReportCreate body}) async {
+    final json = await _send(
+      'post',
+      '/v1/reports',
+      body: body.toJson(),
+      authenticated: true,
+    );
+    return _parse(() => ReportReceipt.fromJson(json! as Map<String, Object?>));
+  }
+
+  /// Score nutrition values without saving
+  ///
+  /// The grade and breakdown the server's engine gives these values, e.g. while
+  /// a contributor reviews a label. Nothing is stored.
+  ///
+  /// Needs a signed-in user: the auth interceptor adds the access token.
+  Future<ScorePreview> previewScore({required ScorePreviewRequest body}) async {
+    final json = await _send(
+      'post',
+      '/v1/score/preview',
+      body: body.toJson(),
+      authenticated: true,
+    );
+    return _parse(() => ScorePreview.fromJson(json! as Map<String, Object?>));
   }
 
   /// Get a URL to upload a contribution photo

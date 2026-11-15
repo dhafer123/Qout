@@ -118,6 +118,10 @@ class Settings(BaseSettings):
     """Upload URLs one user may request per window before 429."""
     upload_window_seconds: int = Field(default=3600, ge=1, le=86_400)
 
+    # "Report an error": new reports from one IP per window before 429.
+    report_max_per_ip: int = Field(default=20, ge=1, le=10_000)
+    report_window_seconds: int = Field(default=3600, ge=1, le=86_400)
+
     # Product photos: copied from Open Food Facts into the public bucket (worker).
     product_image_max_bytes: int = Field(default=2 * 1024 * 1024, ge=1024, le=20 * 1024 * 1024)
     product_images_cron_enabled: bool = True

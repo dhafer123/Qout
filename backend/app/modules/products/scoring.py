@@ -44,11 +44,7 @@ def score_row(
 
     Insufficient data: no grade, no total. Water: grade A, no total (no points).
     """
-    if isinstance(result, InsufficientData):
-        grade, total = None, None
-    else:
-        grade = result.grade
-        total = None if result.breakdown is None else result.breakdown.score
+    grade, total = grade_and_total(result)
     return Score(
         product_id=product_id,
         nutrition_facts_id=nutrition_facts_id,
@@ -59,3 +55,10 @@ def score_row(
         off_grade=off_grade,
         off_grade_estimated=off_grade_estimated,
     )
+
+
+def grade_and_total(result: ScoreResult) -> tuple[Grade | None, int | None]:
+    """Insufficient data: neither. Water: grade A, no total (no points)."""
+    if isinstance(result, InsufficientData):
+        return None, None
+    return result.grade, None if result.breakdown is None else result.breakdown.score

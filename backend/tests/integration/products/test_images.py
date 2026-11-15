@@ -25,7 +25,7 @@ from app.modules.products.images import (
     ProductImageCopier,
     image_key,
 )
-from app.modules.products.models import Product
+from app.modules.products.models import DataSource, Product
 from app.worker import jobs
 from tests.factories import ProductFactory
 from tests.integration.conftest import IntegrationEnv
@@ -578,5 +578,30 @@ async def test_source_changed_but_same_photo_keeps_the_current_copy(
     monkeypatch.setattr(images, "fetch_image", same_photo_after_a_change)
 
     assert await copier().run() == ImageCopyStats()
+    assert (await reload(sessions, stored)).image_key == key
+    assert await storage.public.head(key) is not None
+
+
+async def test_contributed_products_are_left_alone(
+    sessions: Sessions,
+    off: respx.MockRouter,
+    copier: Callable[..., ProductImageCopier],
+    storage: Storage,
+) -> None:
+    """Their photo comes from moderation: no source URL, and it must not be deleted."""
+    key = "products/6191507220214/contribution-0123.png"
+    await storage.public.put(key, PNG, content_type="image/png")
+    stored = await product(
+        sessions,
+        ean="6191507220214",
+        source=DataSource.CONTRIBUTION,
+        source_image_url=None,
+        image_key=key,
+    )
+    await product(sessions, source=DataSource.CONTRIBUTION, source_image_url=URL)
+    route = off.get(URL).respond(200, content=JPEG)
+
+    assert await copier().run() == ImageCopyStats()
+    assert route.call_count == 0
     assert (await reload(sessions, stored)).image_key == key
     assert await storage.public.head(key) is not None

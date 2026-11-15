@@ -127,3 +127,21 @@ async def test_refused_credentials_raise_storage_error(make_settings: object) ->
     async with open_storage(settings) as opened:
         with pytest.raises(StorageError):
             await opened.uploads.head(KEY)
+
+
+async def test_copy_between_buckets(storage: Storage) -> None:
+    await storage.uploads.put(KEY, b"photo", content_type="image/jpeg")
+
+    await storage.public.copy_from(
+        storage.uploads, KEY, "products/x.jpg", content_type="image/png", cache_control="no-cache"
+    )
+
+    assert await storage.public.head("products/x.jpg") == StoredObject(5, "image/png")
+    assert await storage.uploads.head(KEY) is not None  # the source stays
+
+
+async def test_copying_a_missing_object_raises_storage_error(storage: Storage) -> None:
+    with pytest.raises(StorageError):
+        await storage.public.copy_from(
+            storage.uploads, "missing.jpg", "x.jpg", content_type="image/jpeg", cache_control="x"
+        )

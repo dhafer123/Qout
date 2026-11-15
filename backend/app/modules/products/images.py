@@ -1,8 +1,9 @@
 """Copy products' front photos from their source (Open Food Facts) into our public bucket.
 
-The app never calls OFF, so the photo it shows must come from our storage. A product
+The app never calls OFF, so the photo it shows must come from our storage. An OFF product
 needs copying while `source_image_url` differs from `image_copied_from`, or when the
-source dropped its photo but we still hold one. For each such product:
+source dropped its photo but we still hold one (contributed products get their photo from
+moderation instead). For each such product:
 
 - the photo is downloaded (OFF's User-Agent, rate-limited, retried on timeouts, connection
   errors, 429 and 5xx), at most `max_bytes`, and must really be a JPEG or PNG;
@@ -28,7 +29,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.core.storage import Bucket, StorageError
 from app.modules.ingestion.off_client import RateLimiter, RetryPolicy
 from app.modules.products.cache import ProductCache
-from app.modules.products.models import Product
+from app.modules.products.models import DataSource, Product
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +134,8 @@ async def _download(http: httpx.AsyncClient, url: str, max_bytes: int) -> bytes:
 
 
 def needs_copy() -> ColumnElement[bool]:
-    """Products whose stored photo doesn't match their source."""
+    """Open Food Facts products whose stored photo doesn't match their source. Other
+    products (contributions) get their photo from moderation, never from this job."""
     has_source = and_(
         Product.source_image_url.is_not(None),
         Product.source_image_url.is_distinct_from(Product.image_copied_from),
@@ -142,7 +144,7 @@ def needs_copy() -> ColumnElement[bool]:
         Product.source_image_url.is_(None),
         or_(Product.image_key.is_not(None), Product.image_copied_from.is_not(None)),
     )
-    return or_(has_source, dropped)
+    return and_(Product.source == DataSource.OPEN_FOOD_FACTS, or_(has_source, dropped))
 
 
 @dataclass(frozen=True)

@@ -9,7 +9,9 @@ from fastapi.routing import APIRoute
 from redis.asyncio import Redis
 
 from app import __version__
+from app.api.admin import router as admin_router
 from app.api.auth import router as auth_router
+from app.api.contributions import router as contributions_router
 from app.api.health import router as health_router
 from app.api.products import router as products_router
 from app.api.uploads import router as uploads_router
@@ -60,6 +62,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(products_router)
     app.include_router(auth_router)
     app.include_router(uploads_router)
+    app.include_router(contributions_router)
+    app.include_router(admin_router)
     return app
 
 

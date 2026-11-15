@@ -21,21 +21,30 @@ def test_committed_spec_is_up_to_date() -> None:
 
 def test_operation_ids_name_the_route_functions() -> None:
     operations = {
-        path: operation["operationId"]
+        f"{method.upper()} {path}": operation["operationId"]
         for path, methods in openapi_document()["paths"].items()
-        for operation in methods.values()
+        for method, operation in methods.items()
     }
     assert operations == {
-        "/health": "health",
-        "/health/ready": "ready",
-        "/v1/products/{ean}": "getProduct",
-        "/v1/products/{ean}/alternatives": "getProductAlternatives",
-        "/v1/auth/register": "register",
-        "/v1/auth/login": "login",
-        "/v1/auth/refresh": "refreshTokens",
-        "/v1/auth/logout": "logout",
-        "/v1/auth/me": "getMe",
-        "/v1/uploads": "createUpload",
+        "GET /health": "health",
+        "GET /health/ready": "ready",
+        "GET /v1/products/{ean}": "getProduct",
+        "GET /v1/products/{ean}/alternatives": "getProductAlternatives",
+        "POST /v1/auth/register": "register",
+        "POST /v1/auth/login": "login",
+        "POST /v1/auth/refresh": "refreshTokens",
+        "POST /v1/auth/logout": "logout",
+        "GET /v1/auth/me": "getMe",
+        "POST /v1/uploads": "createUpload",
+        "POST /v1/contributions": "submitContribution",
+        "GET /v1/contributions": "listMyContributions",
+        "GET /v1/contributions/{contribution_id}": "getMyContribution",
+        "POST /v1/score/preview": "previewScore",
+        "POST /v1/reports": "reportError",
+        "GET /v1/admin/contributions": "listContributions",
+        "POST /v1/admin/contributions/{contribution_id}/approve": "approveContribution",
+        "POST /v1/admin/contributions/{contribution_id}/reject": "rejectContribution",
+        "GET /v1/admin/reports": "listReports",
     }
 
 

@@ -180,6 +180,21 @@ SELECT kind, source, status, checkpoint_line, inserted, updated, unchanged, skip
 FROM import_runs ORDER BY created_at DESC LIMIT 20;
 ```
 
+#### Contributions, error reports and moderation
+
+Unknown products are added by contributors (signed in): the app uploads the photos
+(`POST /v1/uploads`), then submits the reviewed fields with the OCR text
+(`POST /v1/contributions`, same `client_id`; a resend returns the stored one). Photo keys
+must be the contributor's own uploads for that contribution. `POST /v1/score/preview`
+scores values without saving. Anyone can report an error on a product
+(`POST /v1/reports`, duplicate-safe on `client_id`, `REPORT_MAX_PER_IP` per hour).
+
+Moderators (role `admin`) use `/v1/admin/...`: the pending queue, approve (the product
+becomes verified, source `contribution`, so OFF imports leave it alone; the nutrition is a
+new scored version; the front photo becomes the product photo) or reject (product
+unchanged), and open reports. Until the admin panel (T31), make an account a moderator
+in SQL: `UPDATE users SET role = 'admin' WHERE email = '...';`
+
 #### Product photos
 
 The app never calls Open Food Facts, so product photos are served from our storage. The

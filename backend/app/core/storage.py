@@ -80,6 +80,28 @@ class Bucket:
         except (ClientError, BotoCoreError) as error:
             raise StorageError(f"could not store {key}: {error}") from error
 
+    async def copy_from(
+        self,
+        source: "Bucket",
+        source_key: str,
+        key: str,
+        *,
+        content_type: str,
+        cache_control: str,
+    ) -> None:
+        """Copy an object from another bucket into this one, server side."""
+        try:
+            await self._client.copy_object(
+                Bucket=self.name,
+                Key=key,
+                CopySource={"Bucket": source.name, "Key": source_key},
+                MetadataDirective="REPLACE",
+                ContentType=content_type,
+                CacheControl=cache_control,
+            )
+        except (ClientError, BotoCoreError) as error:
+            raise StorageError(f"could not copy {source_key} to {key}: {error}") from error
+
     async def head(self, key: str) -> StoredObject | None:
         """The object's size and type, or None if there is no such object."""
         try:
