@@ -83,8 +83,8 @@ _FIRST_OFF_YEAR = 2012  # Open Food Facts started in 2012: earlier times are gar
 # Data-quality heuristics (not scoring constants). EU energy factors (Regulation (EU)
 # 1169/2011, Annex XIV) give 4.0 (fibre) to 4.25 (protein, carbohydrate) kJ per kcal;
 # labels round, so allow 0.1 either side and ignore differences under 20 kJ.
-_KJ_PER_KCAL_RANGE = (Decimal("3.9"), Decimal("4.35"))
-_ENERGY_SLACK_KJ = Decimal(20)
+KJ_PER_KCAL_RANGE = (Decimal("3.9"), Decimal("4.35"))
+ENERGY_SLACK_KJ = Decimal(20)
 # Salt and sodium both declared (OFF usually derives one from the other): allow label
 # rounding, 0.01 g or 5 %.
 _SALT_SLACK_G = Decimal("0.01")
@@ -371,8 +371,8 @@ def _sanity_checks(
 
     kj, kcal = values["energy_kj"], _decimal(nutriments.get("energy-kcal_100g"))
     if kj is not None and kcal is not None and kcal > 0:
-        low_ratio, high_ratio = _KJ_PER_KCAL_RANGE
-        lowest, highest = low_ratio * kcal - _ENERGY_SLACK_KJ, high_ratio * kcal + _ENERGY_SLACK_KJ
+        low_ratio, high_ratio = KJ_PER_KCAL_RANGE
+        lowest, highest = low_ratio * kcal - ENERGY_SLACK_KJ, high_ratio * kcal + ENERGY_SLACK_KJ
         if not lowest <= kj <= highest:
             report.suspect.append(f"energy {kj} kJ does not match {kcal} kcal")
 

@@ -185,8 +185,10 @@ FROM import_runs ORDER BY created_at DESC LIMIT 20;
 Unknown products are added by contributors (signed in): the app uploads the photos
 (`POST /v1/uploads`), then submits the reviewed fields with the OCR text
 (`POST /v1/contributions`, same `client_id`; a resend returns the stored one). Photo keys
-must be the contributor's own uploads for that contribution. `POST /v1/score/preview`
-scores values without saving. Anyone can report an error on a product
+must be the contributor's own uploads for that contribution. `POST /v1/labels/parse`
+reads the values from the nutrition table's OCR text (rule-based parser: French, English,
+Arabic; checks in `docs/specs/README.md`), and `POST /v1/score/preview` scores values
+without saving. Anyone can report an error on a product
 (`POST /v1/reports`, duplicate-safe on `client_id`, `REPORT_MAX_PER_IP` per hour).
 
 Moderators (role `admin`) use `/v1/admin/...`: the pending queue, approve (the product

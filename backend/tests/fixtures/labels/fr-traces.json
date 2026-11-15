@@ -1,0 +1,20 @@
+{
+  "description": "Sugars written 'traces'.",
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "485",
+    "energy_kcal": "116",
+    "total_fat_g": "1.0",
+    "saturated_fat_g": "0.3",
+    "carbohydrates_g": "0",
+    "sugars_g": "0",
+    "protein_g": "26",
+    "salt_g": "1.0"
+  },
+  "derived": [],
+  "approximate": [
+    "sugars_g"
+  ],
+  "issues": [],
+  "ok": true
+}

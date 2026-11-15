@@ -1,0 +1,18 @@
+{
+  "description": "Arabic table with Arabic-Indic digits, per 100 mL (soft drink).",
+  "basis": "per_100ml",
+  "values": {
+    "energy_kj": "180",
+    "energy_kcal": "42",
+    "total_fat_g": "0",
+    "saturated_fat_g": "0",
+    "carbohydrates_g": "10.6",
+    "sugars_g": "10.6",
+    "protein_g": "0",
+    "salt_g": "0.01"
+  },
+  "derived": [],
+  "approximate": [],
+  "issues": [],
+  "ok": true
+}

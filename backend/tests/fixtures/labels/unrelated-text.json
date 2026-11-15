@@ -1,0 +1,14 @@
+{
+  "description": "Batch number and best-before date only.",
+  "basis": null,
+  "values": {},
+  "derived": [],
+  "approximate": [],
+  "issues": [
+    [
+      "no_nutrition_table",
+      null
+    ]
+  ],
+  "ok": false
+}

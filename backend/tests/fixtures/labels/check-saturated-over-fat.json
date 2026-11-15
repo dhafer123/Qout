@@ -1,0 +1,23 @@
+{
+  "description": "Decimal comma lost: saturates 3,0 read as 30.",
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "1424",
+    "energy_kcal": "340",
+    "total_fat_g": "3",
+    "saturated_fat_g": "30",
+    "carbohydrates_g": "70",
+    "sugars_g": "2",
+    "protein_g": "8",
+    "salt_g": "0.1"
+  },
+  "derived": [],
+  "approximate": [],
+  "issues": [
+    [
+      "saturated_over_fat",
+      "saturated_fat_g"
+    ]
+  ],
+  "ok": false
+}

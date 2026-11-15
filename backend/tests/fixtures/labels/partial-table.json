@@ -1,0 +1,31 @@
+{
+  "description": "Only part of the table was photographed.",
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "1958",
+    "energy_kcal": "467",
+    "total_fat_g": "18",
+    "salt_g": "0.62"
+  },
+  "derived": [],
+  "approximate": [],
+  "issues": [
+    [
+      "missing",
+      "saturated_fat_g"
+    ],
+    [
+      "missing",
+      "carbohydrates_g"
+    ],
+    [
+      "missing",
+      "sugars_g"
+    ],
+    [
+      "missing",
+      "protein_g"
+    ]
+  ],
+  "ok": false
+}

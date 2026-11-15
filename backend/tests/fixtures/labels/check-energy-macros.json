@@ -1,0 +1,23 @@
+{
+  "description": "kcal misread (410 as 150): far from 4/4/9 of the macros.",
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "628",
+    "energy_kcal": "150",
+    "total_fat_g": "10",
+    "saturated_fat_g": "2",
+    "carbohydrates_g": "60",
+    "sugars_g": "5",
+    "protein_g": "8",
+    "salt_g": "0.4"
+  },
+  "derived": [],
+  "approximate": [],
+  "issues": [
+    [
+      "energy_macros_mismatch",
+      "energy_kcal"
+    ]
+  ],
+  "ok": false
+}

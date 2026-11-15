@@ -1,0 +1,19 @@
+{
+  "description": "English (UK-style) table, units glued to numbers.",
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "1675",
+    "energy_kcal": "400",
+    "total_fat_g": "17",
+    "saturated_fat_g": "10",
+    "carbohydrates_g": "55",
+    "sugars_g": "48",
+    "fibre_g": "1.5",
+    "protein_g": "6.0",
+    "salt_g": "0.25"
+  },
+  "derived": [],
+  "approximate": [],
+  "issues": [],
+  "ok": true
+}

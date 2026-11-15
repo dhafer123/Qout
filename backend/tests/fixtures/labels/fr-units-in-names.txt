@@ -1,0 +1,9 @@
+Valeurs nutritionnelles pour 100 g
+Valeur énergétique (kJ/kcal) 1720/410
+Matières grasses (g) 15
+dont acides gras saturés (g) 9
+Glucides (g) 62
+dont sucres (g) 35
+Fibres alimentaires (g) 1
+Protéines (g) 6
+Sel (g) 1,1

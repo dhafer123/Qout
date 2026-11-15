@@ -39,6 +39,7 @@ def test_operation_ids_name_the_route_functions() -> None:
         "POST /v1/contributions": "submitContribution",
         "GET /v1/contributions": "listMyContributions",
         "GET /v1/contributions/{contribution_id}": "getMyContribution",
+        "POST /v1/labels/parse": "parseLabelText",
         "POST /v1/score/preview": "previewScore",
         "POST /v1/reports": "reportError",
         "GET /v1/admin/contributions": "listContributions",

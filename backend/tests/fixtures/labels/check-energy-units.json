@@ -1,0 +1,23 @@
+{
+  "description": "kcal misread (362 as 862): kJ and kcal disagree.",
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "1520",
+    "energy_kcal": "862",
+    "total_fat_g": "2",
+    "saturated_fat_g": "0.4",
+    "carbohydrates_g": "75",
+    "sugars_g": "3",
+    "protein_g": "11",
+    "salt_g": "0.01"
+  },
+  "derived": [],
+  "approximate": [],
+  "issues": [
+    [
+      "energy_units_mismatch",
+      "energy_kj"
+    ]
+  ],
+  "ok": false
+}

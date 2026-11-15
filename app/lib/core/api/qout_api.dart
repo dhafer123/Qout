@@ -439,6 +439,277 @@ class Credentials {
   String toString() => 'Credentials(${toJson()})';
 }
 
+@immutable
+class LabelParseRequest {
+  const LabelParseRequest({
+    required this.ocrText,
+  });
+
+  factory LabelParseRequest.fromJson(Map<String, Object?> json) =>
+      LabelParseRequest(
+        ocrText: json['ocr_text']! as String,
+      );
+
+  final String ocrText;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'ocr_text': ocrText,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LabelParseRequest && _deepEquals(ocrText, other.ocrText);
+
+  @override
+  int get hashCode => Object.hashAll([_deepHash(ocrText)]);
+
+  @override
+  String toString() => 'LabelParseRequest(${toJson()})';
+}
+
+@immutable
+class LabelParseResult {
+  const LabelParseResult({
+    required this.parserUsed,
+    required this.ok,
+    required this.valuesValue,
+    required this.derived,
+    required this.approximate,
+    required this.issues,
+    this.basis,
+  });
+
+  factory LabelParseResult.fromJson(
+    Map<String, Object?> json,
+  ) => LabelParseResult(
+    parserUsed: ParserUsed.fromJson(json['parser_used']),
+    ok: json['ok']! as bool,
+    basis: json['basis'] == null
+        ? null
+        : NutritionBasis.fromJson(json['basis']),
+    valuesValue: LabelValues.fromJson(json['values']! as Map<String, Object?>),
+    derived: List<String>.unmodifiable(
+      (json['derived']! as List<Object?>).map((item) => item! as String),
+    ),
+    approximate: List<String>.unmodifiable(
+      (json['approximate']! as List<Object?>).map((item) => item! as String),
+    ),
+    issues: List<LabelIssueRead>.unmodifiable(
+      (json['issues']! as List<Object?>).map(
+        (item) => LabelIssueRead.fromJson(item! as Map<String, Object?>),
+      ),
+    ),
+  );
+
+  final ParserUsed parserUsed;
+
+  final bool ok;
+
+  final NutritionBasis? basis;
+
+  final LabelValues valuesValue;
+
+  final List<String> derived;
+
+  final List<String> approximate;
+
+  final List<LabelIssueRead> issues;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'parser_used': parserUsed.toJson(),
+    'ok': ok,
+    'basis': basis?.toJson(),
+    'values': valuesValue.toJson(),
+    'derived': derived,
+    'approximate': approximate,
+    'issues': issues.map((item) => item.toJson()).toList(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LabelParseResult &&
+          _deepEquals(parserUsed, other.parserUsed) &&
+          _deepEquals(ok, other.ok) &&
+          _deepEquals(basis, other.basis) &&
+          _deepEquals(valuesValue, other.valuesValue) &&
+          _deepEquals(derived, other.derived) &&
+          _deepEquals(approximate, other.approximate) &&
+          _deepEquals(issues, other.issues);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(parserUsed),
+    _deepHash(ok),
+    _deepHash(basis),
+    _deepHash(valuesValue),
+    _deepHash(derived),
+    _deepHash(approximate),
+    _deepHash(issues),
+  ]);
+
+  @override
+  String toString() => 'LabelParseResult(${toJson()})';
+}
+
+@immutable
+class LabelIssueRead {
+  const LabelIssueRead({
+    required this.code,
+    required this.blocking,
+    this.field,
+  });
+
+  factory LabelIssueRead.fromJson(Map<String, Object?> json) => LabelIssueRead(
+    code: json['code']! as String,
+    field: json['field'] == null ? null : json['field']! as String,
+    blocking: json['blocking']! as bool,
+  );
+
+  final String code;
+
+  final String? field;
+
+  final bool blocking;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'code': code,
+    'field': field,
+    'blocking': blocking,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LabelIssueRead &&
+          _deepEquals(code, other.code) &&
+          _deepEquals(field, other.field) &&
+          _deepEquals(blocking, other.blocking);
+
+  @override
+  int get hashCode =>
+      Object.hashAll([_deepHash(code), _deepHash(field), _deepHash(blocking)]);
+
+  @override
+  String toString() => 'LabelIssueRead(${toJson()})';
+}
+
+/// Values read from the label, per 100 g or 100 mL; null: not found. Not
+/// checked against the request limits: a value can be impossible (see
+/// `issues`).
+@immutable
+class LabelValues {
+  const LabelValues({
+    this.energyKj,
+    this.energyKcal,
+    this.totalFatG,
+    this.saturatedFatG,
+    this.carbohydratesG,
+    this.sugarsG,
+    this.fibreG,
+    this.proteinG,
+    this.saltG,
+    this.sodiumG,
+  });
+
+  factory LabelValues.fromJson(Map<String, Object?> json) => LabelValues(
+    energyKj: json['energy_kj'] == null
+        ? null
+        : (json['energy_kj']! as num).toDouble(),
+    energyKcal: json['energy_kcal'] == null
+        ? null
+        : (json['energy_kcal']! as num).toDouble(),
+    totalFatG: json['total_fat_g'] == null
+        ? null
+        : (json['total_fat_g']! as num).toDouble(),
+    saturatedFatG: json['saturated_fat_g'] == null
+        ? null
+        : (json['saturated_fat_g']! as num).toDouble(),
+    carbohydratesG: json['carbohydrates_g'] == null
+        ? null
+        : (json['carbohydrates_g']! as num).toDouble(),
+    sugarsG: json['sugars_g'] == null
+        ? null
+        : (json['sugars_g']! as num).toDouble(),
+    fibreG: json['fibre_g'] == null
+        ? null
+        : (json['fibre_g']! as num).toDouble(),
+    proteinG: json['protein_g'] == null
+        ? null
+        : (json['protein_g']! as num).toDouble(),
+    saltG: json['salt_g'] == null ? null : (json['salt_g']! as num).toDouble(),
+    sodiumG: json['sodium_g'] == null
+        ? null
+        : (json['sodium_g']! as num).toDouble(),
+  );
+
+  final double? energyKj;
+
+  final double? energyKcal;
+
+  final double? totalFatG;
+
+  final double? saturatedFatG;
+
+  final double? carbohydratesG;
+
+  final double? sugarsG;
+
+  final double? fibreG;
+
+  final double? proteinG;
+
+  final double? saltG;
+
+  final double? sodiumG;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'energy_kj': energyKj,
+    'energy_kcal': energyKcal,
+    'total_fat_g': totalFatG,
+    'saturated_fat_g': saturatedFatG,
+    'carbohydrates_g': carbohydratesG,
+    'sugars_g': sugarsG,
+    'fibre_g': fibreG,
+    'protein_g': proteinG,
+    'salt_g': saltG,
+    'sodium_g': sodiumG,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LabelValues &&
+          _deepEquals(energyKj, other.energyKj) &&
+          _deepEquals(energyKcal, other.energyKcal) &&
+          _deepEquals(totalFatG, other.totalFatG) &&
+          _deepEquals(saturatedFatG, other.saturatedFatG) &&
+          _deepEquals(carbohydratesG, other.carbohydratesG) &&
+          _deepEquals(sugarsG, other.sugarsG) &&
+          _deepEquals(fibreG, other.fibreG) &&
+          _deepEquals(proteinG, other.proteinG) &&
+          _deepEquals(saltG, other.saltG) &&
+          _deepEquals(sodiumG, other.sodiumG);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(energyKj),
+    _deepHash(energyKcal),
+    _deepHash(totalFatG),
+    _deepHash(saturatedFatG),
+    _deepHash(carbohydratesG),
+    _deepHash(sugarsG),
+    _deepHash(fibreG),
+    _deepHash(proteinG),
+    _deepHash(saltG),
+    _deepHash(sodiumG),
+  ]);
+
+  @override
+  String toString() => 'LabelValues(${toJson()})';
+}
+
 enum NutritionBasis {
   per100g('per_100g'),
   per100ml('per_100ml'),
@@ -1876,6 +2147,28 @@ class QoutApi {
     );
     return _parse(
       () => ContributionRead.fromJson(json! as Map<String, Object?>),
+    );
+  }
+
+  /// Read nutrition values from a label's OCR text
+  ///
+  /// Rule-based parser (French, English, Arabic): values per 100 g or 100 mL,
+  /// the basis, and issues (missing values, a table declared per portion only,
+  /// values failing the sanity checks). Nothing is stored; the contributor
+  /// reviews the values.
+  ///
+  /// Needs a signed-in user: the auth interceptor adds the access token.
+  Future<LabelParseResult> parseLabelText({
+    required LabelParseRequest body,
+  }) async {
+    final json = await _send(
+      'post',
+      '/v1/labels/parse',
+      body: body.toJson(),
+      authenticated: true,
+    );
+    return _parse(
+      () => LabelParseResult.fromJson(json! as Map<String, Object?>),
     );
   }
 

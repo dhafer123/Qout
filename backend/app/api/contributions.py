@@ -1,4 +1,4 @@
-"""Contributions of unknown products, score preview, and error reports."""
+"""Contributions of unknown products, label parsing, score preview, and error reports."""
 
 import uuid
 from typing import Annotated
@@ -10,6 +10,7 @@ from app.api.deps import SessionDep
 from app.core.config import Settings
 from app.core.storage import Storage, StorageError
 from app.modules.auth.rate_limit import RateLimiter
+from app.modules.contributions.label_parser import label_parse_result, parse_label
 from app.modules.contributions.nutrition import score_preview
 from app.modules.contributions.reports import (
     ReportedProductNotFoundError,
@@ -20,6 +21,8 @@ from app.modules.contributions.schemas import (
     ContributionCreate,
     ContributionList,
     ContributionRead,
+    LabelParseRequest,
+    LabelParseResult,
     ReportCreate,
     ReportReceipt,
     ScorePreview,
@@ -129,6 +132,21 @@ async def get_my_contribution(
     except ContributionNotFoundError as error:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(error)) from error
     return ContributionRead.model_validate(found)
+
+
+@router.post(
+    "/v1/labels/parse",
+    summary="Read nutrition values from a label's OCR text",
+    description=(
+        "Rule-based parser (French, English, Arabic): values per 100 g or 100 mL, the "
+        "basis, and issues (missing values, a table declared per portion only, values "
+        "failing the sanity checks). Nothing is stored; the contributor reviews the values."
+    ),
+    dependencies=[Depends(get_current_user)],
+    responses={status.HTTP_401_UNAUTHORIZED: _UNAUTHORIZED},
+)
+async def parse_label_text(body: LabelParseRequest) -> LabelParseResult:
+    return label_parse_result(parse_label(body.ocr_text))
 
 
 @router.post(

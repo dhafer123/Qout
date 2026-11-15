@@ -706,6 +706,63 @@
         }
       }
     },
+    "/v1/labels/parse": {
+      "post": {
+        "tags": [
+          "contributions"
+        ],
+        "summary": "Read nutrition values from a label's OCR text",
+        "description": "Rule-based parser (French, English, Arabic): values per 100 g or 100 mL, the basis, and issues (missing values, a table declared per portion only, values failing the sanity checks). Nothing is stored; the contributor reviews the values.",
+        "operationId": "parseLabelText",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelParseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelParseResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/v1/score/preview": {
       "post": {
         "tags": [
@@ -1951,6 +2008,224 @@
           "status"
         ],
         "title": "HealthResponse"
+      },
+      "LabelIssueRead": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "blocking": {
+            "type": "boolean",
+            "title": "Blocking"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "field",
+          "blocking"
+        ],
+        "title": "LabelIssueRead"
+      },
+      "LabelParseRequest": {
+        "properties": {
+          "ocr_text": {
+            "type": "string",
+            "maxLength": 20000,
+            "title": "Ocr Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ocr_text"
+        ],
+        "title": "LabelParseRequest"
+      },
+      "LabelParseResult": {
+        "properties": {
+          "parser_used": {
+            "$ref": "#/components/schemas/ParserUsed"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionBasis"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "values": {
+            "$ref": "#/components/schemas/LabelValues"
+          },
+          "derived": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Derived"
+          },
+          "approximate": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Approximate"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/LabelIssueRead"
+            },
+            "type": "array",
+            "title": "Issues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "parser_used",
+          "ok",
+          "basis",
+          "values",
+          "derived",
+          "approximate",
+          "issues"
+        ],
+        "title": "LabelParseResult"
+      },
+      "LabelValues": {
+        "properties": {
+          "energy_kj": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Energy Kj"
+          },
+          "energy_kcal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Energy Kcal"
+          },
+          "total_fat_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Fat G"
+          },
+          "saturated_fat_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saturated Fat G"
+          },
+          "carbohydrates_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Carbohydrates G"
+          },
+          "sugars_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sugars G"
+          },
+          "fibre_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fibre G"
+          },
+          "protein_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Protein G"
+          },
+          "salt_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salt G"
+          },
+          "sodium_g": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sodium G"
+          }
+        },
+        "type": "object",
+        "title": "LabelValues",
+        "description": "Values read from the label, per 100 g or 100 mL; null: not found. Not checked\nagainst the request limits: a value can be impossible (see `issues`)."
       },
       "NutritionBasis": {
         "type": "string",

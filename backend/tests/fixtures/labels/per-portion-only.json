@@ -1,0 +1,14 @@
+{
+  "description": "Declared per portion only: refused, not converted.",
+  "basis": null,
+  "values": {},
+  "derived": [],
+  "approximate": [],
+  "issues": [
+    [
+      "per_portion_only",
+      null
+    ]
+  ],
+  "ok": false
+}

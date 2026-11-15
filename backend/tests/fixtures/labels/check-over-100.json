@@ -1,0 +1,31 @@
+{
+  "description": "Decimal comma lost: carbohydrate 68,0 read as 680.",
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "1958",
+    "energy_kcal": "467",
+    "total_fat_g": "18",
+    "saturated_fat_g": "8.2",
+    "carbohydrates_g": "680",
+    "sugars_g": "29",
+    "protein_g": "6.5",
+    "salt_g": "0.62"
+  },
+  "derived": [],
+  "approximate": [],
+  "issues": [
+    [
+      "amount_over_100",
+      "carbohydrates_g"
+    ],
+    [
+      "macros_over_100",
+      null
+    ],
+    [
+      "energy_macros_mismatch",
+      "energy_kcal"
+    ]
+  ],
+  "ok": false
+}

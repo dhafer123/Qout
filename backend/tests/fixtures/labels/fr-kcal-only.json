@@ -1,0 +1,21 @@
+{
+  "description": "Energy in kcal only: kJ derived (x 4.2, rounded).",
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "1520",
+    "energy_kcal": "362",
+    "total_fat_g": "2",
+    "saturated_fat_g": "0.4",
+    "carbohydrates_g": "75",
+    "sugars_g": "3",
+    "fibre_g": "3",
+    "protein_g": "11",
+    "salt_g": "0.01"
+  },
+  "derived": [
+    "energy_kj"
+  ],
+  "approximate": [],
+  "issues": [],
+  "ok": true
+}

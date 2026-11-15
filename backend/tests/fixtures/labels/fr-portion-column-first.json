@@ -1,0 +1,19 @@
+{
+  "description": "The portion column comes before the per-100 g one.",
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "1968",
+    "energy_kcal": "470",
+    "total_fat_g": "20",
+    "saturated_fat_g": "10",
+    "carbohydrates_g": "65",
+    "sugars_g": "40",
+    "fibre_g": "1.5",
+    "protein_g": "5.0",
+    "salt_g": "0.30"
+  },
+  "derived": [],
+  "approximate": [],
+  "issues": [],
+  "ok": true
+}

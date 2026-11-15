@@ -1,0 +1,14 @@
+{
+  "description": "The ingredients list, not the nutrition table.",
+  "basis": null,
+  "values": {},
+  "derived": [],
+  "approximate": [],
+  "issues": [
+    [
+      "no_nutrition_table",
+      null
+    ]
+  ],
+  "ok": false
+}

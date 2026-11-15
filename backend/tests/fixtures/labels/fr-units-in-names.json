@@ -1,0 +1,19 @@
+{
+  "description": "Units in the names: 'Valeur énergétique (kJ/kcal) 1720/410'.",
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "1720",
+    "energy_kcal": "410",
+    "total_fat_g": "15",
+    "saturated_fat_g": "9",
+    "carbohydrates_g": "62",
+    "sugars_g": "35",
+    "fibre_g": "1",
+    "protein_g": "6",
+    "salt_g": "1.1"
+  },
+  "derived": [],
+  "approximate": [],
+  "issues": [],
+  "ok": true
+}

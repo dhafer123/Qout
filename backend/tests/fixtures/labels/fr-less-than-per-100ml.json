@@ -1,0 +1,20 @@
+{
+  "description": "Olive oil per 100 mL, salt written '< 0,01 g'.",
+  "basis": "per_100ml",
+  "values": {
+    "energy_kj": "3404",
+    "energy_kcal": "828",
+    "total_fat_g": "92",
+    "saturated_fat_g": "14",
+    "carbohydrates_g": "0",
+    "sugars_g": "0",
+    "protein_g": "0",
+    "salt_g": "0.01"
+  },
+  "derived": [],
+  "approximate": [
+    "salt_g"
+  ],
+  "issues": [],
+  "ok": true
+}

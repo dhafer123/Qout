@@ -1,0 +1,21 @@
+{
+  "description": "Sodium in mg instead of salt: salt derived (x 2.5).",
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "1250",
+    "energy_kcal": "301",
+    "total_fat_g": "24",
+    "saturated_fat_g": "16",
+    "carbohydrates_g": "1.5",
+    "sugars_g": "1.0",
+    "protein_g": "20",
+    "sodium_g": "0.32",
+    "salt_g": "0.8"
+  },
+  "derived": [
+    "salt_g"
+  ],
+  "approximate": [],
+  "issues": [],
+  "ok": true
+}

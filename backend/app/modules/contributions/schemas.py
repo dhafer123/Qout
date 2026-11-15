@@ -263,3 +263,53 @@ class ErrorReportRead(BaseModel):
 class ErrorReportList(BaseModel):
     items: list[ErrorReportRead]
     """Oldest first."""
+
+
+# ---------------------------------------------------------------- label parsing
+
+
+class LabelParseRequest(_Request):
+    ocr_text: OcrText
+    """Text read from the photo of the nutrition table (ML Kit)."""
+
+
+class LabelValues(BaseModel):
+    """Values read from the label, per 100 g or 100 mL; null: not found. Not checked
+    against the request limits: a value can be impossible (see `issues`)."""
+
+    energy_kj: float | None = None
+    energy_kcal: float | None = None
+    total_fat_g: float | None = None
+    saturated_fat_g: float | None = None
+    carbohydrates_g: float | None = None
+    """Not used for the score; read for the checks and the review form."""
+    sugars_g: float | None = None
+    fibre_g: float | None = None
+    protein_g: float | None = None
+    salt_g: float | None = None
+    sodium_g: float | None = None
+
+
+class LabelIssueRead(BaseModel):
+    code: str
+    """`missing`, `per_portion_only`, `sugars_over_carbohydrates`, ... (a newer server may
+    add codes)."""
+    field: str | None
+    """The value concerned (a `LabelValues` field), if any."""
+    blocking: bool
+    """False for warnings (e.g. `basis_unknown`); a blocking issue means the values need
+    checking by hand."""
+
+
+class LabelParseResult(BaseModel):
+    parser_used: ParserUsed
+    ok: bool
+    """True when every mandatory value was read and passed the checks. The contributor
+    reviews the values either way."""
+    basis: NutritionBasis | None
+    values: LabelValues
+    derived: list[str]
+    """Fields computed from another (salt from sodium, kJ from kcal)."""
+    approximate: list[str]
+    """Fields written as "< x" (read as x) or "traces" (read as 0)."""
+    issues: list[LabelIssueRead]

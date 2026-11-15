@@ -1,0 +1,23 @@
+{
+  "description": "Sugars read larger than carbohydrate.",
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "440",
+    "energy_kcal": "105",
+    "total_fat_g": "5",
+    "saturated_fat_g": "1",
+    "carbohydrates_g": "12",
+    "sugars_g": "21",
+    "protein_g": "3",
+    "salt_g": "0.5"
+  },
+  "derived": [],
+  "approximate": [],
+  "issues": [
+    [
+      "sugars_over_carbohydrates",
+      "sugars_g"
+    ]
+  ],
+  "ok": false
+}

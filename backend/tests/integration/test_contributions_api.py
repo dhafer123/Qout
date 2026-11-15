@@ -5,6 +5,7 @@ URL from `POST /v1/uploads`, then a PUT to storage."""
 import uuid
 from collections.abc import AsyncIterator, Callable, Iterator
 from decimal import Decimal
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -435,6 +436,49 @@ async def test_preview_needs_an_account(api: httpx.AsyncClient) -> None:
     response = await api.post("/v1/score/preview", json={"category": "water", "nutrition": {}})
 
     assert response.status_code == 401
+
+
+# ---------------------------------------------------------------- label parsing
+
+LABELS = Path(__file__).resolve().parents[1] / "fixtures" / "labels"
+
+
+async def test_label_text_is_parsed(api: httpx.AsyncClient, sessions: Sessions) -> None:
+    headers = await sign_in(api)
+    text = (LABELS / "fr-three-columns.txt").read_text(encoding="utf-8")
+
+    response = await api.post("/v1/labels/parse", json={"ocr_text": text}, headers=headers)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert (body["parser_used"], body["ok"], body["basis"]) == ("rules", True, "per_100g")
+    assert body["values"]["energy_kj"] == 1958
+    assert body["values"]["saturated_fat_g"] == 8.2
+    assert body["values"]["sodium_g"] is None
+    assert body["issues"] == []
+    assert await count(sessions, Contribution) == 0
+
+
+async def test_label_declared_per_portion_only(api: httpx.AsyncClient) -> None:
+    headers = await sign_in(api)
+    text = (LABELS / "per-portion-only.txt").read_text(encoding="utf-8")
+
+    body = (await api.post("/v1/labels/parse", json={"ocr_text": text}, headers=headers)).json()
+
+    assert body["ok"] is False
+    assert body["issues"] == [{"code": "per_portion_only", "field": None, "blocking": True}]
+    assert all(value is None for value in body["values"].values())
+
+
+async def test_label_parsing_needs_an_account_and_a_bounded_text(
+    api: httpx.AsyncClient,
+) -> None:
+    headers = await sign_in(api)
+
+    anonymous = await api.post("/v1/labels/parse", json={"ocr_text": "Sel 1 g"})
+    too_long = await api.post("/v1/labels/parse", json={"ocr_text": "x" * 20_001}, headers=headers)
+
+    assert (anonymous.status_code, too_long.status_code) == (401, 422)
 
 
 # ---------------------------------------------------------------- approve
