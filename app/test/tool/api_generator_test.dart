@@ -199,6 +199,26 @@ void main() {
       expect(code, contains("unrecognized('');"));
     });
 
+    test('lists of enums decode with a tear-off', () {
+      final code = generated(
+        schemas: {
+          'Thing': {
+            'type': 'object',
+            'required': ['kinds'],
+            'properties': {
+              'kinds': {
+                'type': 'array',
+                'items': {r'$ref': '#/components/schemas/Kind'},
+              },
+            },
+          },
+          'Kind': kind,
+        },
+      );
+      expect(code, contains('.map(Kind.fromJson)'));
+      expect(code, isNot(contains('(item) => Kind.fromJson(item)')));
+    });
+
     test('only string enums are supported', () {
       expect(
         () => generated(
@@ -306,6 +326,16 @@ void main() {
         },
       );
       expect(code, isNot(contains('health')));
+    });
+
+    test('moderation operations are left out', () {
+      final code = generated(
+        paths: {
+          '/v1/admin/things': getOperation(id: 'listThingsToModerate'),
+          '/v1/things/{id}': getOperation(),
+        },
+      );
+      expect(code, isNot(contains('listThingsToModerate')));
     });
 
     for (final (description, paths) in [

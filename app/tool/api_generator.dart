@@ -9,11 +9,15 @@
 /// response. Operations with `security` are marked so the app's auth
 /// interceptor adds the access token to them, and only to them. Anything else
 /// throws [UnsupportedError] naming where it was found, so a new endpoint
-/// never silently produces a wrong client.
+/// never silently produces a wrong client. Moderation endpoints
+/// (`/v1/admin/`) are left out.
 library;
 
 /// Operations whose path starts with this are generated (not `/health`).
 const apiPathPrefix = '/v1/';
+
+/// Moderation endpoints: used by the admin panel, never by the app.
+const adminPathPrefix = '/v1/admin/';
 
 const _methods = {'get', 'post'};
 
@@ -97,7 +101,9 @@ class _Generator {
     final paths = _map(spec['paths'], 'paths');
     final methods = <String>[];
     for (final path in paths.keys.toList()..sort()) {
-      if (!path.startsWith(apiPathPrefix)) continue;
+      if (!path.startsWith(apiPathPrefix) || path.startsWith(adminPathPrefix)) {
+        continue;
+      }
       final operations = _map(paths[path], 'paths.$path');
       for (final method in operations.keys.toList()..sort()) {
         if (!_methods.contains(method)) {
@@ -284,11 +290,16 @@ $docComment  Future<${result.declaration}> $name($signature) async {
       case 'array':
         final item = _type(schema['items'], '$where items');
         final itemJson = item.encode('item');
+        // `Kind.fromJson(item)` as a tear-off (lint `unnecessary_lambdas`).
+        final itemDecode = item.decode('item');
+        final mapper = itemDecode == '${item.declaration}.fromJson(item)'
+            ? '${item.declaration}.fromJson'
+            : '(item) => $itemDecode';
         return _Type(
           'List<${item.declaration}>',
           (json) =>
               'List<${item.declaration}>.unmodifiable(($json! as List<Object?>)'
-              ' .map((item) => ${item.decode('item')}))',
+              ' .map($mapper))',
           (value, {required nullable}) => itemJson == 'item'
               ? value
               : '$value${nullable ? '?' : ''}'
