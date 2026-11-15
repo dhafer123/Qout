@@ -30,6 +30,9 @@ AppEnv = Literal["dev", "test", "staging", "prod"]
 DEV_JWT_SECRET = "dev-only-jwt-secret-never-use-in-staging-or-prod"  # noqa: S105 - refused outside dev/test
 """Lets dev and tests run without configuration; refused in staging and prod."""
 _MIN_JWT_SECRET_LENGTH = 32
+DEV_S3_ACCESS_KEY = "qout-dev-access-key"
+DEV_S3_SECRET_KEY = "qout-dev-secret-key"  # noqa: S105 - local RustFS only, refused when deployed
+_BUCKET_NAME = r"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 
@@ -93,6 +96,28 @@ class Settings(BaseSettings):
     register_max_per_ip: int = Field(default=5, ge=1, le=1000)
     register_window_seconds: int = Field(default=3600, ge=1, le=86_400)
 
+    # Object storage: any S3-compatible service (RustFS locally, ADR 0002), path-style.
+    s3_endpoint_url: HttpUrl = HttpUrl("http://localhost:9000")
+    s3_public_endpoint_url: HttpUrl | None = None
+    """Host written into presigned upload URLs, which the phone calls directly (the host is
+    signed). Unset: `s3_endpoint_url`. Set it when the phone can't reach that address."""
+    s3_access_key: SecretStr = SecretStr(DEV_S3_ACCESS_KEY)
+    s3_secret_key: SecretStr = SecretStr(DEV_S3_SECRET_KEY)
+    s3_region: str = Field(default="us-east-1", min_length=1)
+    s3_bucket: str = Field(default="qout-uploads", pattern=_BUCKET_NAME)
+    """Private: contribution photos."""
+    s3_public_bucket: str = Field(default="qout-public", pattern=_BUCKET_NAME)
+    """Readable by anyone: product photos shown in the app."""
+    media_base_url: HttpUrl = HttpUrl("http://localhost:9000/qout-public/")
+    """Where the public bucket's objects are served from (the bucket, a CDN, ...)."""
+
+    # Contribution photo uploads (presigned PUT URLs).
+    upload_max_bytes: int = Field(default=8 * 1024 * 1024, ge=1024, le=100 * 1024 * 1024)
+    upload_url_ttl_seconds: int = Field(default=300, ge=30, le=3600)
+    upload_max_per_user: int = Field(default=30, ge=1, le=10_000)
+    """Upload URLs one user may request per window before 429."""
+    upload_window_seconds: int = Field(default=3600, ge=1, le=86_400)
+
     @field_validator("off_user_agent")
     @classmethod
     def _real_user_agent(cls, value: str) -> str:
@@ -148,6 +173,38 @@ class Settings(BaseSettings):
             msg = "JWT_SECRET: set a real random secret in staging and prod"
             raise ValueError(msg)
         return self
+
+    @model_validator(mode="after")
+    def _real_s3_keys_when_deployed(self) -> "Settings":
+        if self.app_env in ("staging", "prod") and (
+            self.s3_access_key.get_secret_value() == DEV_S3_ACCESS_KEY
+            or self.s3_secret_key.get_secret_value() == DEV_S3_SECRET_KEY
+        ):
+            msg = "S3_ACCESS_KEY / S3_SECRET_KEY: set real credentials in staging and prod"
+            raise ValueError(msg)
+        return self
+
+    @model_validator(mode="after")
+    def _separate_buckets(self) -> "Settings":
+        if self.s3_bucket == self.s3_public_bucket:
+            msg = "S3_PUBLIC_BUCKET must differ from S3_BUCKET (contribution photos are private)"
+            raise ValueError(msg)
+        return self
+
+    @field_validator("s3_public_endpoint_url", mode="before")
+    @classmethod
+    def _empty_is_unset(cls, value: object) -> object:
+        return None if isinstance(value, str) and not value.strip() else value
+
+    @field_validator("media_base_url")
+    @classmethod
+    def _media_folder_url(cls, value: HttpUrl) -> HttpUrl:
+        text = str(value)
+        return value if text.endswith("/") else HttpUrl(f"{text}/")
+
+    @property
+    def s3_presign_endpoint_url(self) -> HttpUrl:
+        return self.s3_public_endpoint_url or self.s3_endpoint_url
 
     @field_validator("log_level", mode="before")
     @classmethod

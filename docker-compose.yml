@@ -64,7 +64,9 @@ services:
       retries: 12
       start_period: 10s
 
-  # One-shot job: creates the uploads bucket if it doesn't exist, then exits 0.
+  # One-shot job: creates the buckets if they don't exist, then exits 0. The uploads bucket
+  # (contribution photos) stays private; the public bucket (product photos) is readable by
+  # anyone, never listable.
   s3-init:
     image: amazon/aws-cli:2.40.0
     depends_on:
@@ -75,16 +77,22 @@ services:
       AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:-qout-dev-secret-key}
       AWS_DEFAULT_REGION: ${S3_REGION:-us-east-1}
       S3_BUCKET: ${S3_BUCKET:-qout-uploads}
+      S3_PUBLIC_BUCKET: ${S3_PUBLIC_BUCKET:-qout-public}
     entrypoint: ["/bin/sh", "-ec"]
     command:
       - |
         aws configure set default.s3.addressing_style path
-        if aws --endpoint-url http://rustfs:9000 s3api head-bucket --bucket "$$S3_BUCKET" 2>/dev/null; then
-          echo "bucket $$S3_BUCKET already exists"
-        else
-          aws --endpoint-url http://rustfs:9000 s3api create-bucket --bucket "$$S3_BUCKET"
-          echo "bucket $$S3_BUCKET created"
-        fi
+        s3="aws --endpoint-url http://rustfs:9000 s3api"
+        for bucket in "$$S3_BUCKET" "$$S3_PUBLIC_BUCKET"; do
+          if $$s3 head-bucket --bucket "$$bucket" 2>/dev/null; then
+            echo "bucket $$bucket already exists"
+          else
+            $$s3 create-bucket --bucket "$$bucket"
+            echo "bucket $$bucket created"
+          fi
+        done
+        $$s3 put-bucket-policy --bucket "$$S3_PUBLIC_BUCKET" --policy "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::$$S3_PUBLIC_BUCKET/*\"]}]}"
+        echo "bucket $$S3_PUBLIC_BUCKET is publicly readable"
     restart: "no"
 
 volumes:

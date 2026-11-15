@@ -1,32 +1,46 @@
-"""Integration fixtures: real Postgres (test database) and Redis from docker compose.
+"""Integration fixtures: real Postgres (test database), Redis and RustFS from docker compose.
 
 Database tests get `db_session`: a session inside an outer transaction that is rolled
-back after the test, so every test starts from a clean, migrated `qout_test`.
+back after the test, so every test starts from a clean, migrated `qout_test`. Storage
+tests use their own buckets (`TEST_UPLOADS_BUCKET`, `TEST_PUBLIC_BUCKET`), created once
+and emptied by the `storage` fixture, never the dev buckets.
 """
 
 import asyncio
+import json
 from collections.abc import AsyncIterator, Callable, Iterator
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from pathlib import Path
+from typing import Any
 
 import httpx
 import pytest
+from aiobotocore.session import get_session
 from alembic import command
 from alembic.config import Config
 from fastapi import FastAPI
-from pydantic import PostgresDsn, RedisDsn
+from pydantic import HttpUrl, PostgresDsn, RedisDsn, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from redis.asyncio import Redis
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.core.config import BACKEND_DIR, REPO_ROOT, Settings
+from app.core.config import (
+    BACKEND_DIR,
+    DEV_S3_ACCESS_KEY,
+    DEV_S3_SECRET_KEY,
+    REPO_ROOT,
+    Settings,
+)
 from app.core.health import check_database, check_redis
+from app.core.storage import Storage, open_storage
 from app.factory import create_app
 from tests.models import TEST_SCHEMA, TestBase
 
 STACK_HINT = "Start the local stack first: `docker compose up -d` (repo root)."
+TEST_UPLOADS_BUCKET = "qout-test-uploads"
+TEST_PUBLIC_BUCKET = "qout-test-public"
 
 
 class IntegrationEnv(BaseSettings):
@@ -38,6 +52,10 @@ class IntegrationEnv(BaseSettings):
 
     test_database_url: PostgresDsn
     redis_url: RedisDsn
+    s3_endpoint_url: HttpUrl = HttpUrl("http://localhost:9000")
+    s3_access_key: SecretStr = SecretStr(DEV_S3_ACCESS_KEY)
+    s3_secret_key: SecretStr = SecretStr(DEV_S3_SECRET_KEY)
+    s3_region: str = "us-east-1"
 
 
 _INTEGRATION_DIR = Path(__file__).parent
@@ -72,8 +90,49 @@ def require_stack(integration_env: IntegrationEnv) -> None:
 
     try:
         asyncio.run(probe())
+        asyncio.run(_create_test_buckets(integration_env))
     except Exception as exc:
         pytest.fail(f"Integration stack unreachable ({exc!r}). {STACK_HINT}", pytrace=False)
+
+
+def _s3_client(env: IntegrationEnv) -> Any:
+    return get_session().create_client(
+        "s3",
+        endpoint_url=str(env.s3_endpoint_url).rstrip("/"),
+        region_name=env.s3_region,
+        aws_access_key_id=env.s3_access_key.get_secret_value(),
+        aws_secret_access_key=env.s3_secret_key.get_secret_value(),
+    )
+
+
+async def _create_test_buckets(env: IntegrationEnv) -> None:
+    """Create the test buckets (the public one readable by anyone, as in compose)."""
+    async with asyncio.timeout(15), _s3_client(env) as client:
+        existing = {b["Name"] for b in (await client.list_buckets())["Buckets"]}
+        for bucket in (TEST_UPLOADS_BUCKET, TEST_PUBLIC_BUCKET):
+            if bucket not in existing:
+                await client.create_bucket(Bucket=bucket)
+        policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {"AWS": ["*"]},
+                    "Action": ["s3:GetObject"],
+                    "Resource": [f"arn:aws:s3:::{TEST_PUBLIC_BUCKET}/*"],
+                }
+            ],
+        }
+        await client.put_bucket_policy(Bucket=TEST_PUBLIC_BUCKET, Policy=json.dumps(policy))
+
+
+async def _empty_test_buckets(env: IntegrationEnv) -> None:
+    async with _s3_client(env) as client:
+        for bucket in (TEST_UPLOADS_BUCKET, TEST_PUBLIC_BUCKET):
+            paginator = client.get_paginator("list_objects_v2")
+            async for page in paginator.paginate(Bucket=bucket):
+                for item in page.get("Contents", []):
+                    await client.delete_object(Bucket=bucket, Key=item["Key"])
 
 
 @pytest.fixture
@@ -86,11 +145,29 @@ def make_settings(integration_env: IntegrationEnv) -> Callable[..., Settings]:
             "database_url": integration_env.test_database_url,
             "redis_url": integration_env.redis_url,
             "readiness_timeout_seconds": 2.0,
+            "s3_endpoint_url": integration_env.s3_endpoint_url,
+            "s3_access_key": integration_env.s3_access_key,
+            "s3_secret_key": integration_env.s3_secret_key,
+            "s3_region": integration_env.s3_region,
+            "s3_bucket": TEST_UPLOADS_BUCKET,
+            "s3_public_bucket": TEST_PUBLIC_BUCKET,
+            "media_base_url": f"{integration_env.s3_endpoint_url}{TEST_PUBLIC_BUCKET}/",
         }
         values.update(overrides)
         return Settings(_env_file=None, **values)  # type: ignore[arg-type]
 
     return _make
+
+
+@pytest.fixture
+async def storage(
+    integration_env: IntegrationEnv, make_settings: Callable[..., Settings]
+) -> AsyncIterator[Storage]:
+    """Clients for the (emptied) test buckets; emptied again afterwards."""
+    await _empty_test_buckets(integration_env)
+    async with open_storage(make_settings()) as opened:
+        yield opened
+    await _empty_test_buckets(integration_env)
 
 
 @asynccontextmanager

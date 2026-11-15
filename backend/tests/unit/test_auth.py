@@ -202,9 +202,10 @@ def test_deployed_environments_refuse_placeholder_keys(
     monkeypatch: pytest.MonkeyPatch, env: str, secret: str
 ) -> None:
     monkeypatch.delenv("JWT_SECRET", raising=False)
+    s3 = {"s3_access_key": "real-access-key", "s3_secret_key": "real-secret-key"}
     with pytest.raises(ValidationError, match="real random secret"):
-        settings(app_env=env, jwt_secret=secret)
-    assert settings(app_env=env, jwt_secret="x" * 40).app_env == env
+        settings(app_env=env, jwt_secret=secret, **s3)
+    assert settings(app_env=env, jwt_secret="x" * 40, **s3).app_env == env
 
 
 def test_short_keys_are_refused() -> None:

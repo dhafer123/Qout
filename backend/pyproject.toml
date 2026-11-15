@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Qout backend: product lookup and explainable nutrition scoring API"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "aiobotocore>=3.10.0",
     "alembic>=1.20.1",
     "argon2-cffi>=25.1.0",
     "arq>=0.28.0",
@@ -27,6 +28,7 @@ dev = [
     "pytest-cov>=7.1.0",
     "respx>=0.23.1",
     "ruff>=0.17.4",
+    "types-aiobotocore[s3]>=3.10.0",
 ]
 
 [tool.uv]

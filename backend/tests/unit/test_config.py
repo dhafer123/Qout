@@ -60,6 +60,8 @@ def test_reads_values_from_env_file(tmp_path: Path) -> None:
         tmp_path / ".env",
         APP_ENV="staging",
         JWT_SECRET="s" * 40,
+        S3_ACCESS_KEY="real-access-key",
+        S3_SECRET_KEY="real-secret-key",
         LOG_LEVEL="debug",
         DATABASE_URL=DB_URL,
         REDIS_URL=REDIS_URL,
@@ -81,6 +83,8 @@ def test_environment_variables_override_env_file(
         tmp_path / ".env",
         APP_ENV="staging",
         JWT_SECRET="s" * 40,
+        S3_ACCESS_KEY="real-access-key",
+        S3_SECRET_KEY="real-secret-key",
         DATABASE_URL=DB_URL,
         REDIS_URL=REDIS_URL,
     )
