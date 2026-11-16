@@ -1,49 +1,63 @@
-"""`LabelLlm` on the Anthropic Messages API (official SDK).
+"""`LabelLlm` on the Google Gemini API (official `google-genai` SDK).
 
-One request per label: the system prompt and the OCR text, structured output with
-`OUTPUT_SCHEMA`, and the API's server-side refusal fallback (`fallbacks: "default"`: if the
-model declines, the API retries on its default fallback model in the same call). Nothing
-else is sent. SDK errors become `LlmTimeoutError` / `LlmUnavailableError`.
+One request per label: the system instruction and the OCR text, with a JSON answer
+constrained to `OUTPUT_SCHEMA` (structured output). Nothing else is sent. The SDK runs on
+our own `httpx` client, so requests go through the same HTTP stack as the rest of the
+backend (and tests mock it with respx). SDK and transport errors become
+`LlmTimeoutError` / `LlmUnavailableError`.
 """
 
-from typing import Any
+import httpx
+from google import genai
+from google.genai import errors, types
 
-import anthropic
-from anthropic import AsyncAnthropic
-
-from app.core.config import LlmEffort, Settings
+from app.core.config import Settings
 from app.modules.contributions.llm_parser import (
     OUTPUT_SCHEMA,
     SYSTEM_PROMPT,
+    LlmFinish,
     LlmReply,
     LlmTimeoutError,
     LlmUnavailableError,
     user_message,
 )
 
-MAX_TOKENS = 16_000
-"""Room for adaptive thinking plus the JSON answer (~1 000 tokens)."""
-MAX_RETRIES = 2
-"""SDK retries on connection errors, 408, 409, 429 and 5xx (bounded by the timeout)."""
-FALLBACK_BETA = "server-side-fallback-2026-07-01"
+MAX_OUTPUT_TOKENS = 16_000
+"""Room for the model's thinking plus the JSON answer (~1 000 tokens)."""
+ATTEMPTS = 3
+"""The SDK retries 408, 429 and 5xx (bounded by the time limit)."""
+
+_FINISH = {
+    types.FinishReason.STOP: LlmFinish.COMPLETE,
+    types.FinishReason.MAX_TOKENS: LlmFinish.TRUNCATED,
+    types.FinishReason.SAFETY: LlmFinish.REFUSED,
+    types.FinishReason.PROHIBITED_CONTENT: LlmFinish.REFUSED,
+    types.FinishReason.BLOCKLIST: LlmFinish.REFUSED,
+    types.FinishReason.SPII: LlmFinish.REFUSED,
+    types.FinishReason.RECITATION: LlmFinish.REFUSED,
+}
 
 
-class AnthropicLabelLlm:
-    def __init__(self, client: AsyncAnthropic, *, model: str, effort: LlmEffort) -> None:
+class GeminiLabelLlm:
+    def __init__(self, client: genai.Client, http: httpx.AsyncClient, *, model: str) -> None:
         self._client = client
+        self._http = http
         self._model = model
-        self._effort: LlmEffort = effort
 
     @classmethod
     def from_settings(
-        cls, settings: Settings, client: AsyncAnthropic | None = None
-    ) -> "AnthropicLabelLlm":
-        client = client or AsyncAnthropic(
+        cls, settings: Settings, http: httpx.AsyncClient | None = None
+    ) -> "GeminiLabelLlm":
+        http = http or httpx.AsyncClient(timeout=settings.llm_timeout_seconds)
+        client = genai.Client(
             api_key=settings.llm_api_key.get_secret_value(),
-            timeout=settings.llm_timeout_seconds,
-            max_retries=MAX_RETRIES,
+            http_options=types.HttpOptions(
+                timeout=int(settings.llm_timeout_seconds * 1000),  # milliseconds
+                retry_options=types.HttpRetryOptions(attempts=ATTEMPTS),
+                httpx_async_client=http,
+            ),
         )
-        return cls(client, model=settings.llm_model, effort=settings.llm_effort)
+        return cls(client, http, model=settings.llm_model)
 
     @property
     def model(self) -> str:
@@ -51,29 +65,36 @@ class AnthropicLabelLlm:
 
     async def read(self, ocr_text: str) -> LlmReply:
         try:
-            message = await self._client.beta.messages.create(
+            response = await self._client.aio.models.generate_content(
                 model=self._model,
-                max_tokens=MAX_TOKENS,
-                system=SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": user_message(ocr_text)}],
-                output_config={
-                    "effort": self._effort,
-                    "format": {"type": "json_schema", "schema": OUTPUT_SCHEMA},
-                },
-                betas=[FALLBACK_BETA],
-                fallbacks="default",
+                contents=user_message(ocr_text),
+                config=types.GenerateContentConfig(
+                    system_instruction=SYSTEM_PROMPT,
+                    response_mime_type="application/json",
+                    response_json_schema=OUTPUT_SCHEMA,
+                    max_output_tokens=MAX_OUTPUT_TOKENS,
+                ),
             )
-        except anthropic.APITimeoutError as error:
+        except httpx.TimeoutException as error:
             raise LlmTimeoutError from error
-        except anthropic.APIStatusError as error:
-            raise LlmUnavailableError(f"HTTP {error.status_code}: {error.message}") from error
-        except anthropic.APIError as error:  # connection errors, unreadable responses
+        except errors.APIError as error:
+            raise LlmUnavailableError(f"HTTP {error.code}: {error.message}") from error
+        except (httpx.HTTPError, ValueError) as error:  # connection, unreadable response
             raise LlmUnavailableError(type(error).__name__) from error
-        content: Any = getattr(message, "content", None)
-        if not isinstance(content, list):  # a 200 whose body isn't a message (proxy page)
-            raise LlmUnavailableError("unreadable response")
-        text = next((block.text for block in content if block.type == "text"), None)
-        return LlmReply(text=text, stop_reason=message.stop_reason, model=message.model)
+        return _reply(response, self._model)
 
     async def aclose(self) -> None:
-        await self._client.close()
+        await self._client.aio.aclose()
+        await self._http.aclose()
+
+
+def _reply(response: types.GenerateContentResponse, model: str) -> LlmReply:
+    answered_by = response.model_version or model
+    feedback = response.prompt_feedback
+    if feedback is not None and feedback.block_reason is not None:
+        return LlmReply(None, LlmFinish.REFUSED, answered_by)
+    if not response.candidates:
+        return LlmReply(None, LlmFinish.OTHER, answered_by)
+    reason = response.candidates[0].finish_reason
+    finish = LlmFinish.OTHER if reason is None else _FINISH.get(reason, LlmFinish.OTHER)
+    return LlmReply(response.text, finish, answered_by)

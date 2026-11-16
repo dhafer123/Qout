@@ -28,7 +28,7 @@ from app.core.db import create_engine, create_session_factory
 from app.core.logging import configure_logging
 from app.core.storage import Storage, open_storage
 from app.modules.contributions.fallbacks import FallbackRunner, FallbackSettings
-from app.modules.contributions.llm_client import AnthropicLabelLlm
+from app.modules.contributions.llm_client import GeminiLabelLlm
 from app.modules.ingestion.download import download_client
 from app.modules.ingestion.importer import ImportResult
 from app.modules.ingestion.off_client import RateLimiter, RetryPolicy
@@ -69,7 +69,7 @@ async def startup(ctx: Context) -> None:
     resources = AsyncExitStack()
     ctx["storage"] = await resources.enter_async_context(open_storage(settings))
     if settings.llm_parser_enabled and "label_llm" not in ctx:  # tests preset a fake
-        llm = AnthropicLabelLlm.from_settings(settings)
+        llm = GeminiLabelLlm.from_settings(settings)
         resources.push_async_callback(llm.aclose)
         ctx["label_llm"] = llm
     ctx["resources"] = resources

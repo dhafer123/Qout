@@ -19,7 +19,7 @@ from app.modules.contributions.label_parser import (
     LabelParse,
     parse_label,
 )
-from app.modules.contributions.llm_parser import LlmReply
+from app.modules.contributions.llm_parser import LlmFinish, LlmReply
 from app.modules.contributions.models import FallbackReason
 from app.modules.contributions.parser_eval import (
     EvalSet,
@@ -569,7 +569,7 @@ def llm_answer(**changes: Any) -> dict[str, Any]:
 
 
 class FakeLlm:
-    model = "claude-test"
+    model = "gemini-test"
 
     def __init__(self, answers: dict[str, dict[str, Any]]) -> None:
         self.answers = answers
@@ -577,7 +577,7 @@ class FakeLlm:
 
     async def read(self, ocr_text: str) -> LlmReply:
         self.texts.append(ocr_text)
-        return LlmReply(json.dumps(self.answers[ocr_text]), "end_turn", self.model)
+        return LlmReply(json.dumps(self.answers[ocr_text]), LlmFinish.COMPLETE, self.model)
 
 
 ANSWERS = {
@@ -601,7 +601,7 @@ async def test_evaluate_with_fallback() -> None:
 
     assert sorted(llm.texts) == sorted(ANSWERS)  # never asked for the readable label
     assert use.outcomes == {"tn-002": None, "tn-003": FallbackReason.UNGROUNDED_VALUE}
-    assert (use.asked, use.accepted) == (2, frozenset({"tn-002"}))
+    assert (use.asked, use.accepted, use.model) == (2, frozenset({"tn-002"}), "gemini-test")
     assert use.rejected == Counter({FallbackReason.UNGROUNDED_VALUE: 1})
     assert e.parser == "rules+llm"
     assert e.fields == Tally(correct=24, wrong=1)
@@ -620,7 +620,7 @@ async def test_fallback_report() -> None:
     assert "| Field accuracy | 23 / 25 (92.0 %) | 24 / 25 (96.0 %) |" in report
     assert "| Labels fully correct | 1 / 3 (33.3 %) | 2 / 3 (66.7 %) |" in report
     assert "| **Ok but not fully correct** | 0 | 0 |" in report
-    assert "Asked for the 2 labels whose rules reading is not ok." in report
+    assert "Model `gemini-test`, asked for the 2 labels whose rules reading is not ok." in report
     assert "| Reading accepted | 1 |" in report
     assert "| **Accepted but not fully correct** | **0** |" in report
     assert "| Manual entry: ungrounded_value | 1 |" in report
@@ -665,7 +665,9 @@ def test_script_with_the_fallback(
     monkeypatch.setattr(eval_parser, "get_settings", _settings)
     labels = _labels(tmp_path / "labels")
 
-    path = eval_parser.main(labels, None, "rules+llm", "x", llm=FakeLlm(ANSWERS))
+    path = eval_parser.main(
+        labels, None, "rules+llm", "x", options=eval_parser.FallbackOptions(FakeLlm(ANSWERS), 1)
+    )
 
     assert path.parent == tmp_path / "reports"
     assert path.name.startswith("label-parser-eval-rules-llm-")
@@ -689,14 +691,18 @@ def test_script_fallback_needs_a_key(tmp_path: Path, monkeypatch: pytest.MonkeyP
 
 async def test_cached_llm_answers_again_without_asking(tmp_path: Path) -> None:
     llm = FakeLlm(ANSWERS)
-    cached = eval_parser.CachedLabelLlm(llm, tmp_path / "cache", effort="medium")
-    other_effort = eval_parser.CachedLabelLlm(llm, tmp_path / "cache", effort="high")
+    other_model = FakeLlm(ANSWERS)
+    other_model.model = "gemini-other"
+    cached = eval_parser.CachedLabelLlm(llm, tmp_path / "cache")
+    cached_other = eval_parser.CachedLabelLlm(other_model, tmp_path / "cache")
 
     first = await cached.read(MISREAD)
-    again = await cached.read(MISREAD)
-    await other_effort.read(MISREAD)
+    again = await eval_parser.CachedLabelLlm(llm, tmp_path / "cache").read(MISREAD)
+    await cached_other.read(MISREAD)
 
     assert first == again
-    assert cached.model == "claude-test"
-    assert llm.texts == [MISREAD, MISREAD]  # another effort is another request
+    assert again.finish is LlmFinish.COMPLETE
+    assert cached.model == "gemini-test"
+    assert llm.texts == [MISREAD]  # answered from the cache the second time
+    assert other_model.texts == [MISREAD]  # another model is another request
     assert len(list((tmp_path / "cache").glob("*.json"))) == 2

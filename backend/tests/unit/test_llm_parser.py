@@ -13,6 +13,7 @@ from app.modules.contributions.label_parser import LabelField, LabelIssue, Label
 from app.modules.contributions.llm_parser import (
     OUTPUT_SCHEMA,
     SYSTEM_PROMPT,
+    LlmFinish,
     LlmReply,
     LlmTimeoutError,
     LlmUnavailableError,
@@ -25,7 +26,7 @@ from app.modules.contributions.llm_parser import (
 from app.modules.contributions.models import FallbackReason
 from app.modules.products.models import NutritionBasis
 
-MODEL = "claude-test"
+MODEL = "gemini-test"
 
 # What the OCR returned for a column-by-column table (names first, then values), with a
 # `g` read as `8` (`2,1g` -> `2,18`) and a sodium amount in mg.
@@ -65,9 +66,9 @@ def answer(**changes: Any) -> dict[str, Any]:
     return {"table_found": True, "basis": "per_100g", "values": values, "approximate": []} | changes
 
 
-def reply(data: object, stop_reason: str = "end_turn") -> LlmReply:
+def reply(data: object) -> LlmReply:
     text = data if isinstance(data, str) else json.dumps(data)
-    return LlmReply(text=text, stop_reason=stop_reason, model=MODEL)
+    return LlmReply(text=text, finish=LlmFinish.COMPLETE, model=MODEL)
 
 
 # ---------------------------------------------------------------- request
@@ -288,18 +289,18 @@ def test_infinite_amount_is_rejected() -> None:
 
 
 @pytest.mark.parametrize(
-    ("stop_reason", "text", "reason"),
+    ("finish", "text", "reason"),
     [
-        ("refusal", None, FallbackReason.REFUSED),
-        ("max_tokens", '{"table_found": tr', FallbackReason.INVALID_OUTPUT),
-        ("end_turn", None, FallbackReason.INVALID_OUTPUT),
-        (None, "{}", FallbackReason.INVALID_OUTPUT),
+        (LlmFinish.REFUSED, None, FallbackReason.REFUSED),
+        (LlmFinish.TRUNCATED, '{"table_found": tr', FallbackReason.INVALID_OUTPUT),
+        (LlmFinish.COMPLETE, None, FallbackReason.INVALID_OUTPUT),
+        (LlmFinish.OTHER, "{}", FallbackReason.INVALID_OUTPUT),
     ],
 )
 def test_incomplete_replies_are_rejected(
-    stop_reason: str | None, text: str | None, reason: FallbackReason
+    finish: LlmFinish, text: str | None, reason: FallbackReason
 ) -> None:
-    reading = interpret_reply(LlmReply(text=text, stop_reason=stop_reason, model=MODEL), OCR)
+    reading = interpret_reply(LlmReply(text=text, finish=finish, model=MODEL), OCR)
 
     assert (reading.reason, reading.model) == (reason, MODEL)
 

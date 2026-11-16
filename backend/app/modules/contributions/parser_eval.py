@@ -447,6 +447,8 @@ class FallbackUse:
     read: label id -> None when its reading was used, else why not."""
 
     outcomes: dict[str, FallbackReason | None]
+    model: str
+    """The model asked."""
 
     @property
     def asked(self) -> int:
@@ -491,7 +493,7 @@ async def evaluate_with_fallback(
     by_text = {case.ocr_text: r.parse for case, r in pairs}
     outcomes = {case.truth.label_id: r.reason for case, r in pairs if r.asked}
     evaluation = evaluate(eval_set, by_text.__getitem__, parser_name="rules+llm")
-    return evaluation, FallbackUse(outcomes)
+    return evaluation, FallbackUse(outcomes, llm.model)
 
 
 # ---------------------------------------------------------------- Markdown
@@ -579,7 +581,8 @@ def _fallback(e: Evaluation, fallback: FallbackUse) -> list[str]:
     lines = [
         "## LLM fallback",
         "",
-        f"Asked for the {fallback.asked} labels whose rules reading is not ok. A reading it "
+        f"Model `{fallback.model}`, asked for the {fallback.asked} labels whose rules "
+        "reading is not ok. A reading it "
         "accepts replaces the rules reading; otherwise the contributor gets the rules "
         "reading, flagged for manual entry.",
         "",

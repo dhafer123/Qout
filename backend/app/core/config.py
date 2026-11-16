@@ -34,7 +34,6 @@ DEV_S3_ACCESS_KEY = "qout-dev-access-key"
 DEV_S3_SECRET_KEY = "qout-dev-secret-key"  # noqa: S105 - local RustFS only, refused when deployed
 _BUCKET_NAME = r"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-LlmEffort = Literal["low", "medium", "high", "xhigh", "max"]
 _LLM_KEY_PLACEHOLDERS = frozenset({"dummy-key"})
 
 
@@ -129,12 +128,12 @@ class Settings(BaseSettings):
     product_images_cron_enabled: bool = True
     """Copy new and changed product photos every 15 minutes."""
 
-    # LLM fallback for nutrition labels the rule-based parser can't read (T28). Only the
-    # label's OCR text is sent. Off by default; needs a real API key when on.
+    # LLM fallback for nutrition labels the rule-based parser can't read (T28), on the
+    # Google Gemini API. Only the label's OCR text is sent. Off by default; needs a real
+    # Gemini API key when on.
     llm_parser_enabled: bool = False
     llm_api_key: SecretStr = SecretStr("")
-    llm_model: str = Field(default="claude-opus-5-5", min_length=1)
-    llm_effort: LlmEffort = "medium"
+    llm_model: str = Field(default="gemini-3.8-flash", min_length=1)
     llm_timeout_seconds: float = Field(default=30.0, gt=0, le=300)
     """One reading, including the SDK's retries."""
     llm_parse_deadline_seconds: int = Field(default=90, ge=10, le=3600)

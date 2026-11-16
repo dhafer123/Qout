@@ -25,8 +25,8 @@ from app.core.queue import redis_settings
 from app.factory import create_app
 from app.modules.contributions.fallbacks import JOB_NAME, job_id
 from app.modules.contributions.label_parser import parse_label
-from app.modules.contributions.llm_client import AnthropicLabelLlm
-from app.modules.contributions.llm_parser import LlmReply, LlmUnavailableError
+from app.modules.contributions.llm_client import GeminiLabelLlm
+from app.modules.contributions.llm_parser import LlmFinish, LlmReply, LlmUnavailableError
 from app.modules.contributions.models import LabelFallback
 from app.worker import jobs
 from app.worker.settings import worker_settings
@@ -34,7 +34,7 @@ from tests.integration.conftest import IntegrationEnv, running_client
 
 Sessions = async_sessionmaker[AsyncSession]
 PASSWORD = "a long enough password"
-MODEL = "claude-test"
+MODEL = "gemini-test"
 
 # A column-by-column table where the OCR read `50g` as `508`: the rules parser reads 508 g
 # of carbohydrate and fails its checks; the model fixes it to 50.
@@ -92,7 +92,7 @@ class FakeLlm:
         self.texts.append(ocr_text)
         if self.error is not None:
             raise self.error
-        return LlmReply(json.dumps(self.answer), "end_turn", MODEL)
+        return LlmReply(json.dumps(self.answer), LlmFinish.COMPLETE, MODEL)
 
 
 class BrokenQueue:
@@ -486,17 +486,17 @@ async def test_requests_go_with_the_account(api: httpx.AsyncClient, sessions: Se
     assert await fallback_count(sessions) == 0
 
 
-async def test_worker_builds_the_anthropic_reader_when_enabled(
+async def test_worker_builds_the_gemini_reader_when_enabled(
     settings: Callable[..., Settings],
 ) -> None:
-    ctx: jobs.Context = {"settings": settings(llm_model="claude-haiku-5-5")}
+    ctx: jobs.Context = {"settings": settings(llm_model="gemini-3.6-flash")}
     await jobs.startup(ctx)
     llm = ctx["label_llm"]
     await jobs.shutdown(ctx)
 
-    assert isinstance(llm, AnthropicLabelLlm)
-    assert llm.model == "claude-haiku-5-5"
-    assert llm._client.is_closed()
+    assert isinstance(llm, GeminiLabelLlm)
+    assert llm.model == "gemini-3.6-flash"
+    assert llm._http.is_closed
 
 
 async def test_worker_has_no_reader_when_disabled(settings: Callable[..., Settings]) -> None:

@@ -13,7 +13,7 @@ JSON matching `OUTPUT_SCHEMA` (structured outputs). The answer is not trusted:
 
 A timeout, a service error, a refusal or a truncated answer also gives no values: the
 contributor enters them by hand. The model sits behind `LabelLlm` (`llm_client.py` talks to
-the Anthropic API), so everything here is testable without network.
+the Google Gemini API), so everything here is testable without network.
 """
 
 import asyncio
@@ -23,6 +23,7 @@ import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from decimal import Decimal
+from enum import StrEnum
 from typing import Annotated, Any, Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, Strict, StrictBool
@@ -175,14 +176,22 @@ _BASIS = {"per_100g": NutritionBasis.PER_100G, "per_100ml": NutritionBasis.PER_1
 # ---------------------------------------------------------------- model client
 
 
+class LlmFinish(StrEnum):
+    """Why the model stopped, in provider-neutral terms."""
+
+    COMPLETE = "complete"  # the answer is whole
+    REFUSED = "refused"  # blocked or declined (safety filters)
+    TRUNCATED = "truncated"  # hit the output token limit
+    OTHER = "other"  # anything else: no usable answer
+
+
 @dataclass(frozen=True)
 class LlmReply:
     text: str | None
     """The answer's text (JSON), if the model wrote any."""
-    stop_reason: str | None
-    """`end_turn` when complete; `refusal`, `max_tokens`, ... otherwise."""
+    finish: LlmFinish
     model: str
-    """The model that answered (a refusal fallback may have answered instead)."""
+    """The model (version) that answered."""
 
 
 class LlmTimeoutError(Exception):
@@ -234,9 +243,9 @@ async def read_with_llm(llm: LabelLlm, ocr_text: str, *, time_limit: float) -> L
 
 
 def interpret_reply(reply: LlmReply, ocr_text: str) -> LlmReading:
-    if reply.stop_reason == "refusal":
+    if reply.finish == LlmFinish.REFUSED:
         return _rejected(FallbackReason.REFUSED, reply.model)
-    if reply.stop_reason != "end_turn" or reply.text is None:
+    if reply.finish != LlmFinish.COMPLETE or reply.text is None:
         return _rejected(FallbackReason.INVALID_OUTPUT, reply.model)
     try:
         data = json.loads(reply.text, parse_float=Decimal, parse_int=Decimal)

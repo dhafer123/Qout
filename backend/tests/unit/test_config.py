@@ -245,7 +245,6 @@ LLM_VARS = (
     "LLM_PARSER_ENABLED",
     "LLM_API_KEY",
     "LLM_MODEL",
-    "LLM_EFFORT",
     "LLM_TIMEOUT_SECONDS",
     "LLM_PARSE_DEADLINE_SECONDS",
 )
@@ -263,7 +262,7 @@ def test_llm_defaults(llm_env: pytest.MonkeyPatch) -> None:
 
     assert settings.llm_parser_enabled is False
     assert not has_llm_key(settings)
-    assert (settings.llm_model, settings.llm_effort) == ("claude-opus-5-5", "medium")
+    assert settings.llm_model == "gemini-3.8-flash"
     assert (settings.llm_timeout_seconds, settings.llm_parse_deadline_seconds) == (30.0, 90)
     assert (settings.llm_parse_max_per_user, settings.llm_parse_window_seconds) == (20, 3600)
 
@@ -292,11 +291,4 @@ def test_llm_deadline_must_outlast_the_timeout(llm_env: pytest.MonkeyPatch) -> N
     llm_env.setenv("LLM_PARSE_DEADLINE_SECONDS", "60")
 
     with pytest.raises(ValidationError, match="LLM_PARSE_DEADLINE_SECONDS"):
-        Settings(_env_file=None)  # type: ignore[call-arg]
-
-
-def test_unknown_llm_effort(llm_env: pytest.MonkeyPatch) -> None:
-    llm_env.setenv("LLM_EFFORT", "extreme")
-
-    with pytest.raises(ValidationError):
         Settings(_env_file=None)  # type: ignore[call-arg]
