@@ -202,7 +202,21 @@ otherwise they are offered ("Use these values" / "Keep mine"). The form shows a 
 grade from the Dart engine, marked "Unverified", and names the values it still needs (labels
 don't print the fruit, vegetable and legume share: "None (0 %)" fills it). Sending uploads
 the photos, then submits with `parser_used` saying what filled the values (`rules`, `llm`
-or `manual`). Sending needs a connection for now; the offline outbox comes in T30.
+or `manual`).
+
+Contributions and error reports go through an **outbox** (drift table
+`contribution_outbox`), so they work offline. "Send for review" copies the photos into the
+app's private storage, queues the request and tries it at once: sent, or "Saved" when
+offline or the server is busy (a refusal, 422, is shown in the form instead). The outbox
+sends oldest first, one entry at a time, when the app starts, comes back to the
+foreground, after signing in, after queueing, and at the next retry time while the app is
+open (nothing runs while it is closed: no background-work package). Photos are uploaded
+once (their keys are saved as they go), then the contribution is submitted; the
+client-generated id makes a resend after a lost answer safe (200). No connection, 5xx or
+503 retry with exponential backoff (30 s doubling to 1 h, ±20 % jitter) or after
+Retry-After; 401 waits for a sign-in; 422/404 are marked "not accepted" and never
+retried. The home screen shows a card while something is queued; it opens the queue
+(`/outbox`) with each entry's state, "Try now" and "Delete".
 
 When the rule-based reading is not ok, an **LLM fallback** can read the label instead
 (off by default: `LLM_PARSER_ENABLED`, `LLM_API_KEY`; Google Gemini API, model `LLM_MODEL`,
