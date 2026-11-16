@@ -27,6 +27,9 @@ For each label `<id>` (`tn-001`, `tn-002`, ...):
    adb pull /sdcard/Android/data/tn.qout.app.dev/files/label-eval/. eval/labels/
    ```
 
+   In Git Bash, run `export MSYS_NO_PATHCONV=1` first: otherwise Git Bash turns the phone
+   path into a Windows path.
+
 Aim for variety: product categories (biscuits, dairy, cheese, drinks, oils, canned food,
 snacks, spreads) and layouts (plain table, per 100 g + per portion columns, inline text,
 French + Arabic, Arabic only, curved bottles, small print, per portion only). No people or

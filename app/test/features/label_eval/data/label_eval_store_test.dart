@@ -5,7 +5,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/features/label_eval/data/label_eval_store.dart';
 import 'package:qout/features/label_eval/domain/saved_label.dart';
 
+const jpeg = [0xFF, 0xD8, 0xFF, 0xE0, 1, 2];
+const png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1];
+
 void main() {
+  group('extensionOf', () {
+    test('PNG signature → png, anything else → jpg', () {
+      expect(LabelEvalStore.extensionOf(png), 'png');
+      expect(LabelEvalStore.extensionOf(jpeg), 'jpg');
+      expect(LabelEvalStore.extensionOf([0x89, 0x50]), 'jpg');
+      expect(LabelEvalStore.extensionOf([]), 'jpg');
+    });
+  });
+
   group('nextId', () {
     test('starts at tn-001', () {
       expect(LabelEvalStore.nextId([]), 'tn-001');
@@ -102,9 +114,10 @@ void main() {
       expect(File('${folder.path}/tn-041.txt').readAsStringSync(), 'old');
     });
 
-    test('keeps PNG photos as PNG, anything else is JPEG', () async {
-      await store.save(ocrText: '', photoPath: photo('a.PNG', [1]).path);
-      await store.save(ocrText: '', photoPath: photo('b.jpeg', [2]).path);
+    test('the photo type comes from its content, not its name', () async {
+      // image_picker re-encodes a picked PNG to JPEG, keeping `.png`.
+      await store.save(ocrText: '', photoPath: photo('a.png', jpeg).path);
+      await store.save(ocrText: '', photoPath: photo('b.jpg', png).path);
       await store.save(ocrText: '', photoPath: photo('noextension', [3]).path);
 
       final names =
@@ -115,8 +128,23 @@ void main() {
               .where((name) => !name.endsWith('.json'))
               .toList()
             ..sort();
-      expect(names, ['tn-001.png', 'tn-002.jpg', 'tn-003.jpg']);
+      expect(names, ['tn-001.jpg', 'tn-002.png', 'tn-003.jpg']);
+      expect(File('${folder.path}/tn-002.png').readAsBytesSync(), png);
     });
+
+    test(
+      'a private picker file is saved readable (adb pull)',
+      () async {
+        final source = photo('private.jpg', jpeg);
+        await Process.run('chmod', ['600', source.path]);
+
+        await store.save(ocrText: '', photoPath: source.path);
+
+        final mode = File('${folder.path}/tn-001.jpg').statSync().mode;
+        expect(mode & 0x24, isNot(0), reason: 'group/other read bits');
+      },
+      skip: Platform.isWindows ? 'no POSIX file modes' : null,
+    );
 
     test('an empty text is saved as is', () async {
       final saved = await store.save(

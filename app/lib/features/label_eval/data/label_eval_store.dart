@@ -44,7 +44,10 @@ class LabelEvalStore {
     final names = await directory.list().map((e) => _name(e.path)).toList();
     final id = nextId(names);
     final base = '${directory.path}/$id';
-    await File(photoPath).copy('$base.${_extension(photoPath)}');
+    // Written as a new file, not copied: a copy keeps the picker's private
+    // file mode, which `adb pull` can't read.
+    final photo = await File(photoPath).readAsBytes();
+    await File('$base.${extensionOf(photo)}').writeAsBytes(photo, flush: true);
     await File('$base.txt').writeAsString(ocrText, flush: true);
     await File('$base.json').writeAsString(
       '${const JsonEncoder.withIndent('  ').convert(template)}\n',
@@ -69,14 +72,16 @@ class LabelEvalStore {
 
   static final _separator = RegExp(r'[/\\]');
 
-  static String _extension(String path) {
-    final name = _name(path);
-    final dot = name.lastIndexOf('.');
-    final extension = dot < 0 ? '' : name.substring(dot + 1).toLowerCase();
-    return switch (extension) {
-      'png' => 'png',
-      _ => 'jpg', // image_picker re-encodes to JPEG
-    };
+  /// `png` for PNG data, otherwise `jpg`. Read from the content: image_picker
+  /// re-encodes a picked PNG to JPEG but keeps the `.png` file name.
+  static String extensionOf(List<int> photo) {
+    const pngSignature = [0x89, 0x50, 0x4E, 0x47];
+    final isPng =
+        photo.length >= pngSignature.length &&
+        Iterable<int>.generate(
+          pngSignature.length,
+        ).every((i) => photo[i] == pngSignature[i]);
+    return isPng ? 'png' : 'jpg';
   }
 }
 
