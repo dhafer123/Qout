@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -151,7 +153,6 @@ class _NotFound extends ConsumerWidget {
 
   /// Adding a product needs an account: sign in first if needed.
   Future<void> _add(BuildContext context, WidgetRef ref) async {
-    final messenger = ScaffoldMessenger.of(context);
     final state = await ref.read(authRepositoryProvider).current();
     if (state is! SignedIn) {
       if (!context.mounted) return;
@@ -161,10 +162,7 @@ class _NotFound extends ConsumerWidget {
       );
       if (signedIn != true) return;
     }
-    // The contribution flow comes in T29.
-    messenger.showSnackBar(
-      const SnackBar(content: Text('Adding products is coming soon.')),
-    );
+    if (context.mounted) unawaited(context.push(AppRoutes.contribute(ean)));
   }
 
   @override

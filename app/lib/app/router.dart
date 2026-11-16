@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qout/core/env/app_env.dart';
 import 'package:qout/features/auth/presentation/sign_in_screen.dart';
+import 'package:qout/features/contribute/presentation/contribute_screen.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/label_eval/presentation/label_eval_screen.dart';
@@ -16,11 +17,13 @@ abstract final class AppRoutes {
   static const scan = '/scan';
   static const productPattern = '/product/:ean';
   static const signIn = '/sign-in';
+  static const contributePattern = '/contribute/:ean';
 
   /// Dev flavor only (label evaluation set, T27).
   static const labelOcr = '/dev/label-ocr';
 
   static String product(String ean) => '/product/$ean';
+  static String contribute(String ean) => '/contribute/$ean';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -57,6 +60,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.productPattern,
         builder: (context, state) =>
             ProductScreen(ean: state.pathParameters['ean']!),
+      ),
+      GoRoute(
+        path: AppRoutes.contributePattern,
+        builder: (context, state) =>
+            ContributeScreen(ean: state.pathParameters['ean']!),
       ),
       if (dev)
         GoRoute(

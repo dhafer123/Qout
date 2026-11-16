@@ -11,6 +11,7 @@ import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/core/database/database.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/auth/presentation/sign_in_screen.dart';
+import 'package:qout/features/contribute/presentation/contribute_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
@@ -307,13 +308,12 @@ void main() {
 
       expect(find.byType(SignInScreen), findsOneWidget);
       expect(find.textContaining('Sign in to add products'), findsOneWidget);
-      expect(find.text('Adding products is coming soon.'), findsNothing);
 
       // Back without signing in: nothing else happens.
       await tester.pageBack();
       await tester.pumpAndSettle();
       expect(find.text('We do not know this product yet'), findsOneWidget);
-      expect(find.text('Adding products is coming soon.'), findsNothing);
+      expect(find.byType(ContributeScreen), findsNothing);
     });
 
     testWidgets('unknown product: after signing in, adding continues', (
@@ -337,8 +337,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(SignInScreen), findsNothing);
+      expect(find.byType(ContributeScreen), findsOneWidget);
+      expect(
+        find.textContaining('Barcode 6191234567897. Take'),
+        findsOneWidget,
+      );
+
+      // Back from adding: the product page again.
+      await tester.pageBack();
+      await tester.pumpAndSettle();
       expect(find.text('We do not know this product yet'), findsOneWidget);
-      expect(find.text('Adding products is coming soon.'), findsOneWidget);
     });
 
     testWidgets('unknown product: signed in already, no detour', (
@@ -358,7 +366,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(SignInScreen), findsNothing);
-      expect(find.text('Adding products is coming soon.'), findsOneWidget);
+      expect(find.byType(ContributeScreen), findsOneWidget);
     });
 
     testWidgets('unknown product: scan another opens the scanner', (
