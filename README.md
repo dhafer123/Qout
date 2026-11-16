@@ -34,7 +34,8 @@ api/openapi.json      API contract: exported from the backend, the app's client 
 scoring-spec/golden/  Shared golden test cases for the Python and Dart scoring engines
 docs/specs/           Official scoring specifications (source of all thresholds)
 docs/adr/             Architecture decision records
-docs/reports/         Engine validation reports
+docs/reports/         Engine validation and label parser evaluation reports
+eval/labels/          Label parser evaluation set (real labels: ML Kit text, photo, ground truth)
 scripts/              Repo-wide scripts (gen_client.sh)
 .github/workflows/    CI pipelines
 .githooks/            Shared git hooks
@@ -190,6 +191,12 @@ reads the values from the nutrition table's OCR text (rule-based parser: French,
 Arabic; checks in `docs/specs/README.md`), and `POST /v1/score/preview` scores values
 without saving. Anyone can report an error on a product
 (`POST /v1/reports`, duplicate-safe on `client_id`, `REPORT_MAX_PER_IP` per hour).
+
+The parser is measured on real labels in `eval/labels/` (photographed with the dev
+build's "Label OCR" screen; format and capture steps in its README). From `backend/`,
+`uv run python -m scripts.eval_parser` writes
+`docs/reports/label-parser-eval-rules-<date>.md`: field accuracy, per-field and per-tag
+breakdowns, and labels the parser calls ok but got wrong.
 
 Moderators (role `admin`) use `/v1/admin/...`: the pending queue, approve (the product
 becomes verified, source `contribution`, so OFF imports leave it alone; the nutrition is a
