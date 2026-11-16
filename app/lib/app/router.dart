@@ -8,6 +8,7 @@ import 'package:qout/features/contribute/presentation/contribute_screen.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/label_eval/presentation/label_eval_screen.dart';
+import 'package:qout/features/outbox/presentation/outbox_screen.dart';
 import 'package:qout/features/product/presentation/product_screen.dart';
 import 'package:qout/features/scan/presentation/scan_screen.dart';
 
@@ -18,6 +19,7 @@ abstract final class AppRoutes {
   static const productPattern = '/product/:ean';
   static const signIn = '/sign-in';
   static const contributePattern = '/contribute/:ean';
+  static const outbox = '/outbox';
 
   /// Dev flavor only (label evaluation set, T27).
   static const labelOcr = '/dev/label-ocr';
@@ -65,6 +67,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.contributePattern,
         builder: (context, state) =>
             ContributeScreen(ean: state.pathParameters['ean']!),
+      ),
+      GoRoute(
+        path: AppRoutes.outbox,
+        builder: (context, state) => const OutboxScreen(),
       ),
       if (dev)
         GoRoute(

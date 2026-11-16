@@ -9,8 +9,8 @@ void main() {
   setUp(() => database = AppDatabase(NativeDatabase.memory()));
   tearDown(() => database.close());
 
-  test('schema version 1', () {
-    expect(database.schemaVersion, 1);
+  test('schema version 2', () {
+    expect(database.schemaVersion, 2);
   });
 
   group('product cache', () {
@@ -123,29 +123,140 @@ void main() {
     });
   });
 
-  group('contribution outbox', () {
-    test('enqueue, pending in order, failures counted, remove', () async {
-      final outbox = database.outboxDao;
-      final first = await outbox.enqueue(
+  group('outbox', () {
+    late OutboxDao outbox;
+
+    setUp(() => outbox = database.outboxDao);
+
+    Future<OutboxRow> add(String clientId, {String kind = 'new_product'}) =>
+        outbox
+            .enqueue(
+              kind: kind,
+              clientId: clientId,
+              payload: '{"client_id": "$clientId"}',
+              createdAt: t0,
+            )
+            .then((_) => outbox.find(clientId).then((row) => row!));
+
+    test('enqueue: waiting, due at once; a client id queued once', () async {
+      final a = await add('a');
+      expect(
+        (a.kind, a.state, a.attempts, a.nextAttemptAt, a.lastError),
+        ('new_product', OutboxState.waiting, 0, null, null),
+      );
+      expect(a.createdAt, t0);
+      final again = await outbox.enqueue(
         kind: 'new_product',
-        payload: '{"ean": "1"}',
+        clientId: 'a',
+        payload: '{"other": true}',
         createdAt: t0,
       );
-      await outbox.enqueue(
-        kind: 'new_product',
-        payload: '{"ean": "2"}',
-        createdAt: t0,
+      expect(again, isFalse);
+      expect((await outbox.find('a'))!.payload, '{"client_id": "a"}');
+      expect(await outbox.find('missing'), isNull);
+    });
+
+    test('due: waiting entries whose time has come, oldest first', () async {
+      final a = await add('a');
+      final b = await add('b');
+      final c = await add('c');
+      await add('d');
+      final later = t0.add(const Duration(minutes: 5));
+      await outbox.recordRetry(a.id, error: 'offline', nextAttemptAt: later);
+      await outbox.recordNeedsSignIn(b.id, 'sign in');
+      await outbox.recordRefused(c.id, 'refused');
+
+      expect((await outbox.due(t0)).map((r) => r.clientId), ['d']);
+      expect(
+        (await outbox.due(later)).map((r) => r.clientId),
+        ['a', 'd'],
+      );
+      // Times compared in UTC whatever the zone given.
+      expect(
+        (await outbox.due(later.toLocal())).map((r) => r.clientId),
+        ['a', 'd'],
+      );
+    });
+
+    test('failures: state, attempts, reason, retry time', () async {
+      final a = await add('a');
+      final next = t0.add(const Duration(seconds: 30));
+      await outbox.recordRetry(a.id, error: 'offline', nextAttemptAt: next);
+      var row = (await outbox.find('a'))!;
+      expect(
+        (row.state, row.attempts, row.lastError, row.nextAttemptAt),
+        (OutboxState.waiting, 1, 'offline', next),
       );
 
-      await outbox.recordFailure(first, 'offline');
-      await outbox.recordFailure(first, 'HTTP 503');
+      await outbox.recordNeedsSignIn(a.id, 'Sign in to send it.');
+      row = (await outbox.find('a'))!;
+      expect(
+        (row.state, row.attempts, row.nextAttemptAt),
+        (OutboxState.needsSignIn, 2, null),
+      );
 
-      final [a, b] = await outbox.pending();
-      expect((a.id, a.attempts, a.lastError), (first, 2, 'HTTP 503'));
-      expect((b.attempts, b.lastError, b.kind), (0, null, 'new_product'));
+      await outbox.recordRefused(a.id, 'Not accepted: salt');
+      row = (await outbox.find('a'))!;
+      expect(
+        (row.state, row.attempts, row.lastError),
+        (OutboxState.refused, 3, 'Not accepted: salt'),
+      );
+    });
 
-      await outbox.remove(first);
-      expect((await outbox.pending()).map((r) => r.payload), ['{"ean": "2"}']);
+    test('next attempt: the earliest retry time of waiting entries', () async {
+      expect(await outbox.nextAttempt(), isNull);
+      final a = await add('a');
+      final b = await add('b');
+      final c = await add('c');
+      expect(await outbox.nextAttempt(), isNull); // due at once
+      await outbox.recordRetry(
+        a.id,
+        error: 'x',
+        nextAttemptAt: t0.add(const Duration(minutes: 9)),
+      );
+      await outbox.recordRetry(
+        b.id,
+        error: 'x',
+        nextAttemptAt: t0.add(const Duration(minutes: 2)),
+      );
+      await outbox.recordRefused(c.id, 'x');
+      expect(await outbox.nextAttempt(), t0.add(const Duration(minutes: 2)));
+    });
+
+    test('try now and after signing in: due again; refused stays', () async {
+      final a = await add('a');
+      final b = await add('b');
+      final c = await add('c');
+      await outbox.recordRetry(
+        a.id,
+        error: 'offline',
+        nextAttemptAt: t0.add(const Duration(hours: 1)),
+      );
+      await outbox.recordNeedsSignIn(b.id, 'sign in');
+      await outbox.recordRefused(c.id, 'refused');
+
+      await outbox.retryNow(a.id);
+      await outbox.retryNow(c.id);
+      await outbox.resumeAfterSignIn();
+
+      expect((await outbox.due(t0)).map((r) => r.clientId), ['a', 'b']);
+      expect((await outbox.find('c'))!.state, OutboxState.refused);
+      // The failures stay counted (the backoff continues from them).
+      expect((await outbox.find('a'))!.attempts, 1);
+    });
+
+    test('payload updates, removal, and the watched list', () async {
+      final a = await add('a');
+      await add('b');
+      final watched = outbox.watchAll();
+      expect(
+        (await watched.first).map((r) => r.clientId),
+        ['a', 'b'],
+      );
+      await outbox.updatePayload(a.id, '{"done": 1}');
+      expect((await outbox.find('a'))!.payload, '{"done": 1}');
+      await outbox.remove(a.id);
+      expect((await outbox.all()).map((r) => r.clientId), ['b']);
     });
   });
 }

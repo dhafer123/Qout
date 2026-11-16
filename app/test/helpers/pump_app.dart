@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:drift/native.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -11,23 +12,34 @@ import 'package:qout/core/env/app_env.dart';
 import 'package:qout/features/auth/data/token_store.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
+import 'package:qout/features/outbox/data/outbox_files.dart';
+import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
+import 'package:qout/features/outbox/presentation/outbox_screen.dart';
 import 'package:qout/features/product/data/alternatives_repository.dart';
 
 import 'fake_alternatives_repository.dart';
+import 'fake_outbox.dart';
 import 'fake_scan_history_repository.dart';
 import 'in_memory_token_store.dart';
 
 extension PumpQoutApp on WidgetTester {
   /// Pumps the full app with a fixed [AppEnv] (no build flavor in tests), a
   /// local [database] (a fresh in-memory one by default), a scan [history]
-  /// and [alternatives] (empty fakes by default) and any extra provider
-  /// [overrides] (fake repositories).
+  /// and [alternatives] (empty fakes by default), an outbox that keeps
+  /// photos without files ([outboxFiles]) and whose automatic syncs only
+  /// count ([outboxTrigger]: tests send with `Outbox` itself), the queue as
+  /// [outboxEntries] (empty by default; pass `database.outboxDao.watchAll()`
+  /// for the real one, then call [unmountQoutApp]), and any extra
+  /// provider [overrides] (fake repositories).
   Future<void> pumpQoutApp({
     AppFlavor flavor = AppFlavor.dev,
     AppDatabase? database,
     FakeScanHistoryRepository? history,
     FakeAlternativesRepository? alternatives,
     InMemoryTokenStore? tokens,
+    FakeOutboxFiles? outboxFiles,
+    OutboxTrigger? outboxTrigger,
+    Stream<List<OutboxRow>>? outboxEntries,
     List<Override> overrides = const [],
   }) async {
     final db = database ?? _memoryDatabase();
@@ -47,12 +59,31 @@ extension PumpQoutApp on WidgetTester {
           alternativesRepositoryProvider.overrideWithValue(
             alternatives ?? FakeAlternativesRepository(),
           ),
+          outboxFilesProvider.overrideWithValue(
+            outboxFiles ?? FakeOutboxFiles(),
+          ),
+          outboxTriggerProvider.overrideWithValue(
+            outboxTrigger ?? FakeOutboxTrigger(),
+          ),
+          // Not the drift stream by default (see [unmountQoutApp]).
+          outboxEntriesProvider.overrideWith(
+            (ref) => outboxEntries ?? Stream.value(const []),
+          ),
           ...overrides,
         ],
         child: const QoutApp(),
       ),
     );
     await pumpAndSettle();
+  }
+
+  /// Unmounts the app and lets drift close its query streams. Needed at the
+  /// end of a test that watched the real database (`outboxEntries:`):
+  /// closing a drift stream schedules a zero timer, and a timer still pending
+  /// when the test ends fails it.
+  Future<void> unmountQoutApp() async {
+    await pumpWidget(const SizedBox.shrink());
+    await pump(Duration.zero);
   }
 
   /// Opens [location] on top of the home screen, as navigating would.

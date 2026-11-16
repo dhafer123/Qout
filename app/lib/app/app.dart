@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/env/app_env.dart';
+import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
 
 class QoutApp extends ConsumerWidget {
   const QoutApp({super.key});
@@ -17,6 +18,8 @@ class QoutApp extends ConsumerWidget {
       // The debug banner marks non-prod builds.
       debugShowCheckedModeBanner: env.flavor != AppFlavor.prod,
       routerConfig: ref.watch(routerProvider),
+      // Sends queued contributions and reports while the app runs (T30).
+      builder: (context, child) => OutboxSyncHost(child: child!),
     );
   }
 }

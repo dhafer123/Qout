@@ -8,6 +8,7 @@ import 'package:qout/core/photos/label_photo_picker.dart';
 import 'package:qout/features/contribute/data/contribution_repository.dart';
 import 'package:qout/features/contribute/presentation/contribution_controller.dart';
 
+import 'fake_outbox.dart';
 import 'fixtures.dart';
 
 /// The OCR text behind `test/fixtures/api/label-parse-ok.json`: a clean
@@ -145,12 +146,15 @@ class FakeContribution {
   final puts = <(Uri url, int length, String contentType)>[];
   final putErrors = <PhotoUploadError>[];
 
-  /// A JPEG start; `png-` paths read as PNG data.
-  Uint8List photoBytes(String path) => Uint8List.fromList(
-    path.startsWith('png-')
-        ? [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
-        : [0xFF, 0xD8, 0xFF, 0xE0, 0x00],
-  );
+  /// A JPEG start; paths with `png-` read as PNG data; paths with `missing`
+  /// fail like a deleted file.
+  Uint8List photoBytes(String path) => FakeOutboxFiles.missing(path)
+      ? throw FakeOutboxFiles.missingError(path)
+      : Uint8List.fromList(
+          path.contains('png-')
+              ? [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
+              : [0xFF, 0xD8, 0xFF, 0xE0, 0x00],
+        );
 
   ContributionRepository get repository => ContributionRepository(
     api: api,

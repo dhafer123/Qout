@@ -559,7 +559,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Choose at least one.'), findsOneWidget);
-      expect(await database.outboxDao.pending(), isEmpty);
+      expect(await database.outboxDao.all(), isEmpty);
     });
 
     testWidgets('"something else" needs details', (tester) async {
@@ -589,7 +589,7 @@ void main() {
         find.textContaining('Thanks! Your report is saved'),
         findsOneWidget,
       );
-      final rows = await tester.runAsync(database.outboxDao.pending);
+      final rows = await tester.runAsync(database.outboxDao.all);
       final [row] = rows!;
       expect(row.kind, 'error_report');
       expect(row.payload, contains('"ean":"9557062321136"'));

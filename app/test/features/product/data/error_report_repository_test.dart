@@ -10,6 +10,7 @@ import 'package:qout/features/product/domain/error_report.dart';
 void main() {
   late AppDatabase database;
   late ErrorReportRepository repository;
+  late int queued;
 
   final now = DateTime.utc(2026, 11, 13, 10, 30);
   final productUpdatedAt = DateTime.utc(2026, 11, 12, 17, 18, 43);
@@ -20,7 +21,9 @@ void main() {
       outbox: database.outboxDao,
       clock: () => now,
       newId: () => 'id-1',
+      onQueued: () => queued++,
     );
+    queued = 0;
   });
 
   tearDown(() => database.close());
@@ -41,8 +44,11 @@ void main() {
       ErrorReportReason.name,
     }, comment: '  Salt is 0.3 g on the pack \n');
 
-    final [row] = await database.outboxDao.pending();
+    final [row] = await database.outboxDao.all();
     expect(row.kind, 'error_report');
+    expect(row.clientId, 'id-1');
+    expect(row.state, OutboxState.waiting);
+    expect(queued, 1); // a send is started
     expect(row.createdAt, now);
     expect(row.attempts, 0);
     expect(jsonDecode(row.payload), {
@@ -58,14 +64,15 @@ void main() {
   test('an empty comment is sent as null', () async {
     await submit({ErrorReportReason.nutrition}, comment: '   ');
 
-    final [row] = await database.outboxDao.pending();
+    final [row] = await database.outboxDao.all();
     expect((jsonDecode(row.payload) as Map)['comment'], isNull);
   });
 
   test('refuses an invalid report and queues nothing', () async {
     await expectLater(submit({}), throwsArgumentError);
     await expectLater(submit({ErrorReportReason.other}), throwsArgumentError);
-    expect(await database.outboxDao.pending(), isEmpty);
+    expect(await database.outboxDao.all(), isEmpty);
+    expect(queued, 0);
   });
 
   test('each report gets its own id by default', () async {
@@ -74,7 +81,7 @@ void main() {
     await submit({ErrorReportReason.name});
 
     final ids = [
-      for (final row in await database.outboxDao.pending())
+      for (final row in await database.outboxDao.all())
         (jsonDecode(row.payload) as Map)['client_id'],
     ];
     expect(ids.toSet(), hasLength(2));

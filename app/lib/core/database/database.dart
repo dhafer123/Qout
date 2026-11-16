@@ -30,21 +30,48 @@ class ScanHistory extends Table {
   DateTimeColumn get scannedAt => dateTime()();
 }
 
-/// Contributions waiting to be sent to the backend (T23 to T26).
+/// Where an outbox entry stands.
+enum OutboxState {
+  /// Sent at the next sync once [ContributionOutbox.nextAttemptAt] has
+  /// passed (or at once when it is null).
+  waiting,
+
+  /// The server wants a signed-in user: sent again after signing in.
+  needsSignIn,
+
+  /// The server refused it (e.g. invalid values): never retried; the user
+  /// deletes it.
+  refused,
+}
+
+/// What the app sends when it can: new products (T29) and error reports
+/// (T20), oldest first (T30).
 @DataClassName('OutboxRow')
 class ContributionOutbox extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  /// What the payload is, e.g. `new_product`; read by the sender.
+  /// What the payload is (`new_product`, `error_report`); read by the sender.
   TextColumn get kind => text()();
+
+  /// The request's id, also in the payload: the backend stores a request
+  /// sent twice once, and the app never queues it twice.
+  TextColumn get clientId => text().unique()();
 
   /// The request to send, as JSON text.
   TextColumn get payload => text()();
 
   DateTimeColumn get createdAt => dateTime()();
 
+  TextColumn get state => textEnum<OutboxState>().withDefault(
+    Constant(OutboxState.waiting.name),
+  )();
+
+  /// Not sent before this time (UTC; backoff or the server's Retry-After).
+  DateTimeColumn get nextAttemptAt => dateTime().nullable()();
+
   IntColumn get attempts => integer().withDefault(const Constant(0))();
 
+  /// Why the last attempt failed, in words for the user.
   TextColumn get lastError => text().nullable()();
 }
 
@@ -143,28 +170,122 @@ class ScanHistoryDao extends DatabaseAccessor<AppDatabase>
 class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
   OutboxDao(super.attachedDatabase);
 
-  Future<int> enqueue({
+  /// Queues a request; false when [clientId] is already queued (unchanged).
+  Future<bool> enqueue({
     required String kind,
+    required String clientId,
     required String payload,
     required DateTime createdAt,
-  }) => into(contributionOutbox).insert(
-    ContributionOutboxCompanion.insert(
-      kind: kind,
-      payload: payload,
-      createdAt: createdAt,
-    ),
-  );
+  }) async {
+    final row = await into(contributionOutbox).insertReturningOrNull(
+      ContributionOutboxCompanion.insert(
+        kind: kind,
+        clientId: clientId,
+        payload: payload,
+        createdAt: createdAt.toUtc(),
+      ),
+      mode: InsertMode.insertOrIgnore,
+    );
+    return row != null;
+  }
 
-  /// Oldest first.
-  Future<List<OutboxRow>> pending() => (select(
+  Future<OutboxRow?> find(String clientId) => (select(
+    contributionOutbox,
+  )..where((t) => t.clientId.equals(clientId))).getSingleOrNull();
+
+  /// Waiting entries whose time has come at [now], oldest first.
+  Future<List<OutboxRow>> due(DateTime now) =>
+      (select(contributionOutbox)
+            ..where(
+              (t) =>
+                  t.state.equalsValue(OutboxState.waiting) &
+                  (t.nextAttemptAt.isNull() |
+                      t.nextAttemptAt.isSmallerOrEqualValue(now.toUtc())),
+            )
+            ..orderBy([(t) => OrderingTerm.asc(t.id)]))
+          .get();
+
+  /// The earliest retry time of the waiting entries, or null when none waits
+  /// for one.
+  Future<DateTime?> nextAttempt() async {
+    final rows =
+        await (select(contributionOutbox)
+              ..where(
+                (t) =>
+                    t.state.equalsValue(OutboxState.waiting) &
+                    t.nextAttemptAt.isNotNull(),
+              )
+              ..orderBy([(t) => OrderingTerm.asc(t.nextAttemptAt)])
+              ..limit(1))
+            .get();
+    return rows.isEmpty ? null : rows.single.nextAttemptAt;
+  }
+
+  /// Every entry, oldest first.
+  Future<List<OutboxRow>> all() => (select(
     contributionOutbox,
   )..orderBy([(t) => OrderingTerm.asc(t.id)])).get();
 
-  Future<void> recordFailure(int id, String error) =>
+  /// Every entry, oldest first; updates as entries change.
+  Stream<List<OutboxRow>> watchAll() => (select(
+    contributionOutbox,
+  )..orderBy([(t) => OrderingTerm.asc(t.id)])).watch();
+
+  /// Saves progress (e.g. photos uploaded so far).
+  Future<void> updatePayload(int id, String payload) =>
       (update(contributionOutbox)..where((t) => t.id.equals(id))).write(
-        ContributionOutboxCompanion.custom(
-          attempts: contributionOutbox.attempts + const Constant(1),
-          lastError: Variable(error),
+        ContributionOutboxCompanion(payload: Value(payload)),
+      );
+
+  /// A failed attempt to try again at [nextAttemptAt].
+  Future<void> recordRetry(
+    int id, {
+    required String error,
+    required DateTime nextAttemptAt,
+  }) => _fail(id, OutboxState.waiting, error, nextAttemptAt.toUtc());
+
+  Future<void> recordNeedsSignIn(int id, String error) =>
+      _fail(id, OutboxState.needsSignIn, error, null);
+
+  Future<void> recordRefused(int id, String error) =>
+      _fail(id, OutboxState.refused, error, null);
+
+  Future<void> _fail(
+    int id,
+    OutboxState state,
+    String error,
+    DateTime? nextAttemptAt,
+  ) => (update(contributionOutbox)..where((t) => t.id.equals(id))).write(
+    ContributionOutboxCompanion.custom(
+      state: Variable(state.name),
+      nextAttemptAt: Variable(nextAttemptAt),
+      attempts: contributionOutbox.attempts + const Constant(1),
+      lastError: Variable(error),
+    ),
+  );
+
+  /// Sends [id] at the next sync ("Try now"), unless it was refused.
+  Future<void> retryNow(int id) =>
+      (update(contributionOutbox)..where(
+            (t) =>
+                t.id.equals(id) &
+                t.state.equalsValue(OutboxState.refused).not(),
+          ))
+          .write(
+            const ContributionOutboxCompanion(
+              state: Value(OutboxState.waiting),
+              nextAttemptAt: Value(null),
+            ),
+          );
+
+  /// After signing in: the entries that needed it wait again, due at once.
+  Future<void> resumeAfterSignIn() =>
+      (update(
+        contributionOutbox,
+      )..where((t) => t.state.equalsValue(OutboxState.needsSignIn))).write(
+        const ContributionOutboxCompanion(
+          state: Value(OutboxState.waiting),
+          nextAttemptAt: Value(null),
         ),
       );
 
@@ -182,8 +303,35 @@ class AppDatabase extends _$AppDatabase {
   /// The app's database file (`qout.sqlite` in the app's documents folder).
   AppDatabase.open() : this(driftDatabase(name: 'qout'));
 
-  /// Bump with every schema change, and add a migration step plus a schema
-  /// dump (`dart run drift_dev make-migrations`).
+  /// Bump with every schema change, add a step to [migration], and keep the
+  /// old schema in `test/fixtures/database/schema_v<n>.sql` for its test
+  /// (`make-migrations` needs a newer drift_dev than this SDK resolves).
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // T30: the outbox gets its client id (from the payload, where the
+        // error reports queued since T20 have it), state and retry time.
+        await m.alterTable(
+          TableMigration(
+            contributionOutbox,
+            columnTransformer: {
+              contributionOutbox.clientId: const CustomExpression<String>(
+                r"coalesce(json_extract(payload, '$.client_id'), "
+                "'outbox-' || id)",
+              ),
+            },
+            newColumns: [
+              contributionOutbox.clientId,
+              contributionOutbox.state,
+              contributionOutbox.nextAttemptAt,
+            ],
+          ),
+        );
+      }
+    },
+  );
 }

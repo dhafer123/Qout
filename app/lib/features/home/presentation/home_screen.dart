@@ -9,6 +9,7 @@ import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/history/domain/history_entry.dart';
+import 'package:qout/features/outbox/presentation/outbox_screen.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
 import 'package:qout/features/product/presentation/product_labels.dart';
@@ -72,6 +73,8 @@ class HomeScreen extends ConsumerWidget {
                   icon: const Icon(Icons.qr_code_scanner),
                   label: const Text('Scan'),
                 ),
+                const SizedBox(height: 16),
+                const OutboxCard(),
               ],
             ),
           ),

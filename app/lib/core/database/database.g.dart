@@ -595,6 +595,18 @@ class $ContributionOutboxTable extends ContributionOutbox
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
   static const VerificationMeta _payloadMeta = const VerificationMeta(
     'payload',
   );
@@ -617,6 +629,28 @@ class $ContributionOutboxTable extends ContributionOutbox
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  @override
+  late final GeneratedColumnWithTypeConverter<OutboxState, String> state =
+      GeneratedColumn<String>(
+        'state',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(OutboxState.waiting.name),
+      ).withConverter<OutboxState>($ContributionOutboxTable.$converterstate);
+  static const VerificationMeta _nextAttemptAtMeta = const VerificationMeta(
+    'nextAttemptAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> nextAttemptAt =
+      GeneratedColumn<DateTime>(
+        'next_attempt_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _attemptsMeta = const VerificationMeta(
     'attempts',
   );
@@ -644,8 +678,11 @@ class $ContributionOutboxTable extends ContributionOutbox
   List<GeneratedColumn> get $columns => [
     id,
     kind,
+    clientId,
     payload,
     createdAt,
+    state,
+    nextAttemptAt,
     attempts,
     lastError,
   ];
@@ -672,6 +709,14 @@ class $ContributionOutboxTable extends ContributionOutbox
     } else if (isInserting) {
       context.missing(_kindMeta);
     }
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
     if (data.containsKey('payload')) {
       context.handle(
         _payloadMeta,
@@ -687,6 +732,15 @@ class $ContributionOutboxTable extends ContributionOutbox
       );
     } else if (isInserting) {
       context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('next_attempt_at')) {
+      context.handle(
+        _nextAttemptAtMeta,
+        nextAttemptAt.isAcceptableOrUnknown(
+          data['next_attempt_at']!,
+          _nextAttemptAtMeta,
+        ),
+      );
     }
     if (data.containsKey('attempts')) {
       context.handle(
@@ -717,6 +771,10 @@ class $ContributionOutboxTable extends ContributionOutbox
         DriftSqlType.string,
         data['${effectivePrefix}kind'],
       )!,
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      )!,
       payload: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}payload'],
@@ -725,6 +783,16 @@ class $ContributionOutboxTable extends ContributionOutbox
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      state: $ContributionOutboxTable.$converterstate.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}state'],
+        )!,
+      ),
+      nextAttemptAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}next_attempt_at'],
+      ),
       attempts: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}attempts'],
@@ -740,24 +808,40 @@ class $ContributionOutboxTable extends ContributionOutbox
   $ContributionOutboxTable createAlias(String alias) {
     return $ContributionOutboxTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<OutboxState, String, String> $converterstate =
+      const EnumNameConverter<OutboxState>(OutboxState.values);
 }
 
 class OutboxRow extends DataClass implements Insertable<OutboxRow> {
   final int id;
 
-  /// What the payload is, e.g. `new_product`; read by the sender.
+  /// What the payload is (`new_product`, `error_report`); read by the sender.
   final String kind;
+
+  /// The request's id, also in the payload: the backend stores a request
+  /// sent twice once, and the app never queues it twice.
+  final String clientId;
 
   /// The request to send, as JSON text.
   final String payload;
   final DateTime createdAt;
+  final OutboxState state;
+
+  /// Not sent before this time (UTC; backoff or the server's Retry-After).
+  final DateTime? nextAttemptAt;
   final int attempts;
+
+  /// Why the last attempt failed, in words for the user.
   final String? lastError;
   const OutboxRow({
     required this.id,
     required this.kind,
+    required this.clientId,
     required this.payload,
     required this.createdAt,
+    required this.state,
+    this.nextAttemptAt,
     required this.attempts,
     this.lastError,
   });
@@ -766,8 +850,17 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['kind'] = Variable<String>(kind);
+    map['client_id'] = Variable<String>(clientId);
     map['payload'] = Variable<String>(payload);
     map['created_at'] = Variable<DateTime>(createdAt);
+    {
+      map['state'] = Variable<String>(
+        $ContributionOutboxTable.$converterstate.toSql(state),
+      );
+    }
+    if (!nullToAbsent || nextAttemptAt != null) {
+      map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt);
+    }
     map['attempts'] = Variable<int>(attempts);
     if (!nullToAbsent || lastError != null) {
       map['last_error'] = Variable<String>(lastError);
@@ -779,8 +872,13 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     return ContributionOutboxCompanion(
       id: Value(id),
       kind: Value(kind),
+      clientId: Value(clientId),
       payload: Value(payload),
       createdAt: Value(createdAt),
+      state: Value(state),
+      nextAttemptAt: nextAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextAttemptAt),
       attempts: Value(attempts),
       lastError: lastError == null && nullToAbsent
           ? const Value.absent()
@@ -796,8 +894,13 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     return OutboxRow(
       id: serializer.fromJson<int>(json['id']),
       kind: serializer.fromJson<String>(json['kind']),
+      clientId: serializer.fromJson<String>(json['clientId']),
       payload: serializer.fromJson<String>(json['payload']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      state: $ContributionOutboxTable.$converterstate.fromJson(
+        serializer.fromJson<String>(json['state']),
+      ),
+      nextAttemptAt: serializer.fromJson<DateTime?>(json['nextAttemptAt']),
       attempts: serializer.fromJson<int>(json['attempts']),
       lastError: serializer.fromJson<String?>(json['lastError']),
     );
@@ -808,8 +911,13 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'kind': serializer.toJson<String>(kind),
+      'clientId': serializer.toJson<String>(clientId),
       'payload': serializer.toJson<String>(payload),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'state': serializer.toJson<String>(
+        $ContributionOutboxTable.$converterstate.toJson(state),
+      ),
+      'nextAttemptAt': serializer.toJson<DateTime?>(nextAttemptAt),
       'attempts': serializer.toJson<int>(attempts),
       'lastError': serializer.toJson<String?>(lastError),
     };
@@ -818,15 +926,23 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
   OutboxRow copyWith({
     int? id,
     String? kind,
+    String? clientId,
     String? payload,
     DateTime? createdAt,
+    OutboxState? state,
+    Value<DateTime?> nextAttemptAt = const Value.absent(),
     int? attempts,
     Value<String?> lastError = const Value.absent(),
   }) => OutboxRow(
     id: id ?? this.id,
     kind: kind ?? this.kind,
+    clientId: clientId ?? this.clientId,
     payload: payload ?? this.payload,
     createdAt: createdAt ?? this.createdAt,
+    state: state ?? this.state,
+    nextAttemptAt: nextAttemptAt.present
+        ? nextAttemptAt.value
+        : this.nextAttemptAt,
     attempts: attempts ?? this.attempts,
     lastError: lastError.present ? lastError.value : this.lastError,
   );
@@ -834,8 +950,13 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     return OutboxRow(
       id: data.id.present ? data.id.value : this.id,
       kind: data.kind.present ? data.kind.value : this.kind,
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
       payload: data.payload.present ? data.payload.value : this.payload,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      state: data.state.present ? data.state.value : this.state,
+      nextAttemptAt: data.nextAttemptAt.present
+          ? data.nextAttemptAt.value
+          : this.nextAttemptAt,
       attempts: data.attempts.present ? data.attempts.value : this.attempts,
       lastError: data.lastError.present ? data.lastError.value : this.lastError,
     );
@@ -846,8 +967,11 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     return (StringBuffer('OutboxRow(')
           ..write('id: $id, ')
           ..write('kind: $kind, ')
+          ..write('clientId: $clientId, ')
           ..write('payload: $payload, ')
           ..write('createdAt: $createdAt, ')
+          ..write('state: $state, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
           ..write('attempts: $attempts, ')
           ..write('lastError: $lastError')
           ..write(')'))
@@ -855,16 +979,28 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, kind, payload, createdAt, attempts, lastError);
+  int get hashCode => Object.hash(
+    id,
+    kind,
+    clientId,
+    payload,
+    createdAt,
+    state,
+    nextAttemptAt,
+    attempts,
+    lastError,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is OutboxRow &&
           other.id == this.id &&
           other.kind == this.kind &&
+          other.clientId == this.clientId &&
           other.payload == this.payload &&
           other.createdAt == this.createdAt &&
+          other.state == this.state &&
+          other.nextAttemptAt == this.nextAttemptAt &&
           other.attempts == this.attempts &&
           other.lastError == this.lastError);
 }
@@ -872,41 +1008,57 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
 class ContributionOutboxCompanion extends UpdateCompanion<OutboxRow> {
   final Value<int> id;
   final Value<String> kind;
+  final Value<String> clientId;
   final Value<String> payload;
   final Value<DateTime> createdAt;
+  final Value<OutboxState> state;
+  final Value<DateTime?> nextAttemptAt;
   final Value<int> attempts;
   final Value<String?> lastError;
   const ContributionOutboxCompanion({
     this.id = const Value.absent(),
     this.kind = const Value.absent(),
+    this.clientId = const Value.absent(),
     this.payload = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.state = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
     this.attempts = const Value.absent(),
     this.lastError = const Value.absent(),
   });
   ContributionOutboxCompanion.insert({
     this.id = const Value.absent(),
     required String kind,
+    required String clientId,
     required String payload,
     required DateTime createdAt,
+    this.state = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
     this.attempts = const Value.absent(),
     this.lastError = const Value.absent(),
   }) : kind = Value(kind),
+       clientId = Value(clientId),
        payload = Value(payload),
        createdAt = Value(createdAt);
   static Insertable<OutboxRow> custom({
     Expression<int>? id,
     Expression<String>? kind,
+    Expression<String>? clientId,
     Expression<String>? payload,
     Expression<DateTime>? createdAt,
+    Expression<String>? state,
+    Expression<DateTime>? nextAttemptAt,
     Expression<int>? attempts,
     Expression<String>? lastError,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (kind != null) 'kind': kind,
+      if (clientId != null) 'client_id': clientId,
       if (payload != null) 'payload': payload,
       if (createdAt != null) 'created_at': createdAt,
+      if (state != null) 'state': state,
+      if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
       if (attempts != null) 'attempts': attempts,
       if (lastError != null) 'last_error': lastError,
     });
@@ -915,16 +1067,22 @@ class ContributionOutboxCompanion extends UpdateCompanion<OutboxRow> {
   ContributionOutboxCompanion copyWith({
     Value<int>? id,
     Value<String>? kind,
+    Value<String>? clientId,
     Value<String>? payload,
     Value<DateTime>? createdAt,
+    Value<OutboxState>? state,
+    Value<DateTime?>? nextAttemptAt,
     Value<int>? attempts,
     Value<String?>? lastError,
   }) {
     return ContributionOutboxCompanion(
       id: id ?? this.id,
       kind: kind ?? this.kind,
+      clientId: clientId ?? this.clientId,
       payload: payload ?? this.payload,
       createdAt: createdAt ?? this.createdAt,
+      state: state ?? this.state,
+      nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
       attempts: attempts ?? this.attempts,
       lastError: lastError ?? this.lastError,
     );
@@ -939,11 +1097,22 @@ class ContributionOutboxCompanion extends UpdateCompanion<OutboxRow> {
     if (kind.present) {
       map['kind'] = Variable<String>(kind.value);
     }
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
     if (payload.present) {
       map['payload'] = Variable<String>(payload.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (state.present) {
+      map['state'] = Variable<String>(
+        $ContributionOutboxTable.$converterstate.toSql(state.value),
+      );
+    }
+    if (nextAttemptAt.present) {
+      map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt.value);
     }
     if (attempts.present) {
       map['attempts'] = Variable<int>(attempts.value);
@@ -959,8 +1128,11 @@ class ContributionOutboxCompanion extends UpdateCompanion<OutboxRow> {
     return (StringBuffer('ContributionOutboxCompanion(')
           ..write('id: $id, ')
           ..write('kind: $kind, ')
+          ..write('clientId: $clientId, ')
           ..write('payload: $payload, ')
           ..write('createdAt: $createdAt, ')
+          ..write('state: $state, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
           ..write('attempts: $attempts, ')
           ..write('lastError: $lastError')
           ..write(')'))
@@ -1321,8 +1493,11 @@ typedef $$ContributionOutboxTableCreateCompanionBuilder =
     ContributionOutboxCompanion Function({
       Value<int> id,
       required String kind,
+      required String clientId,
       required String payload,
       required DateTime createdAt,
+      Value<OutboxState> state,
+      Value<DateTime?> nextAttemptAt,
       Value<int> attempts,
       Value<String?> lastError,
     });
@@ -1330,8 +1505,11 @@ typedef $$ContributionOutboxTableUpdateCompanionBuilder =
     ContributionOutboxCompanion Function({
       Value<int> id,
       Value<String> kind,
+      Value<String> clientId,
       Value<String> payload,
       Value<DateTime> createdAt,
+      Value<OutboxState> state,
+      Value<DateTime?> nextAttemptAt,
       Value<int> attempts,
       Value<String?> lastError,
     });
@@ -1355,6 +1533,11 @@ class $$ContributionOutboxTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get payload => $composableBuilder(
     column: $table.payload,
     builder: (column) => ColumnFilters(column),
@@ -1362,6 +1545,17 @@ class $$ContributionOutboxTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<OutboxState, OutboxState, String> get state =>
+      $composableBuilder(
+        column: $table.state,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1395,6 +1589,11 @@ class $$ContributionOutboxTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get payload => $composableBuilder(
     column: $table.payload,
     builder: (column) => ColumnOrderings(column),
@@ -1402,6 +1601,16 @@ class $$ContributionOutboxTableOrderingComposer
 
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1431,11 +1640,22 @@ class $$ContributionOutboxTableAnnotationComposer
   GeneratedColumn<String> get kind =>
       $composableBuilder(column: $table.kind, builder: (column) => column);
 
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
   GeneratedColumn<String> get payload =>
       $composableBuilder(column: $table.payload, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<OutboxState, String> get state =>
+      $composableBuilder(column: $table.state, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get attempts =>
       $composableBuilder(column: $table.attempts, builder: (column) => column);
@@ -1482,15 +1702,21 @@ class $$ContributionOutboxTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> kind = const Value.absent(),
+                Value<String> clientId = const Value.absent(),
                 Value<String> payload = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<OutboxState> state = const Value.absent(),
+                Value<DateTime?> nextAttemptAt = const Value.absent(),
                 Value<int> attempts = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
               }) => ContributionOutboxCompanion(
                 id: id,
                 kind: kind,
+                clientId: clientId,
                 payload: payload,
                 createdAt: createdAt,
+                state: state,
+                nextAttemptAt: nextAttemptAt,
                 attempts: attempts,
                 lastError: lastError,
               ),
@@ -1498,15 +1724,21 @@ class $$ContributionOutboxTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String kind,
+                required String clientId,
                 required String payload,
                 required DateTime createdAt,
+                Value<OutboxState> state = const Value.absent(),
+                Value<DateTime?> nextAttemptAt = const Value.absent(),
                 Value<int> attempts = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
               }) => ContributionOutboxCompanion.insert(
                 id: id,
                 kind: kind,
+                clientId: clientId,
                 payload: payload,
                 createdAt: createdAt,
+                state: state,
+                nextAttemptAt: nextAttemptAt,
                 attempts: attempts,
                 lastError: lastError,
               ),
