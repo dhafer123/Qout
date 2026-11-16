@@ -205,7 +205,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Tests: **I** submit → pending; preview scores without saving; approve → product verified; reject keeps product unchanged; auth required.
 - Done: backend 1634 tests (coverage 100 %), app 713 tests. Migration `10d96b9f2ef3`: `contributions` (user, app `client_id` unique per user, EAN, name, brand, Nutri-Score category, basis, nutrition as exact decimal strings in JSONB, photo keys and OCR text per kind, `parser_used` rules/llm/manual, status, reviewer, review time and note, product) and `error_reports` (`client_id` 32 hex unique, EAN, product, optional user, reasons, comment ≤ 500, `product_updated_at`, `reported_at`, status open/resolved/dismissed). Endpoints (`api/contributions.py`): `POST /v1/contributions` (signed in; 201 pending, 200 for a resend of the same `client_id`; each photo key must match `contributions/{user}/{client_id}/{kind}-{16 hex}.{jpg|png}` and exist in storage, else 422; front and nutrition photos required; UPC-A stored as EAN-13; storage down 503), `GET /v1/contributions` and `/{id}` (own only, 404 otherwise), `POST /v1/score/preview` (signed in; same grade/total/breakdown as a product score; all 60 golden cases checked), `POST /v1/reports` (anonymous allowed; a valid token records the user, an invalid one is treated as anonymous; marked secured in the spec so the app sends the token when signed in; 404 unknown product; 200 for a resend, which never counts against the limit; 429 over `REPORT_MAX_PER_IP` (20 / h)). Moderation (`api/admin.py`, admin role, 401/403 otherwise): `GET /v1/admin/contributions?status=` (pending by default, oldest first), `POST .../{id}/approve` and `.../reject` (optional note shown to the contributor; 409 once decided, row locked so two moderators can't both decide), `GET /v1/admin/reports?status=`. Approval (`modules/contributions/moderation.py`): product created or updated with source `contribution` and status `verified` (OFF imports leave it alone from then on), name/brand kept when not contributed, OFF quality flag cleared; nutrition added as a new version (source `contribution`) and scored; front photo copied server side into the public bucket (`products/{ean}/contribution-{id}.{ext}`), replacing and deleting the old photo (a missing upload keeps the current photo); cached response or "not found" dropped; on failure nothing changes and the copied photo is removed. The photo copy job (T24) now only handles OFF products. Client generator: `/v1/admin/` is left out, enum lists decode with tear-offs. New env vars: REPORT_MAX_PER_IP, REPORT_WINDOW_SECONDS.
 - Changed on the way: no endpoint parses OCR text yet; the contribution stores the fields as the contributor reviewed them, with the parser they came from (T26/T28 add parsing).
-- Follow-ups: admin accounts are made in SQL until T31 (`UPDATE users SET role = 'admin' ...`, in README). T31: moderators need to see the private photos (presigned GET URLs), edit fields before approving, and resolve/dismiss reports (statuses exist, no endpoint changes them yet). Contributions are not rate-limited (uploads are, 30 / h per user). Uploads never submitted and photos of rejected contributions stay in the private bucket (cleanup with T30, from T24).
+- Follow-ups: admin accounts are made in SQL until T31 (`UPDATE users SET role = 'admin' ...`, in README). T31: moderators need to see the private photos (presigned GET URLs), edit fields before approving, and resolve/dismiss reports (statuses exist, no endpoint changes them yet). Contributions are not rate-limited (uploads are, 30 / h per user). Uploads never submitted and photos of rejected contributions stay in the private bucket (cleanup: T30b).
 
 ### T26 · Rule-based label parser
 - [x] Parse OCR text (French, plus Arabic labels where possible) into nutrient fields per 100 g; handle OCR noise (O/0, comma decimals), per-100 g vs per-portion columns
@@ -246,10 +246,23 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - [ ] Also sends the `error_report` entries queued since T20 (to `POST /v1/reports`)
 - Tests: **U** outbox sync (success, failure, retry, duplicate-safe via client-generated id).
 
+### T30b · Storage and data cleanup (backend)
+- [ ] arq cron job: delete uploads never submitted (older than a few days), photos of rejected contributions, and old `label_fallbacks` rows (they hold OCR text); limits as settings
+- Tests: **U** what is old enough; **I** the job against storage and the DB.
+
 ### T31 · Admin panel
 - [ ] SQLAdmin for products/scores/users (admin role only)
 - [ ] Custom moderation page: photos next to parsed fields, edit, approve/reject
 - Tests: **I** admin routes require admin role; approve/reject via moderation endpoints.
+
+### T31b · UI/UX polish (app)
+- [ ] Visual identity: adaptive app icon, splash screen, palette and type scale beyond the seed colour, consistent spacing and components
+- [ ] Screen pass: home (scan, history, outbox card), product result, sign-in, contribution flow, outbox; consistent empty, loading and error states; wording reviewed in one go
+- [ ] Accessibility: screen-reader labels, contrast in both themes, large-text scaling, touch targets of at least 48 dp
+- [ ] Decide localization (French, Arabic with right-to-left): own task or a stated non-goal (`flutter_localizations` / `intl` are new packages: ask first)
+- [ ] Optional: short first-run onboarding (what the grade means; scanning needs no account)
+- Tests: **W** golden or widget tests for the reworked screens in light and dark; text scaling doesn't overflow.
+- Placed after T31 (every screen exists) and before the release pipeline and T37's screenshots.
 
 ---
 
