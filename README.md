@@ -192,6 +192,18 @@ Arabic; checks in `docs/specs/README.md`), and `POST /v1/score/preview` scores v
 without saving. Anyone can report an error on a product
 (`POST /v1/reports`, duplicate-safe on `client_id`, `REPORT_MAX_PER_IP` per hour).
 
+In the app, "Add this product" on an unknown barcode (after signing in) opens
+`/contribute/{ean}`: photos of the front and the nutrition table (required) and the
+ingredients (optional), each read on the phone by ML Kit. The nutrition table's text goes
+to `POST /v1/labels/parse` and its values fill an editable review form at once, with the
+values the parser flagged marked. While an LLM fallback is pending the app asks for it every
+2 s for up to 90 s: its values replace the form's if the contributor hasn't edited it yet,
+otherwise they are offered ("Use these values" / "Keep mine"). The form shows a provisional
+grade from the Dart engine, marked "Unverified", and names the values it still needs (labels
+don't print the fruit, vegetable and legume share: "None (0 %)" fills it). Sending uploads
+the photos, then submits with `parser_used` saying what filled the values (`rules`, `llm`
+or `manual`). Sending needs a connection for now; the offline outbox comes in T30.
+
 When the rule-based reading is not ok, an **LLM fallback** can read the label instead
 (off by default: `LLM_PARSER_ENABLED`, `LLM_API_KEY`; Google Gemini API, model `LLM_MODEL`,
 key from <https://aistudio.google.com/apikey>).
