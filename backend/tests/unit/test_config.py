@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import BACKEND_DIR, Settings, get_settings
+from app.core.config import BACKEND_DIR, Settings, get_settings, has_llm_key
 
 DB_URL = "postgresql+asyncpg://user:pw@db.example:5432/qout"
 REDIS_URL = "redis://cache.example:6379/0"
@@ -237,3 +237,66 @@ def test_relative_download_dir_is_under_backend(
     assert Settings(_env_file=None).import_download_dir == BACKEND_DIR / "var" / "imports"  # type: ignore[call-arg]
     required_env.setenv("IMPORT_DOWNLOAD_DIR", str(tmp_path))
     assert Settings(_env_file=None).import_download_dir == tmp_path  # type: ignore[call-arg]
+
+
+# ---------------------------------------------------------------- LLM fallback parser
+
+LLM_VARS = (
+    "LLM_PARSER_ENABLED",
+    "LLM_API_KEY",
+    "LLM_MODEL",
+    "LLM_EFFORT",
+    "LLM_TIMEOUT_SECONDS",
+    "LLM_PARSE_DEADLINE_SECONDS",
+)
+
+
+@pytest.fixture
+def llm_env(required_env: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
+    for name in LLM_VARS:
+        required_env.delenv(name, raising=False)
+    return required_env
+
+
+def test_llm_defaults(llm_env: pytest.MonkeyPatch) -> None:
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+
+    assert settings.llm_parser_enabled is False
+    assert not has_llm_key(settings)
+    assert (settings.llm_model, settings.llm_effort) == ("claude-opus-5-5", "medium")
+    assert (settings.llm_timeout_seconds, settings.llm_parse_deadline_seconds) == (30.0, 90)
+    assert (settings.llm_parse_max_per_user, settings.llm_parse_window_seconds) == (20, 3600)
+
+
+@pytest.mark.parametrize("key", ["", "dummy-key", "change-me-please", "  "])
+def test_enabled_llm_needs_a_real_key(llm_env: pytest.MonkeyPatch, key: str) -> None:
+    llm_env.setenv("LLM_PARSER_ENABLED", "true")
+    llm_env.setenv("LLM_API_KEY", key)
+
+    with pytest.raises(ValidationError, match="LLM_API_KEY"):
+        Settings(_env_file=None)  # type: ignore[call-arg]
+
+
+def test_enabled_llm_with_a_key(llm_env: pytest.MonkeyPatch) -> None:
+    llm_env.setenv("LLM_PARSER_ENABLED", "true")
+    llm_env.setenv("LLM_API_KEY", "sk-test-not-a-real-key")
+
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+
+    assert settings.llm_parser_enabled
+    assert has_llm_key(settings)
+
+
+def test_llm_deadline_must_outlast_the_timeout(llm_env: pytest.MonkeyPatch) -> None:
+    llm_env.setenv("LLM_TIMEOUT_SECONDS", "60")
+    llm_env.setenv("LLM_PARSE_DEADLINE_SECONDS", "60")
+
+    with pytest.raises(ValidationError, match="LLM_PARSE_DEADLINE_SECONDS"):
+        Settings(_env_file=None)  # type: ignore[call-arg]
+
+
+def test_unknown_llm_effort(llm_env: pytest.MonkeyPatch) -> None:
+    llm_env.setenv("LLM_EFFORT", "extreme")
+
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)  # type: ignore[call-arg]

@@ -34,6 +34,8 @@ DEV_S3_ACCESS_KEY = "qout-dev-access-key"
 DEV_S3_SECRET_KEY = "qout-dev-secret-key"  # noqa: S105 - local RustFS only, refused when deployed
 _BUCKET_NAME = r"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+LlmEffort = Literal["low", "medium", "high", "xhigh", "max"]
+_LLM_KEY_PLACEHOLDERS = frozenset({"dummy-key"})
 
 
 class Settings(BaseSettings):
@@ -127,6 +129,21 @@ class Settings(BaseSettings):
     product_images_cron_enabled: bool = True
     """Copy new and changed product photos every 15 minutes."""
 
+    # LLM fallback for nutrition labels the rule-based parser can't read (T28). Only the
+    # label's OCR text is sent. Off by default; needs a real API key when on.
+    llm_parser_enabled: bool = False
+    llm_api_key: SecretStr = SecretStr("")
+    llm_model: str = Field(default="claude-opus-5-5", min_length=1)
+    llm_effort: LlmEffort = "medium"
+    llm_timeout_seconds: float = Field(default=30.0, gt=0, le=300)
+    """One reading, including the SDK's retries."""
+    llm_parse_deadline_seconds: int = Field(default=90, ge=10, le=3600)
+    """A fallback not finished this long after it was asked for (queue wait included) is
+    given up: the contributor enters the values by hand."""
+    llm_parse_max_per_user: int = Field(default=20, ge=1, le=10_000)
+    """LLM readings one user may ask for per window; beyond, manual entry."""
+    llm_parse_window_seconds: int = Field(default=3600, ge=1, le=86_400)
+
     @field_validator("off_user_agent")
     @classmethod
     def _real_user_agent(cls, value: str) -> str:
@@ -200,6 +217,20 @@ class Settings(BaseSettings):
             raise ValueError(msg)
         return self
 
+    @model_validator(mode="after")
+    def _llm_key_when_enabled(self) -> "Settings":
+        if self.llm_parser_enabled and not has_llm_key(self):
+            msg = "LLM_PARSER_ENABLED needs a real LLM_API_KEY"
+            raise ValueError(msg)
+        return self
+
+    @model_validator(mode="after")
+    def _llm_deadline_after_timeout(self) -> "Settings":
+        if self.llm_parse_deadline_seconds <= self.llm_timeout_seconds:
+            msg = "LLM_PARSE_DEADLINE_SECONDS must be longer than LLM_TIMEOUT_SECONDS"
+            raise ValueError(msg)
+        return self
+
     @field_validator("s3_public_endpoint_url", mode="before")
     @classmethod
     def _empty_is_unset(cls, value: object) -> object:
@@ -219,6 +250,12 @@ class Settings(BaseSettings):
     @classmethod
     def _uppercase_log_level(cls, value: object) -> object:
         return value.upper() if isinstance(value, str) else value
+
+
+def has_llm_key(settings: Settings) -> bool:
+    """False for an empty key or a placeholder (`.env.example`'s `dummy-key`, `change-me...`)."""
+    key = settings.llm_api_key.get_secret_value().strip()
+    return bool(key) and key not in _LLM_KEY_PLACEHOLDERS and not key.startswith("change-me")
 
 
 @lru_cache

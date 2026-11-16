@@ -43,6 +43,27 @@ class ParserUsed(StrEnum):
     MANUAL = "manual"  # typed by the contributor
 
 
+class FallbackStatus(StrEnum):
+    """A request to the LLM fallback parser (T28)."""
+
+    PENDING = "pending"
+    DONE = "done"  # read and passed the checks: values to review
+    NEEDS_MANUAL_ENTRY = "needs_manual_entry"
+
+
+class FallbackReason(StrEnum):
+    """Why the LLM fallback gave no values (the contributor types them)."""
+
+    DISABLED = "disabled"  # the fallback is turned off
+    RATE_LIMITED = "rate_limited"  # too many readings asked for by this user
+    TIMEOUT = "timeout"  # no answer in time (queue wait included)
+    UNAVAILABLE = "unavailable"  # the LLM service (or the job queue) failed
+    REFUSED = "refused"  # the model declined
+    INVALID_OUTPUT = "invalid_output"  # not the expected JSON, or truncated
+    UNGROUNDED_VALUE = "ungrounded_value"  # a value that isn't in the OCR text
+    FAILED_CHECKS = "failed_checks"  # same sanity checks as the rules parser
+
+
 class Contribution(IdTimestampMixin, Base):
     """A product as a contributor submitted it: photos, OCR text and the fields they
     reviewed. Approval (moderation) turns it into a verified product."""
