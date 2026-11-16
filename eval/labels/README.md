@@ -136,11 +136,14 @@ With the LLM fallback (T28):
 
 ```sh
 uv run python -m scripts.eval_parser --parser rules+llm   # writes ...-rules-llm-<date>.md
+LLM_MODEL=gemini-3.6-flash uv run python -m scripts.eval_parser --parser rules+llm --concurrency 1
 ```
 
 The LLM is asked, as in the app, only for labels whose rules reading is not ok. This
-sends their OCR text to the Anthropic API (`LLM_API_KEY`, `LLM_MODEL`, `LLM_EFFORT` from
-`.env`; billed). Replies are cached in `backend/var/llm-cache/`, so running it again with
-the same settings sends nothing; delete the folder to ask again. The report adds a
+sends their OCR text to the Google Gemini API (`LLM_API_KEY` and `LLM_MODEL` from `.env`,
+or the environment). `--concurrency` (default 4) limits requests at a time, for the free
+tier's rate limit. Replies are cached in `backend/var/llm-cache/` per model, so running it
+again with the same model sends nothing; delete the folder to ask again. A model
+overloaded at the time (HTTP 503) counts as `unavailable` and is not cached. The report adds a
 comparison with `rules` alone and what the fallback did per label (accepted, or the reason
 for manual entry); an LLM reading accepted but wrong is the new costly case.
