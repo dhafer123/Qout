@@ -304,6 +304,25 @@ void main() {
       );
     });
 
+    test('an error before sending keeps its cause', () async {
+      final (api, _) = apiAnswering(
+        (options) => throw DioException(
+          requestOptions: options,
+          error: StateError('token store unavailable'),
+        ),
+      );
+      await expectLater(
+        api.getProduct(ean: '6194039501011'),
+        throwsA(
+          isA<ApiConnectionError>().having(
+            (e) => e.message,
+            'message',
+            'Bad state: token store unavailable',
+          ),
+        ),
+      );
+    });
+
     test('a timeout without a message is ApiConnectionError', () async {
       final (api, _) = apiAnswering(
         (options) => throw DioException(

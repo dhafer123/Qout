@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:qout/core/api/qout_api.dart';
@@ -143,7 +145,8 @@ class ContributionController
     String? text;
     try {
       text = await ref.read(labelOcrProvider)(path);
-    } on Object {
+    } on Object catch (error) {
+      _log('OCR failed', error);
       text = null; // the photo is kept; its text is optional
     }
     if (_disposed || state.draft.photos[kind] != path) return;
@@ -168,7 +171,8 @@ class ContributionController
     final LabelParseResult result;
     try {
       result = await _repository.parseLabel(text);
-    } on Object {
+    } on Object catch (error) {
+      _log('reading the label failed', error);
       if (_current(generation)) {
         state = state.copyWith(reading: LabelReadingStatus.failed);
       }
@@ -199,7 +203,8 @@ class ContributionController
       final LabelFallbackRead fallback;
       try {
         fallback = await _repository.fallback(id);
-      } on Object {
+      } on Object catch (error) {
+        _log('asking for the fallback failed', error);
         continue; // a lost answer: ask again until the deadline
       }
       if (!_current(generation)) return;
@@ -362,6 +367,7 @@ class ContributionController
       }
       await _repository.submit(_body(draft, keys));
     } on Object catch (error) {
+      _log('sending failed', error);
       if (!_disposed) {
         state = state.copyWith(sending: false, sendError: sendErrorText(error));
       }
@@ -401,6 +407,12 @@ class ContributionController
       parserUsed: draft.parserUsed,
     );
   }
+}
+
+/// The real error behind a friendly message, in debug builds (the console
+/// of `flutter run`); release builds stay silent.
+void _log(String what, Object error) {
+  if (kDebugMode) debugPrint('Contribution: $what: $error');
 }
 
 /// What to tell the contributor when sending failed.

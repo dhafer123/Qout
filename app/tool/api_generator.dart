@@ -501,7 +501,11 @@ sealed class QoutApiException implements Exception {
   factory QoutApiException.fromDio(DioException error) {
     final response = error.response;
     if (response == null) {
-      return ApiConnectionError(error.message ?? error.type.name);
+      // Without a message (type `unknown`), the underlying error says what
+      // went wrong (e.g. an exception thrown while building the request).
+      return ApiConnectionError(
+        error.message ?? error.error?.toString() ?? error.type.name,
+      );
     }
     final message = _detail(response.data) ?? 'HTTP ${response.statusCode}';
     final retryAfter = _seconds(response.headers.value('retry-after'));
