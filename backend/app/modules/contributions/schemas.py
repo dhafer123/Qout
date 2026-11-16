@@ -24,6 +24,8 @@ from app.modules.contributions.models import (
     CLIENT_ID_PATTERN,
     REPORT_COMMENT_MAX_LENGTH,
     ContributionStatus,
+    FallbackReason,
+    FallbackStatus,
     ParserUsed,
     ReportReason,
     ReportStatus,
@@ -301,8 +303,11 @@ class LabelIssueRead(BaseModel):
     checking by hand."""
 
 
-class LabelParseResult(BaseModel):
+class LabelReading(BaseModel):
+    """Values read from a label by one parser."""
+
     parser_used: ParserUsed
+    """`rules` (rule-based parser) or `llm` (the fallback)."""
     ok: bool
     """True when every mandatory value was read and passed the checks. The contributor
     reviews the values either way."""
@@ -313,3 +318,27 @@ class LabelParseResult(BaseModel):
     approximate: list[str]
     """Fields written as "< x" (read as x) or "traces" (read as 0)."""
     issues: list[LabelIssueRead]
+
+
+class LabelFallbackRead(BaseModel):
+    """The LLM fallback parser's reading of a label, read in the background."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    status: FallbackStatus
+    """`pending` (ask again shortly), `done` (see `result`) or `needs_manual_entry`."""
+    reason: FallbackReason | None
+    """Why there are no values, with `needs_manual_entry`."""
+    result: LabelReading | None
+    """With `done`: values that passed the checks, `parser_used` `llm`."""
+    created_at: datetime
+    completed_at: datetime | None
+
+
+class LabelParseResult(LabelReading):
+    """The rule-based parser's reading, and the LLM fallback when that one is not ok."""
+
+    fallback: LabelFallbackRead | None = None
+    """Set when the rules reading is not ok and the fallback is enabled: poll
+    `GET /v1/labels/parse/{id}` while it is `pending`. Null otherwise."""

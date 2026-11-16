@@ -15,7 +15,7 @@ from app.modules.contributions.label_parser import (
     LabelIssueCode,
     LabelParse,
     checked_parse,
-    label_parse_result,
+    label_reading,
     normalize,
     parse_label,
 )
@@ -419,7 +419,7 @@ def test_normalize(raw: str, normalized: str) -> None:
 
 
 def test_api_result_keeps_impossible_values_for_review() -> None:
-    result = label_parse_result(parse(salt="100,5 g", energy="330 kcal"))
+    result = label_reading(parse(salt="100,5 g", energy="330 kcal"))
 
     assert result.parser_used == "rules"
     assert result.ok is False
@@ -437,7 +437,7 @@ def test_api_result_keeps_impossible_values_for_review() -> None:
 
 
 def test_api_result_warning_does_not_block() -> None:
-    result = label_parse_result(parse_label(table(**BASE).split("\n", 1)[1]))
+    result = label_reading(parse_label(table(**BASE).split("\n", 1)[1]))
 
     assert result.ok is True
     assert [(i.code, i.field, i.blocking) for i in result.issues] == [

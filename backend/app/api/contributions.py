@@ -8,9 +8,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 from app.api.auth import CurrentUser, OptionalUser, client_ip, get_current_user
 from app.api.deps import SessionDep
 from app.core.config import Settings
+from app.core.queue import JobQueue
 from app.core.storage import Storage, StorageError
 from app.modules.auth.rate_limit import RateLimiter
-from app.modules.contributions.label_parser import label_parse_result, parse_label
+from app.modules.contributions.fallbacks import (
+    FallbackNotFoundError,
+    FallbackSettings,
+    LabelFallbackService,
+)
+from app.modules.contributions.label_parser import label_reading, parse_label
 from app.modules.contributions.nutrition import score_preview
 from app.modules.contributions.reports import (
     ReportedProductNotFoundError,
@@ -21,6 +27,7 @@ from app.modules.contributions.schemas import (
     ContributionCreate,
     ContributionList,
     ContributionRead,
+    LabelFallbackRead,
     LabelParseRequest,
     LabelParseResult,
     ReportCreate,
@@ -52,7 +59,25 @@ def get_report_service(request: Request, session: SessionDep) -> ReportService:
     return ReportService(session, RateLimiter(request.app.state.redis), settings)
 
 
+def get_job_queue(request: Request) -> JobQueue:
+    queue: JobQueue = request.app.state.job_queue
+    return queue
+
+
+def get_fallback_service(
+    request: Request, session: SessionDep, queue: Annotated[JobQueue, Depends(get_job_queue)]
+) -> LabelFallbackService:
+    settings: Settings = request.app.state.settings
+    return LabelFallbackService(
+        session,
+        FallbackSettings.from_settings(settings),
+        RateLimiter(request.app.state.redis),
+        queue,
+    )
+
+
 ContributionServiceDep = Annotated[ContributionService, Depends(get_contribution_service)]
+FallbackServiceDep = Annotated[LabelFallbackService, Depends(get_fallback_service)]
 
 
 @router.post(
@@ -140,13 +165,49 @@ async def get_my_contribution(
     description=(
         "Rule-based parser (French, English, Arabic): values per 100 g or 100 mL, the "
         "basis, and issues (missing values, a table declared per portion only, values "
-        "failing the sanity checks). Nothing is stored; the contributor reviews the values."
+        "failing the sanity checks). When that reading is not ok and the LLM fallback is "
+        "enabled, `fallback` holds a request for it: poll `GET /v1/labels/parse/{id}`. "
+        "Only the OCR text is sent to the LLM. The contributor reviews the values either "
+        "way; nothing else is stored."
     ),
-    dependencies=[Depends(get_current_user)],
     responses={status.HTTP_401_UNAUTHORIZED: _UNAUTHORIZED},
 )
-async def parse_label_text(body: LabelParseRequest) -> LabelParseResult:
-    return label_parse_result(parse_label(body.ocr_text))
+async def parse_label_text(
+    body: LabelParseRequest, user: CurrentUser, fallbacks: FallbackServiceDep
+) -> LabelParseResult:
+    parse = parse_label(body.ocr_text)
+    fallback = None if parse.ok else await fallbacks.start(user.id, body.ocr_text)
+    return LabelParseResult(
+        **dict(label_reading(parse)),
+        fallback=None if fallback is None else LabelFallbackRead.model_validate(fallback),
+    )
+
+
+@router.get(
+    "/v1/labels/parse/{fallback_id}",
+    summary="The LLM fallback's reading of a label",
+    description=(
+        "`pending` until the worker has read it (ask again every second or two), then "
+        "`done` with values that passed the same checks as the rule-based parser's, or "
+        "`needs_manual_entry` with the reason. Given up as `timeout` when not done in "
+        "time."
+    ),
+    responses={
+        status.HTTP_401_UNAUTHORIZED: _UNAUTHORIZED,
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "No such request of this user",
+        },
+    },
+)
+async def get_label_fallback(
+    fallback_id: uuid.UUID, user: CurrentUser, fallbacks: FallbackServiceDep
+) -> LabelFallbackRead:
+    try:
+        fallback = await fallbacks.get(user.id, fallback_id)
+    except FallbackNotFoundError as error:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(error)) from error
+    return LabelFallbackRead.model_validate(fallback)
 
 
 @router.post(

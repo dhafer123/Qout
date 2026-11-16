@@ -32,7 +32,13 @@ Sessions = async_sessionmaker[AsyncSession]
 EXPORT_URL = "https://static.off.test/data/openfoodfacts-products.jsonl.gz"
 DELTA_URL = "https://static.off.test/data/delta/"
 DELTA = "openfoodfacts_products_1000_2000.json.gz"
-JOBS = ["import_off_export", "import_off_deltas", "copy_product_images", "rescore_products"]
+JOBS = [
+    "import_off_export",
+    "import_off_deltas",
+    "copy_product_images",
+    "rescore_products",
+    "parse_label_with_llm",
+]
 
 
 @pytest.fixture

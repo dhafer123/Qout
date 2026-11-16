@@ -4,6 +4,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from functools import partial
 
+from arq.connections import ArqRedis
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from redis.asyncio import Redis
@@ -19,6 +20,7 @@ from app.core.config import Settings, get_settings
 from app.core.db import create_engine, create_session_factory
 from app.core.health import ReadinessCheck, check_database, check_redis
 from app.core.logging import configure_logging
+from app.core.queue import QUEUE_NAME
 from app.core.request_id import RequestIdMiddleware
 from app.core.storage import open_storage
 from app.modules.ingestion.off_client import OffClient
@@ -40,6 +42,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.session_factory = create_session_factory(engine)
         app.state.readiness_checks = checks
         app.state.redis = redis
+        # Queues worker jobs (the LLM label fallback) over the same connections.
+        app.state.job_queue = ArqRedis(redis.connection_pool, default_queue_name=QUEUE_NAME)
         app.state.off_client = OffClient.from_settings(settings)
         try:
             async with open_storage(settings) as storage:

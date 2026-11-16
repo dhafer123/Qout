@@ -5,10 +5,13 @@ imports run one at a time (a Postgres advisory lock), whichever worker picks the
 job that finds another import running is retried later. Every worker start queues a
 rescoring for the current engine version (once per version: the job id says which), so
 deploying a new engine rescores outdated products. Product photos are copied into our
-storage by their own job (every 15 minutes, one run at a time).
+storage by their own job (every 15 minutes, one run at a time). Labels the rule-based
+parser can't read are read by the LLM fallback (`parse_label_with_llm`, queued by the API)
+when it is enabled.
 """
 
 import logging
+import uuid
 from collections.abc import AsyncIterator
 from contextlib import AsyncExitStack, asynccontextmanager
 from dataclasses import asdict
@@ -24,6 +27,8 @@ from app.core.config import Settings, get_settings
 from app.core.db import create_engine, create_session_factory
 from app.core.logging import configure_logging
 from app.core.storage import Storage, open_storage
+from app.modules.contributions.fallbacks import FallbackRunner, FallbackSettings
+from app.modules.contributions.llm_client import AnthropicLabelLlm
 from app.modules.ingestion.download import download_client
 from app.modules.ingestion.importer import ImportResult
 from app.modules.ingestion.off_client import RateLimiter, RetryPolicy
@@ -63,6 +68,10 @@ async def startup(ctx: Context) -> None:
     ctx["http"] = download_client(settings)
     resources = AsyncExitStack()
     ctx["storage"] = await resources.enter_async_context(open_storage(settings))
+    if settings.llm_parser_enabled and "label_llm" not in ctx:  # tests preset a fake
+        llm = AnthropicLabelLlm.from_settings(settings)
+        resources.push_async_callback(llm.aclose)
+        ctx["label_llm"] = llm
     ctx["resources"] = resources
 
 
@@ -123,6 +132,17 @@ async def copy_product_images(ctx: Context) -> dict[str, int] | None:
     except ImportBusyError:
         return None
     return asdict(stats)
+
+
+async def parse_label_with_llm(ctx: Context, fallback_id: str) -> str | None:
+    """Read a label with the LLM fallback (queued by `POST /v1/labels/parse`). Returns
+    the status it ended with; None if the request was no longer pending."""
+    settings: Settings = ctx["settings"]
+    runner = FallbackRunner(
+        ctx["sessions"], ctx.get("label_llm"), FallbackSettings.from_settings(settings)
+    )
+    status = await runner.run(uuid.UUID(fallback_id))
+    return None if status is None else status.value
 
 
 async def run_copy_images(ctx: Context) -> ImageCopyStats:

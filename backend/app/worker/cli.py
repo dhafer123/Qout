@@ -18,8 +18,8 @@ from typing import Any
 from arq import create_pool
 
 from app.core.config import Settings, get_settings
+from app.core.queue import QUEUE_NAME, redis_settings
 from app.worker import jobs
-from app.worker.settings import QUEUE_NAME, redis_settings
 
 _JOBS = {
     "export": "import_off_export",

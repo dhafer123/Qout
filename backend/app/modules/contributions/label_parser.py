@@ -33,7 +33,7 @@ from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from enum import StrEnum
 
 from app.modules.contributions.models import ParserUsed
-from app.modules.contributions.schemas import LabelIssueRead, LabelParseResult, LabelValues
+from app.modules.contributions.schemas import LabelIssueRead, LabelReading, LabelValues
 from app.modules.ingestion.off_normaliser import ENERGY_SLACK_KJ, KJ_PER_KCAL_RANGE
 from app.modules.products.models import NutritionBasis
 from app.modules.scoring.conversions import KJ_PER_KCAL, SALT_PER_SODIUM
@@ -622,9 +622,9 @@ def _check_energy(reading: _Reading) -> None:
 # ---------------------------------------------------------------- API result
 
 
-def label_parse_result(parse: LabelParse) -> LabelParseResult:
-    return LabelParseResult(
-        parser_used=ParserUsed.RULES,
+def label_reading(parse: LabelParse, parser_used: ParserUsed = ParserUsed.RULES) -> LabelReading:
+    return LabelReading(
+        parser_used=parser_used,
         ok=parse.ok,
         basis=parse.basis,
         values=LabelValues(**{f.value: float(v) for f, v in parse.values.items()}),

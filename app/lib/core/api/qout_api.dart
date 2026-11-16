@@ -439,6 +439,143 @@ class Credentials {
   String toString() => 'Credentials(${toJson()})';
 }
 
+/// The LLM fallback parser's reading of a label, read in the background.
+@immutable
+class LabelFallbackRead {
+  const LabelFallbackRead({
+    required this.id,
+    required this.status,
+    required this.createdAt,
+    this.reason,
+    this.result,
+    this.completedAt,
+  });
+
+  factory LabelFallbackRead.fromJson(Map<String, Object?> json) =>
+      LabelFallbackRead(
+        id: json['id']! as String,
+        status: FallbackStatus.fromJson(json['status']),
+        reason: json['reason'] == null
+            ? null
+            : FallbackReason.fromJson(json['reason']),
+        result: json['result'] == null
+            ? null
+            : LabelReading.fromJson(json['result']! as Map<String, Object?>),
+        createdAt: DateTime.parse(json['created_at']! as String),
+        completedAt: json['completed_at'] == null
+            ? null
+            : DateTime.parse(json['completed_at']! as String),
+      );
+
+  final String id;
+
+  final FallbackStatus status;
+
+  final FallbackReason? reason;
+
+  final LabelReading? result;
+
+  final DateTime createdAt;
+
+  final DateTime? completedAt;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'id': id,
+    'status': status.toJson(),
+    'reason': reason?.toJson(),
+    'result': result?.toJson(),
+    'created_at': createdAt.toIso8601String(),
+    'completed_at': completedAt?.toIso8601String(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LabelFallbackRead &&
+          _deepEquals(id, other.id) &&
+          _deepEquals(status, other.status) &&
+          _deepEquals(reason, other.reason) &&
+          _deepEquals(result, other.result) &&
+          _deepEquals(createdAt, other.createdAt) &&
+          _deepEquals(completedAt, other.completedAt);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(id),
+    _deepHash(status),
+    _deepHash(reason),
+    _deepHash(result),
+    _deepHash(createdAt),
+    _deepHash(completedAt),
+  ]);
+
+  @override
+  String toString() => 'LabelFallbackRead(${toJson()})';
+}
+
+/// Why the LLM fallback gave no values (the contributor types them).
+enum FallbackReason {
+  disabled('disabled'),
+  rateLimited('rate_limited'),
+  timeout('timeout'),
+  unavailable('unavailable'),
+  refused('refused'),
+  invalidOutput('invalid_output'),
+  ungroundedValue('ungrounded_value'),
+  failedChecks('failed_checks'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const FallbackReason(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory FallbackReason.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('FallbackReason: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
+}
+
+/// A request to the LLM fallback parser (T28).
+enum FallbackStatus {
+  pending('pending'),
+  done('done'),
+  needsManualEntry('needs_manual_entry'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const FallbackStatus(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory FallbackStatus.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('FallbackStatus: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
+}
+
 @immutable
 class LabelParseRequest {
   const LabelParseRequest({
@@ -468,6 +605,8 @@ class LabelParseRequest {
   String toString() => 'LabelParseRequest(${toJson()})';
 }
 
+/// The rule-based parser's reading, and the LLM fallback when that one is not
+/// ok.
 @immutable
 class LabelParseResult {
   const LabelParseResult({
@@ -478,6 +617,7 @@ class LabelParseResult {
     required this.approximate,
     required this.issues,
     this.basis,
+    this.fallback,
   });
 
   factory LabelParseResult.fromJson(
@@ -500,6 +640,9 @@ class LabelParseResult {
         (item) => LabelIssueRead.fromJson(item! as Map<String, Object?>),
       ),
     ),
+    fallback: json['fallback'] == null
+        ? null
+        : LabelFallbackRead.fromJson(json['fallback']! as Map<String, Object?>),
   );
 
   final ParserUsed parserUsed;
@@ -516,6 +659,8 @@ class LabelParseResult {
 
   final List<LabelIssueRead> issues;
 
+  final LabelFallbackRead? fallback;
+
   Map<String, Object?> toJson() => <String, Object?>{
     'parser_used': parserUsed.toJson(),
     'ok': ok,
@@ -524,6 +669,7 @@ class LabelParseResult {
     'derived': derived,
     'approximate': approximate,
     'issues': issues.map((item) => item.toJson()).toList(),
+    'fallback': fallback?.toJson(),
   };
 
   @override
@@ -536,7 +682,8 @@ class LabelParseResult {
           _deepEquals(valuesValue, other.valuesValue) &&
           _deepEquals(derived, other.derived) &&
           _deepEquals(approximate, other.approximate) &&
-          _deepEquals(issues, other.issues);
+          _deepEquals(issues, other.issues) &&
+          _deepEquals(fallback, other.fallback);
 
   @override
   int get hashCode => Object.hashAll([
@@ -547,6 +694,7 @@ class LabelParseResult {
     _deepHash(derived),
     _deepHash(approximate),
     _deepHash(issues),
+    _deepHash(fallback),
   ]);
 
   @override
@@ -593,6 +741,90 @@ class LabelIssueRead {
 
   @override
   String toString() => 'LabelIssueRead(${toJson()})';
+}
+
+/// Values read from a label by one parser.
+@immutable
+class LabelReading {
+  const LabelReading({
+    required this.parserUsed,
+    required this.ok,
+    required this.valuesValue,
+    required this.derived,
+    required this.approximate,
+    required this.issues,
+    this.basis,
+  });
+
+  factory LabelReading.fromJson(Map<String, Object?> json) => LabelReading(
+    parserUsed: ParserUsed.fromJson(json['parser_used']),
+    ok: json['ok']! as bool,
+    basis: json['basis'] == null
+        ? null
+        : NutritionBasis.fromJson(json['basis']),
+    valuesValue: LabelValues.fromJson(json['values']! as Map<String, Object?>),
+    derived: List<String>.unmodifiable(
+      (json['derived']! as List<Object?>).map((item) => item! as String),
+    ),
+    approximate: List<String>.unmodifiable(
+      (json['approximate']! as List<Object?>).map((item) => item! as String),
+    ),
+    issues: List<LabelIssueRead>.unmodifiable(
+      (json['issues']! as List<Object?>).map(
+        (item) => LabelIssueRead.fromJson(item! as Map<String, Object?>),
+      ),
+    ),
+  );
+
+  final ParserUsed parserUsed;
+
+  final bool ok;
+
+  final NutritionBasis? basis;
+
+  final LabelValues valuesValue;
+
+  final List<String> derived;
+
+  final List<String> approximate;
+
+  final List<LabelIssueRead> issues;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'parser_used': parserUsed.toJson(),
+    'ok': ok,
+    'basis': basis?.toJson(),
+    'values': valuesValue.toJson(),
+    'derived': derived,
+    'approximate': approximate,
+    'issues': issues.map((item) => item.toJson()).toList(),
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LabelReading &&
+          _deepEquals(parserUsed, other.parserUsed) &&
+          _deepEquals(ok, other.ok) &&
+          _deepEquals(basis, other.basis) &&
+          _deepEquals(valuesValue, other.valuesValue) &&
+          _deepEquals(derived, other.derived) &&
+          _deepEquals(approximate, other.approximate) &&
+          _deepEquals(issues, other.issues);
+
+  @override
+  int get hashCode => Object.hashAll([
+    _deepHash(parserUsed),
+    _deepHash(ok),
+    _deepHash(basis),
+    _deepHash(valuesValue),
+    _deepHash(derived),
+    _deepHash(approximate),
+    _deepHash(issues),
+  ]);
+
+  @override
+  String toString() => 'LabelReading(${toJson()})';
 }
 
 /// Values read from the label, per 100 g or 100 mL; null: not found. Not
@@ -2154,8 +2386,10 @@ class QoutApi {
   ///
   /// Rule-based parser (French, English, Arabic): values per 100 g or 100 mL,
   /// the basis, and issues (missing values, a table declared per portion only,
-  /// values failing the sanity checks). Nothing is stored; the contributor
-  /// reviews the values.
+  /// values failing the sanity checks). When that reading is not ok and the LLM
+  /// fallback is enabled, `fallback` holds a request for it: poll `GET
+  /// /v1/labels/parse/{id}`. Only the OCR text is sent to the LLM. The
+  /// contributor reviews the values either way; nothing else is stored.
   ///
   /// Needs a signed-in user: the auth interceptor adds the access token.
   Future<LabelParseResult> parseLabelText({
@@ -2169,6 +2403,27 @@ class QoutApi {
     );
     return _parse(
       () => LabelParseResult.fromJson(json! as Map<String, Object?>),
+    );
+  }
+
+  /// The LLM fallback's reading of a label
+  ///
+  /// `pending` until the worker has read it (ask again every second or two),
+  /// then `done` with values that passed the same checks as the rule-based
+  /// parser's, or `needs_manual_entry` with the reason. Given up as `timeout`
+  /// when not done in time.
+  ///
+  /// Needs a signed-in user: the auth interceptor adds the access token.
+  Future<LabelFallbackRead> getLabelFallback({
+    required String fallbackId,
+  }) async {
+    final json = await _send(
+      'get',
+      '/v1/labels/parse/${Uri.encodeComponent(fallbackId)}',
+      authenticated: true,
+    );
+    return _parse(
+      () => LabelFallbackRead.fromJson(json! as Map<String, Object?>),
     );
   }
 

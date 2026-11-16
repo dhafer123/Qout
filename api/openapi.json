@@ -712,7 +712,7 @@
           "contributions"
         ],
         "summary": "Read nutrition values from a label's OCR text",
-        "description": "Rule-based parser (French, English, Arabic): values per 100 g or 100 mL, the basis, and issues (missing values, a table declared per portion only, values failing the sanity checks). Nothing is stored; the contributor reviews the values.",
+        "description": "Rule-based parser (French, English, Arabic): values per 100 g or 100 mL, the basis, and issues (missing values, a table declared per portion only, values failing the sanity checks). When that reading is not ok and the LLM fallback is enabled, `fallback` holds a request for it: poll `GET /v1/labels/parse/{id}`. Only the OCR text is sent to the LLM. The contributor reviews the values either way; nothing else is stored.",
         "operationId": "parseLabelText",
         "requestBody": {
           "content": {
@@ -761,6 +761,75 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/v1/labels/parse/{fallback_id}": {
+      "get": {
+        "tags": [
+          "contributions"
+        ],
+        "summary": "The LLM fallback's reading of a label",
+        "description": "`pending` until the worker has read it (ask again every second or two), then `done` with values that passed the same checks as the rule-based parser's, or `needs_manual_entry` with the reason. Given up as `timeout` when not done in time.",
+        "operationId": "getLabelFallback",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "fallback_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Fallback Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelFallbackRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such request of this user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/v1/score/preview": {
@@ -1971,6 +2040,31 @@
         ],
         "title": "ErrorResponse"
       },
+      "FallbackReason": {
+        "type": "string",
+        "enum": [
+          "disabled",
+          "rate_limited",
+          "timeout",
+          "unavailable",
+          "refused",
+          "invalid_output",
+          "ungrounded_value",
+          "failed_checks"
+        ],
+        "title": "FallbackReason",
+        "description": "Why the LLM fallback gave no values (the contributor types them)."
+      },
+      "FallbackStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "done",
+          "needs_manual_entry"
+        ],
+        "title": "FallbackStatus",
+        "description": "A request to the LLM fallback parser (T28)."
+      },
       "Grade": {
         "type": "string",
         "enum": [
@@ -2008,6 +2102,66 @@
           "status"
         ],
         "title": "HealthResponse"
+      },
+      "LabelFallbackRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/FallbackStatus"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FallbackReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LabelReading"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "reason",
+          "result",
+          "created_at",
+          "completed_at"
+        ],
+        "title": "LabelFallbackRead",
+        "description": "The LLM fallback parser's reading of a label, read in the background."
       },
       "LabelIssueRead": {
         "properties": {
@@ -2096,6 +2250,16 @@
             },
             "type": "array",
             "title": "Issues"
+          },
+          "fallback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LabelFallbackRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -2108,7 +2272,65 @@
           "approximate",
           "issues"
         ],
-        "title": "LabelParseResult"
+        "title": "LabelParseResult",
+        "description": "The rule-based parser's reading, and the LLM fallback when that one is not ok."
+      },
+      "LabelReading": {
+        "properties": {
+          "parser_used": {
+            "$ref": "#/components/schemas/ParserUsed"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionBasis"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "values": {
+            "$ref": "#/components/schemas/LabelValues"
+          },
+          "derived": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Derived"
+          },
+          "approximate": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Approximate"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/LabelIssueRead"
+            },
+            "type": "array",
+            "title": "Issues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "parser_used",
+          "ok",
+          "basis",
+          "values",
+          "derived",
+          "approximate",
+          "issues"
+        ],
+        "title": "LabelReading",
+        "description": "Values read from a label by one parser."
       },
       "LabelValues": {
         "properties": {

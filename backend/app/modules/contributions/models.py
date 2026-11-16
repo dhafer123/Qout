@@ -113,6 +113,41 @@ class Contribution(IdTimestampMixin, Base):
     """The product created or updated by approval."""
 
 
+class LabelFallback(IdTimestampMixin, Base):
+    """One request to the LLM fallback parser (T28): the nutrition table's OCR text, then
+    the reading (`done`) or why there is none (`needs_manual_entry`)."""
+
+    __tablename__ = "label_fallbacks"
+    __table_args__ = (
+        CheckConstraint("(status = 'done') = (result IS NOT NULL)", name="result_when_done"),
+        CheckConstraint(
+            "(status = 'needs_manual_entry') = (reason IS NOT NULL)", name="reason_when_failed"
+        ),
+        CheckConstraint(
+            "(status = 'pending') = (completed_at IS NULL)", name="completed_unless_pending"
+        ),
+    )
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    """Who asked; only they can read it."""
+    ocr_text: Mapped[str] = mapped_column(Text)
+    """The text sent to the model (nothing else is)."""
+    status: Mapped[FallbackStatus] = mapped_column(
+        str_enum(FallbackStatus, "label_fallback_status"),
+        server_default=FallbackStatus.PENDING.value,
+    )
+    reason: Mapped[FallbackReason | None] = mapped_column(
+        str_enum(FallbackReason, "label_fallback_reason")
+    )
+    result: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    """The accepted reading (`LabelReading`, `parser_used` `llm`)."""
+    model: Mapped[str | None] = mapped_column(String(100))
+    """The model that answered."""
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
 class ReportReason(StrEnum):
     NAME = "name"
     NUTRITION = "nutrition"

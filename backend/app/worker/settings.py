@@ -4,26 +4,23 @@ from datetime import UTC, timedelta
 from typing import Any
 
 from arq import cron
-from arq.connections import RedisSettings
 from arq.worker import func
 
 from app.core.config import Settings
+from app.core.queue import QUEUE_NAME, redis_settings
 from app.worker import jobs
 
-QUEUE_NAME = "qout:queue"
 EXPORT_TIMEOUT = timedelta(hours=12)
 """Download (~14 GB) plus a pass over every line of the export."""
 DELTA_TIMEOUT = timedelta(hours=2)
 RESCORE_TIMEOUT = timedelta(hours=2)
 IMAGES_TIMEOUT = timedelta(hours=2)
 KEEP_RESULT = timedelta(days=1)
+LABEL_JOB_MARGIN = timedelta(seconds=30)
+"""Beyond the LLM time limit: database reads and writes around the call."""
 MAX_TRIES = 5
 """Runs of a job interrupted by a worker restart, or retried because another import was
 running. Interrupted imports resume from their checkpoint."""
-
-
-def redis_settings(settings: Settings) -> RedisSettings:
-    return RedisSettings.from_dsn(str(settings.redis_url))
 
 
 def worker_settings(settings: Settings, *, queue_name: str = QUEUE_NAME) -> dict[str, Any]:
@@ -71,6 +68,12 @@ def worker_settings(settings: Settings, *, queue_name: str = QUEUE_NAME) -> dict
                 timeout=RESCORE_TIMEOUT,
                 keep_result=KEEP_RESULT,
                 max_tries=MAX_TRIES,
+            ),
+            func(
+                jobs.parse_label_with_llm,
+                timeout=timedelta(seconds=settings.llm_timeout_seconds) + LABEL_JOB_MARGIN,
+                keep_result=timedelta(hours=1),
+                max_tries=1,  # the contributor is waiting: no retry, manual entry instead
             ),
         ],
         "cron_jobs": cron_jobs,
