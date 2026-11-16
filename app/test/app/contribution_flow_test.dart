@@ -1,20 +1,53 @@
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/api_providers.dart';
 import 'package:qout/core/api/qout_api.dart';
+import 'package:qout/core/database/database.dart';
+import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/auth/presentation/sign_in_screen.dart';
 import 'package:qout/features/contribute/presentation/contribute_screen.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
+import 'package:qout/features/outbox/data/outbox.dart';
+import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
+import 'package:qout/features/outbox/presentation/outbox_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 
 import '../helpers/fake_auth_api.dart';
 import '../helpers/fake_contribution.dart';
 import '../helpers/fake_product_repository.dart';
+import '../helpers/in_memory_token_store.dart';
 import '../helpers/pump_app.dart';
 
 const _ean = '6191234567897';
+
+/// Syncs with the app's own outbox (the real sending, no timers).
+class _RunTrigger implements OutboxTrigger {
+  ProviderContainer? container;
+
+  @override
+  Future<void> sync() async => container?.read(outboxProvider).run();
+
+  @override
+  Future<void> signedIn() => sync();
+}
+
+/// Takes the photo for each tile [titles] with the camera.
+Future<void> _takePhotos(WidgetTester tester, List<String> titles) async {
+  for (final title in titles) {
+    await tester.tap(
+      find.descendant(
+        of: find.ancestor(of: find.text(title), matching: find.byType(Card)),
+        matching: find.text('Camera'),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+  }
+}
 
 /// End to end with a fake API: an unknown product is added from three
 /// photos, the label read by the rules parser and the LLM fallback.
@@ -130,5 +163,94 @@ void main() {
     await tester.tap(find.text('Done'));
     await tester.pumpAndSettle();
     expect(find.byType(HomeScreen), findsOneWidget);
+  });
+
+  testWidgets('offline: saved, shown on the home screen, sent later', (
+    tester,
+  ) async {
+    tester.view
+      ..physicalSize = const Size(800, 3200)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final database = AppDatabase(NativeDatabase.memory());
+    addTearDown(database.close);
+    final trigger = _RunTrigger();
+
+    final fake = FakeContribution(
+      photos: ['front.jpg', 'nutrition.jpg'],
+      texts: {'front.jpg': 'Sablés', 'nutrition.jpg': cleanLabelText},
+    );
+    fake.api.parseResults.add(recordedLabelParse('label-parse-ok'));
+    // The connection drops before sending.
+    fake.api.uploadErrors.add(const ApiConnectionError('offline'));
+
+    await tester.pumpQoutApp(
+      database: database,
+      tokens: InMemoryTokenStore(
+        AuthSession(
+          email: 'a@example.tn',
+          accessToken: 'access',
+          accessExpiresAt: DateTime.now().add(const Duration(minutes: 15)),
+          refreshToken: 'refresh',
+          refreshExpiresAt: DateTime.now().add(const Duration(days: 30)),
+        ),
+      ),
+      outboxTrigger: trigger,
+      outboxEntries: database.outboxDao.watchAll(),
+      overrides: [
+        ...fake.overrides,
+        productRepositoryProvider.overrideWithValue(
+          FakeProductRepository(
+            results: [const ProductResult.notFound(ean: _ean)],
+          ),
+        ),
+      ],
+    );
+    trigger.container = ProviderScope.containerOf(
+      tester.element(find.byType(HomeScreen)),
+    );
+    await tester.pushRoute(AppRoutes.product(_ean));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Add this product'));
+    await tester.pumpAndSettle();
+    await _takePhotos(tester, ['Front of the package', 'Nutrition table']);
+    await tester.tap(find.text('Continue'));
+    await tester.pump();
+    await tester.tap(find.text('None (0 %)'));
+    await tester.pump();
+    await tester.tap(find.text('Send for review'));
+    await tester.pumpAndSettle();
+
+    // Kept on the phone.
+    expect(find.text('Saved'), findsOneWidget);
+    expect(find.textContaining('No connection to Qout.'), findsOneWidget);
+    expect(fake.api.submitted, isEmpty);
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+
+    // Shown on the home screen.
+    expect(find.text('1 waiting to be sent'), findsOneWidget);
+    await tester.tap(find.byType(OutboxCard));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Next try at'), findsOneWidget);
+
+    // Back online: sent at once on request.
+    await tester.tap(find.text('Try now'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Nothing waiting. Everything has been sent.'),
+      findsOneWidget,
+    );
+    final body = fake.api.submitted.single;
+    expect(body.ean, _ean);
+    expect(body.nutrition.saltG, 0.85);
+    expect(fake.api.uploads.map((u) => u.kind), [
+      PhotoKind.front, // the failed attempt
+      PhotoKind.front,
+      PhotoKind.nutrition,
+    ]);
+    expect(await database.outboxDao.all(), isEmpty);
+    await tester.unmountQoutApp();
   });
 }

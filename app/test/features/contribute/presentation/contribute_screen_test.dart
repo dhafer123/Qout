@@ -393,13 +393,13 @@ void main() {
       expect(find.byType(ContributeScreen), findsNothing);
     });
 
-    testWidgets('sending shows progress; a failure, then try again', (
+    testWidgets('sending shows progress; refused, then try again', (
       tester,
     ) async {
       fake.api.parseResults.add(recordedLabelParse('label-parse-ok'));
       fake.api
         ..submitGate = Completer<void>()
-        ..submitErrors.add(const ApiUnavailable('busy'));
+        ..submitErrors.add(const ApiInvalidRequest('salt_g too high'));
       await open(tester);
       await toReview(tester);
 
@@ -413,19 +413,39 @@ void main() {
       expect(tester.widget<FilledButton>(sendButton).onPressed, isNull);
 
       fake.api.submitGate!.complete();
-      await tester.pump();
-      await tester.pump();
-      expect(
-        find.text('The server is busy. Try again in a moment.'),
-        findsOneWidget,
-      );
+      await tester.pumpAndSettle();
+      expect(find.text('Not accepted: salt_g too high'), findsOneWidget);
 
       fake.api.submitGate = null;
       await tester.tap(find.text('Try again'));
-      await tester.pump();
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(find.text('Thank you!'), findsOneWidget);
       expect(fake.api.submitted, hasLength(2));
+    });
+
+    testWidgets('offline: saved on the phone, sent later', (tester) async {
+      fake.api.parseResults.add(recordedLabelParse('label-parse-ok'));
+      fake.api.uploadErrors.add(const ApiConnectionError('offline'));
+      await open(tester);
+      await toReview(tester);
+
+      await tester.tap(find.text('Send for review'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Saved'), findsOneWidget); // the title
+      expect(
+        find.text(
+          'No connection to Qout. It is saved on this phone and will be '
+          'sent automatically. You can follow it from the home screen.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byIcon(Icons.outbox_outlined), findsOneWidget);
+      expect(fake.api.submitted, isEmpty);
+
+      await tester.tap(find.text('Done'));
+      await tester.pumpAndSettle();
+      expect(find.byType(HomeScreen), findsOneWidget);
     });
   });
 }

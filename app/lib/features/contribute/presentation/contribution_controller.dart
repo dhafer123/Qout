@@ -10,12 +10,24 @@ import 'package:qout/core/photos/label_photo_picker.dart';
 import 'package:qout/features/contribute/data/contribution_repository.dart';
 import 'package:qout/features/contribute/domain/contribution_draft.dart';
 import 'package:qout/features/contribute/domain/draft_values.dart';
+import 'package:qout/features/outbox/data/outbox.dart';
+import 'package:qout/features/outbox/domain/send_outcome.dart';
+import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
 import 'package:qout/scoring/scoring.dart' as scoring;
 
 part 'contribution_controller.freezed.dart';
 
 /// The flow's pages.
-enum ContributionStep { photos, review, sent }
+enum ContributionStep {
+  photos,
+  review,
+
+  /// Received by the server.
+  sent,
+
+  /// Kept on the phone (offline, server busy): the outbox sends it later.
+  saved,
+}
 
 /// Where reading the nutrition table stands.
 enum LabelReadingStatus {
@@ -85,6 +97,9 @@ abstract class ContributionState with _$ContributionState {
     /// Why the last send failed (shown with "Try again").
     String? sendError,
 
+    /// Why a saved contribution isn't sent yet (no connection, ...).
+    String? savedReason,
+
     /// The contributor tried to send: missing values are shown as errors.
     @Default(false) bool showRequired,
   }) = _ContributionState;
@@ -99,8 +114,9 @@ extension ContributionStateX on ContributionState {
 
 /// One product being added, by barcode. Photos are read on the phone (ML
 /// Kit); the nutrition table's text goes to the server's label parser and
-/// fills the form; the contributor reviews; sending uploads the photos and
-/// submits the product (moderated before it is published).
+/// fills the form; the contributor reviews; sending queues the product in the
+/// outbox, which uploads the photos and submits it at once or, offline,
+/// later (moderated before it is published).
 class ContributionController
     extends AutoDisposeFamilyNotifier<ContributionState, String> {
   /// Bumped when a new nutrition photo replaces the one being read, so a late
@@ -356,33 +372,54 @@ class ContributionController
       return false;
     }
     state = state.copyWith(sending: true, sendError: null, showRequired: true);
+    final outbox = ref.read(outboxProvider);
     try {
-      final keys = <PhotoKind, String>{};
-      for (final MapEntry(key: kind, value: path) in draft.photos.entries) {
-        keys[kind] = await _repository.uploadPhoto(
-          clientId: draft.clientId,
-          kind: kind,
-          path: path,
-        );
-      }
-      await _repository.submit(_body(draft, keys));
+      await outbox.addContribution(_body(draft), draft.photos);
     } on Object catch (error) {
-      _log('sending failed', error);
-      if (!_disposed) {
-        state = state.copyWith(sending: false, sendError: sendErrorText(error));
-      }
+      _log('saving it on the phone failed', error);
+      _sendFailed('Could not save it on this phone. Try again.');
       return false;
     }
-    if (!_disposed) {
-      state = state.copyWith(sending: false, step: ContributionStep.sent);
+    final outcome = await outbox.sendNow(draft.clientId);
+    if (_disposed) return outcome is! Refused;
+    switch (outcome) {
+      case Sent():
+        state = state.copyWith(sending: false, step: ContributionStep.sent);
+        return true;
+      case Refused(:final message):
+        // Still in the form: the contributor fixes it and sends again.
+        await outbox.delete(draft.clientId);
+        _sendFailed(message);
+        return false;
+      case RetryLater(:final message):
+        _saved(message);
+        return true;
+      case NeedsSignIn(:final message):
+        _saved(message);
+        return true;
     }
-    return true;
   }
 
-  ContributionCreate _body(
-    ContributionDraft draft,
-    Map<PhotoKind, String> keys,
-  ) {
+  void _sendFailed(String message) {
+    if (!_disposed) {
+      state = state.copyWith(sending: false, sendError: message);
+    }
+  }
+
+  /// Queued, not sent yet: the outbox sends it later (its timer is set by a
+  /// run).
+  void _saved(String why) {
+    state = state.copyWith(
+      sending: false,
+      step: ContributionStep.saved,
+      savedReason: why,
+    );
+    unawaited(ref.read(outboxTriggerProvider).sync().catchError((Object _) {}));
+  }
+
+  /// The request as queued; photo keys are filled in by the outbox once
+  /// uploaded.
+  ContributionCreate _body(ContributionDraft draft) {
     String? text(String value) => value.trim().isEmpty ? null : value.trim();
     return ContributionCreate(
       clientId: draft.clientId,
@@ -394,11 +431,7 @@ class ContributionController
       ),
       basis: draft.basis,
       nutrition: nutritionValues(draft),
-      photos: ContributionPhotos(
-        front: keys[PhotoKind.front]!,
-        nutrition: keys[PhotoKind.nutrition]!,
-        ingredients: keys[PhotoKind.ingredients],
-      ),
+      photos: const ContributionPhotos(front: '', nutrition: ''),
       ocrText: ContributionOcr(
         front: draft.ocrText[PhotoKind.front],
         nutrition: draft.ocrText[PhotoKind.nutrition],
@@ -414,18 +447,6 @@ class ContributionController
 void _log(String what, Object error) {
   if (kDebugMode) debugPrint('Contribution: $what: $error');
 }
-
-/// What to tell the contributor when sending failed.
-String sendErrorText(Object error) => switch (error) {
-  ApiConnectionError() || PhotoUploadError() =>
-    'Could not reach the server. Check your connection and try again.',
-  ApiUnauthorized() => 'Your session has ended. Sign in again, then retry.',
-  ApiInvalidRequest(:final message) =>
-    'The server refused this product: $message',
-  ApiTooManyRequests() => 'Too many photos sent in the last hour. Try later.',
-  ApiUnavailable() => 'The server is busy. Try again in a moment.',
-  _ => 'Something went wrong. Try again.',
-};
 
 /// The product being added, by barcode; dropped when the flow closes.
 final AutoDisposeNotifierProviderFamily<

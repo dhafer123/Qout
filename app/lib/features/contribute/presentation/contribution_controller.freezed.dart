@@ -18,7 +18,8 @@ mixin _$ContributionState {
  Set<PhotoKind> get readingPhotos;/// The LLM's reading, when offered (not applied).
  LabelReading? get aiOffer;/// Sending: uploading the photos, then submitting.
  bool get sending;/// Why the last send failed (shown with "Try again").
- String? get sendError;/// The contributor tried to send: missing values are shown as errors.
+ String? get sendError;/// Why a saved contribution isn't sent yet (no connection, ...).
+ String? get savedReason;/// The contributor tried to send: missing values are shown as errors.
  bool get showRequired;
 /// Create a copy of ContributionState
 /// with the given fields replaced by the non-null parameter values.
@@ -30,16 +31,16 @@ $ContributionStateCopyWith<ContributionState> get copyWith => _$ContributionStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContributionState&&(identical(other.draft, draft) || other.draft == draft)&&(identical(other.step, step) || other.step == step)&&(identical(other.reading, reading) || other.reading == reading)&&const DeepCollectionEquality().equals(other.readingPhotos, readingPhotos)&&(identical(other.aiOffer, aiOffer) || other.aiOffer == aiOffer)&&(identical(other.sending, sending) || other.sending == sending)&&(identical(other.sendError, sendError) || other.sendError == sendError)&&(identical(other.showRequired, showRequired) || other.showRequired == showRequired));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContributionState&&(identical(other.draft, draft) || other.draft == draft)&&(identical(other.step, step) || other.step == step)&&(identical(other.reading, reading) || other.reading == reading)&&const DeepCollectionEquality().equals(other.readingPhotos, readingPhotos)&&(identical(other.aiOffer, aiOffer) || other.aiOffer == aiOffer)&&(identical(other.sending, sending) || other.sending == sending)&&(identical(other.sendError, sendError) || other.sendError == sendError)&&(identical(other.savedReason, savedReason) || other.savedReason == savedReason)&&(identical(other.showRequired, showRequired) || other.showRequired == showRequired));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,draft,step,reading,const DeepCollectionEquality().hash(readingPhotos),aiOffer,sending,sendError,showRequired);
+int get hashCode => Object.hash(runtimeType,draft,step,reading,const DeepCollectionEquality().hash(readingPhotos),aiOffer,sending,sendError,savedReason,showRequired);
 
 @override
 String toString() {
-  return 'ContributionState(draft: $draft, step: $step, reading: $reading, readingPhotos: $readingPhotos, aiOffer: $aiOffer, sending: $sending, sendError: $sendError, showRequired: $showRequired)';
+  return 'ContributionState(draft: $draft, step: $step, reading: $reading, readingPhotos: $readingPhotos, aiOffer: $aiOffer, sending: $sending, sendError: $sendError, savedReason: $savedReason, showRequired: $showRequired)';
 }
 
 
@@ -50,7 +51,7 @@ abstract mixin class $ContributionStateCopyWith<$Res>  {
   factory $ContributionStateCopyWith(ContributionState value, $Res Function(ContributionState) _then) = _$ContributionStateCopyWithImpl;
 @useResult
 $Res call({
- ContributionDraft draft, ContributionStep step, LabelReadingStatus reading, Set<PhotoKind> readingPhotos, LabelReading? aiOffer, bool sending, String? sendError, bool showRequired
+ ContributionDraft draft, ContributionStep step, LabelReadingStatus reading, Set<PhotoKind> readingPhotos, LabelReading? aiOffer, bool sending, String? sendError, String? savedReason, bool showRequired
 });
 
 
@@ -67,7 +68,7 @@ class _$ContributionStateCopyWithImpl<$Res>
 
 /// Create a copy of ContributionState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? draft = null,Object? step = null,Object? reading = null,Object? readingPhotos = null,Object? aiOffer = freezed,Object? sending = null,Object? sendError = freezed,Object? showRequired = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? draft = null,Object? step = null,Object? reading = null,Object? readingPhotos = null,Object? aiOffer = freezed,Object? sending = null,Object? sendError = freezed,Object? savedReason = freezed,Object? showRequired = null,}) {
   return _then(_self.copyWith(
 draft: null == draft ? _self.draft : draft // ignore: cast_nullable_to_non_nullable
 as ContributionDraft,step: null == step ? _self.step : step // ignore: cast_nullable_to_non_nullable
@@ -76,6 +77,7 @@ as LabelReadingStatus,readingPhotos: null == readingPhotos ? _self.readingPhotos
 as Set<PhotoKind>,aiOffer: freezed == aiOffer ? _self.aiOffer : aiOffer // ignore: cast_nullable_to_non_nullable
 as LabelReading?,sending: null == sending ? _self.sending : sending // ignore: cast_nullable_to_non_nullable
 as bool,sendError: freezed == sendError ? _self.sendError : sendError // ignore: cast_nullable_to_non_nullable
+as String?,savedReason: freezed == savedReason ? _self.savedReason : savedReason // ignore: cast_nullable_to_non_nullable
 as String?,showRequired: null == showRequired ? _self.showRequired : showRequired // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
@@ -171,10 +173,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ContributionDraft draft,  ContributionStep step,  LabelReadingStatus reading,  Set<PhotoKind> readingPhotos,  LabelReading? aiOffer,  bool sending,  String? sendError,  bool showRequired)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ContributionDraft draft,  ContributionStep step,  LabelReadingStatus reading,  Set<PhotoKind> readingPhotos,  LabelReading? aiOffer,  bool sending,  String? sendError,  String? savedReason,  bool showRequired)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ContributionState() when $default != null:
-return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.aiOffer,_that.sending,_that.sendError,_that.showRequired);case _:
+return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.aiOffer,_that.sending,_that.sendError,_that.savedReason,_that.showRequired);case _:
   return orElse();
 
 }
@@ -192,10 +194,10 @@ return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.a
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ContributionDraft draft,  ContributionStep step,  LabelReadingStatus reading,  Set<PhotoKind> readingPhotos,  LabelReading? aiOffer,  bool sending,  String? sendError,  bool showRequired)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ContributionDraft draft,  ContributionStep step,  LabelReadingStatus reading,  Set<PhotoKind> readingPhotos,  LabelReading? aiOffer,  bool sending,  String? sendError,  String? savedReason,  bool showRequired)  $default,) {final _that = this;
 switch (_that) {
 case _ContributionState():
-return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.aiOffer,_that.sending,_that.sendError,_that.showRequired);case _:
+return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.aiOffer,_that.sending,_that.sendError,_that.savedReason,_that.showRequired);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -212,10 +214,10 @@ return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.a
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ContributionDraft draft,  ContributionStep step,  LabelReadingStatus reading,  Set<PhotoKind> readingPhotos,  LabelReading? aiOffer,  bool sending,  String? sendError,  bool showRequired)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ContributionDraft draft,  ContributionStep step,  LabelReadingStatus reading,  Set<PhotoKind> readingPhotos,  LabelReading? aiOffer,  bool sending,  String? sendError,  String? savedReason,  bool showRequired)?  $default,) {final _that = this;
 switch (_that) {
 case _ContributionState() when $default != null:
-return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.aiOffer,_that.sending,_that.sendError,_that.showRequired);case _:
+return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.aiOffer,_that.sending,_that.sendError,_that.savedReason,_that.showRequired);case _:
   return null;
 
 }
@@ -227,7 +229,7 @@ return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.a
 
 
 class _ContributionState implements ContributionState {
-  const _ContributionState({required this.draft, this.step = ContributionStep.photos, this.reading = LabelReadingStatus.none, final  Set<PhotoKind> readingPhotos = const <PhotoKind>{}, this.aiOffer, this.sending = false, this.sendError, this.showRequired = false}): _readingPhotos = readingPhotos;
+  const _ContributionState({required this.draft, this.step = ContributionStep.photos, this.reading = LabelReadingStatus.none, final  Set<PhotoKind> readingPhotos = const <PhotoKind>{}, this.aiOffer, this.sending = false, this.sendError, this.savedReason, this.showRequired = false}): _readingPhotos = readingPhotos;
   
 
 @override final  ContributionDraft draft;
@@ -248,6 +250,8 @@ class _ContributionState implements ContributionState {
 @override@JsonKey() final  bool sending;
 /// Why the last send failed (shown with "Try again").
 @override final  String? sendError;
+/// Why a saved contribution isn't sent yet (no connection, ...).
+@override final  String? savedReason;
 /// The contributor tried to send: missing values are shown as errors.
 @override@JsonKey() final  bool showRequired;
 
@@ -261,16 +265,16 @@ _$ContributionStateCopyWith<_ContributionState> get copyWith => __$ContributionS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ContributionState&&(identical(other.draft, draft) || other.draft == draft)&&(identical(other.step, step) || other.step == step)&&(identical(other.reading, reading) || other.reading == reading)&&const DeepCollectionEquality().equals(other._readingPhotos, _readingPhotos)&&(identical(other.aiOffer, aiOffer) || other.aiOffer == aiOffer)&&(identical(other.sending, sending) || other.sending == sending)&&(identical(other.sendError, sendError) || other.sendError == sendError)&&(identical(other.showRequired, showRequired) || other.showRequired == showRequired));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ContributionState&&(identical(other.draft, draft) || other.draft == draft)&&(identical(other.step, step) || other.step == step)&&(identical(other.reading, reading) || other.reading == reading)&&const DeepCollectionEquality().equals(other._readingPhotos, _readingPhotos)&&(identical(other.aiOffer, aiOffer) || other.aiOffer == aiOffer)&&(identical(other.sending, sending) || other.sending == sending)&&(identical(other.sendError, sendError) || other.sendError == sendError)&&(identical(other.savedReason, savedReason) || other.savedReason == savedReason)&&(identical(other.showRequired, showRequired) || other.showRequired == showRequired));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,draft,step,reading,const DeepCollectionEquality().hash(_readingPhotos),aiOffer,sending,sendError,showRequired);
+int get hashCode => Object.hash(runtimeType,draft,step,reading,const DeepCollectionEquality().hash(_readingPhotos),aiOffer,sending,sendError,savedReason,showRequired);
 
 @override
 String toString() {
-  return 'ContributionState(draft: $draft, step: $step, reading: $reading, readingPhotos: $readingPhotos, aiOffer: $aiOffer, sending: $sending, sendError: $sendError, showRequired: $showRequired)';
+  return 'ContributionState(draft: $draft, step: $step, reading: $reading, readingPhotos: $readingPhotos, aiOffer: $aiOffer, sending: $sending, sendError: $sendError, savedReason: $savedReason, showRequired: $showRequired)';
 }
 
 
@@ -281,7 +285,7 @@ abstract mixin class _$ContributionStateCopyWith<$Res> implements $ContributionS
   factory _$ContributionStateCopyWith(_ContributionState value, $Res Function(_ContributionState) _then) = __$ContributionStateCopyWithImpl;
 @override @useResult
 $Res call({
- ContributionDraft draft, ContributionStep step, LabelReadingStatus reading, Set<PhotoKind> readingPhotos, LabelReading? aiOffer, bool sending, String? sendError, bool showRequired
+ ContributionDraft draft, ContributionStep step, LabelReadingStatus reading, Set<PhotoKind> readingPhotos, LabelReading? aiOffer, bool sending, String? sendError, String? savedReason, bool showRequired
 });
 
 
@@ -298,7 +302,7 @@ class __$ContributionStateCopyWithImpl<$Res>
 
 /// Create a copy of ContributionState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? draft = null,Object? step = null,Object? reading = null,Object? readingPhotos = null,Object? aiOffer = freezed,Object? sending = null,Object? sendError = freezed,Object? showRequired = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? draft = null,Object? step = null,Object? reading = null,Object? readingPhotos = null,Object? aiOffer = freezed,Object? sending = null,Object? sendError = freezed,Object? savedReason = freezed,Object? showRequired = null,}) {
   return _then(_ContributionState(
 draft: null == draft ? _self.draft : draft // ignore: cast_nullable_to_non_nullable
 as ContributionDraft,step: null == step ? _self.step : step // ignore: cast_nullable_to_non_nullable
@@ -307,6 +311,7 @@ as LabelReadingStatus,readingPhotos: null == readingPhotos ? _self._readingPhoto
 as Set<PhotoKind>,aiOffer: freezed == aiOffer ? _self.aiOffer : aiOffer // ignore: cast_nullable_to_non_nullable
 as LabelReading?,sending: null == sending ? _self.sending : sending // ignore: cast_nullable_to_non_nullable
 as bool,sendError: freezed == sendError ? _self.sendError : sendError // ignore: cast_nullable_to_non_nullable
+as String?,savedReason: freezed == savedReason ? _self.savedReason : savedReason // ignore: cast_nullable_to_non_nullable
 as String?,showRequired: null == showRequired ? _self.showRequired : showRequired // ignore: cast_nullable_to_non_nullable
 as bool,
   ));

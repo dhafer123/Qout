@@ -33,13 +33,17 @@ class ContributeScreen extends ConsumerWidget {
             ContributionStep.photos => 'Add a product',
             ContributionStep.review => 'Check the values',
             ContributionStep.sent => 'Sent',
+            ContributionStep.saved => 'Saved',
           }),
         ),
         body: SafeArea(
           child: switch (step) {
             ContributionStep.photos => _PhotosStep(ean: ean),
             ContributionStep.review => ReviewForm(ean: ean),
-            ContributionStep.sent => const _Sent(),
+            ContributionStep.sent => const _Done(),
+            ContributionStep.saved => _Done(
+              savedReason: ref.watch(provider.select((s) => s.savedReason)),
+            ),
           },
         ),
       ),
@@ -210,8 +214,12 @@ class _Thumbnail extends StatelessWidget {
   }
 }
 
-class _Sent extends StatelessWidget {
-  const _Sent();
+/// After sending: received by the server, or kept on the phone
+/// ([savedReason]) for the outbox to send later.
+class _Done extends StatelessWidget {
+  const _Done({this.savedReason});
+
+  final String? savedReason;
 
   @override
   Widget build(BuildContext context) {
@@ -223,16 +231,22 @@ class _Sent extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.check_circle_outline,
+              savedReason == null
+                  ? Icons.check_circle_outline
+                  : Icons.outbox_outlined,
               size: 64,
               color: theme.colorScheme.primary,
             ),
             const SizedBox(height: 16),
             Text('Thank you!', style: theme.textTheme.headlineSmall),
             const SizedBox(height: 8),
-            const Text(
-              'Your product is waiting for review. It appears in the app once '
-              'a moderator has checked it against your photos.',
+            Text(
+              savedReason == null
+                  ? 'Your product is waiting for review. It appears in the app '
+                        'once a moderator has checked it against your photos.'
+                  : '$savedReason It is saved on this phone and will be sent '
+                        'automatically. You can follow it from the home '
+                        'screen.',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),

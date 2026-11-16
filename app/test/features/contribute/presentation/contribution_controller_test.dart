@@ -1,21 +1,31 @@
 import 'dart:async';
 
+import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qout/core/api/api_providers.dart';
 import 'package:qout/core/api/qout_api.dart';
+import 'package:qout/core/database/database.dart';
+import 'package:qout/core/database/database_provider.dart';
 import 'package:qout/core/photos/label_photo_picker.dart';
 import 'package:qout/features/contribute/data/contribution_repository.dart';
 import 'package:qout/features/contribute/domain/contribution_draft.dart';
 import 'package:qout/features/contribute/presentation/contribution_controller.dart';
+import 'package:qout/features/outbox/data/outbox_files.dart';
+import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
 import 'package:qout/scoring/scoring.dart' as scoring;
 
 import '../../../helpers/fake_contribution.dart';
+import '../../../helpers/fake_outbox.dart';
 
 const _ean = '6191234567897';
 
 void main() {
   late FakeContribution fake;
   late ProviderContainer container;
+  late AppDatabase database;
+  late FakeOutboxFiles files;
+  late FakeOutboxTrigger trigger;
   final provider = contributionControllerProvider(_ean);
 
   ContributionController controller() => container.read(provider.notifier);
@@ -30,12 +40,25 @@ void main() {
         'ingredients.jpg': 'Ingrédients : farine de blé, sucre',
       },
     );
+    database = AppDatabase(NativeDatabase.memory());
+    files = FakeOutboxFiles();
+    trigger = FakeOutboxTrigger();
     // Listened to: keeps the auto-dispose provider alive.
-    container = ProviderContainer(overrides: fake.overrides)
-      ..listen(provider, (_, _) {});
+    container = ProviderContainer(
+      overrides: [
+        ...fake.overrides,
+        appDatabaseProvider.overrideWithValue(database),
+        qoutApiProvider.overrideWithValue(fake.api),
+        outboxFilesProvider.overrideWithValue(files),
+        outboxTriggerProvider.overrideWithValue(trigger),
+      ],
+    )..listen(provider, (_, _) {});
   });
 
-  tearDown(() => container.dispose());
+  tearDown(() async {
+    container.dispose();
+    await database.close();
+  });
 
   /// Takes the photo at [path] as [kind] (camera).
   Future<void> capture(PhotoKind kind, String? path) {
@@ -453,6 +476,10 @@ void main() {
       expect(body.ocrText?.nutrition, cleanLabelText);
       expect(body.ocrText?.front, 'Biscuits Sablés\nMarque');
       expect(body.ocrText?.ingredients, 'Ingrédients : farine de blé, sucre');
+      // Through the outbox: kept photos sent, then cleared.
+      expect(files.kept.map((k) => k.$1).toSet(), {id});
+      expect(files.removed, [id]);
+      expect(await database.outboxDao.all(), isEmpty);
     });
 
     test('without the ingredients photo', () async {
@@ -510,26 +537,67 @@ void main() {
       expect(fake.api.uploads, isEmpty);
     });
 
-    test('a failure is shown; trying again resends the same one', () async {
+    test('offline: saved on the phone for the outbox', () async {
       await threePhotos();
       fake.putErrors.add(const PhotoUploadError('no connection to storage'));
 
-      expect(await controller().send(), isFalse);
-      expect(state().sending, isFalse);
-      expect(state().step, ContributionStep.photos);
-      expect(
-        state().sendError,
-        'Could not reach the server. Check your connection and try again.',
-      );
-      expect(fake.api.submitted, isEmpty);
-
       expect(await controller().send(), isTrue);
+
+      expect(state().sending, isFalse);
+      expect(state().step, ContributionStep.saved);
+      expect(state().savedReason, 'A photo could not be uploaded.');
+      expect(state().sendError, isNull);
+      expect(fake.api.submitted, isEmpty);
+      final queued = (await database.outboxDao.find(state().draft.clientId))!;
+      expect(queued.state, OutboxState.waiting);
+      expect(queued.nextAttemptAt, isNotNull);
+      expect(files.removed, isEmpty); // photos kept for the retry
+      await pumpEventQueue();
+      expect(trigger.syncs, 1); // sets the retry timer
+    });
+
+    test('signed out meanwhile: saved, sent after signing in', () async {
+      await threePhotos();
+      fake.api.uploadErrors.add(const ApiUnauthorized('expired'));
+      expect(await controller().send(), isTrue);
+      expect(state().step, ContributionStep.saved);
+      expect(state().savedReason, 'Sign in to send it.');
+      expect(
+        (await database.outboxDao.find(state().draft.clientId))!.state,
+        OutboxState.needsSignIn,
+      );
+    });
+
+    test('refused: shown in the form, not kept; fixed, sent again', () async {
+      await threePhotos();
+      fake.api.submitErrors.add(const ApiInvalidRequest('salt_g too high'));
+
+      expect(await controller().send(), isFalse);
+      expect(state().step, ContributionStep.photos);
+      expect(state().sendError, 'Not accepted: salt_g too high');
+      expect(await database.outboxDao.all(), isEmpty);
+      expect(files.removed, [state().draft.clientId]);
+
+      controller().setValue(NutrientField.salt, '0,9');
+      expect(await controller().send(), isTrue);
+      expect(state().step, ContributionStep.sent);
       expect(state().sendError, isNull);
       expect(
-        fake.api.uploads.map((u) => u.contributionId).toSet(),
+        fake.api.submitted.map((b) => b.clientId).toSet(),
         {state().draft.clientId},
       );
-      expect(fake.api.submitted, hasLength(1));
+      expect(fake.api.submitted.last.nutrition.saltG, 0.9);
+    });
+
+    test('the photos cannot be kept: shown, nothing queued', () async {
+      await threePhotos();
+      files.keepError = Exception('disk full');
+      expect(await controller().send(), isFalse);
+      expect(
+        state().sendError,
+        'Could not save it on this phone. Try again.',
+      );
+      expect(await database.outboxDao.all(), isEmpty);
     });
 
     test('a second tap while sending is ignored', () async {
@@ -553,33 +621,10 @@ void main() {
       await pumpEventQueue();
       container.dispose();
       fake.api.submitGate!.complete();
-      expect(await sending, isFalse);
+      expect(await sending, isTrue); // kept: the outbox sends it later
+      expect(await database.outboxDao.all(), hasLength(1));
       container = ProviderContainer(); // for tearDown
     });
-  });
-
-  test('send errors in plain words', () {
-    expect(
-      sendErrorText(const ApiConnectionError('x')),
-      'Could not reach the server. Check your connection and try again.',
-    );
-    expect(
-      sendErrorText(const ApiUnauthorized('x')),
-      'Your session has ended. Sign in again, then retry.',
-    );
-    expect(
-      sendErrorText(const ApiInvalidRequest('salt_g: too high')),
-      'The server refused this product: salt_g: too high',
-    );
-    expect(
-      sendErrorText(const ApiTooManyRequests('x')),
-      'Too many photos sent in the last hour. Try later.',
-    );
-    expect(
-      sendErrorText(const ApiUnavailable('x')),
-      'The server is busy. Try again in a moment.',
-    );
-    expect(sendErrorText(StateError('x')), 'Something went wrong. Try again.');
   });
 }
 
