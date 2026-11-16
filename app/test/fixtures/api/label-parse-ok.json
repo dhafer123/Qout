@@ -1,0 +1,21 @@
+{
+  "parser_used": "rules",
+  "ok": true,
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": 1046.0,
+    "energy_kcal": 250.0,
+    "total_fat_g": 9.5,
+    "saturated_fat_g": 3.2,
+    "carbohydrates_g": 33.0,
+    "sugars_g": 12.0,
+    "fibre_g": 2.1,
+    "protein_g": 7.4,
+    "salt_g": 0.85,
+    "sodium_g": null
+  },
+  "derived": [],
+  "approximate": [],
+  "issues": [],
+  "fallback": null
+}
