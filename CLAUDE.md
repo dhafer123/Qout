@@ -13,7 +13,8 @@ label and get an explainable nutrition score. Solo portfolio project by Dhafer R
 - `scoring-spec/golden/*.json` — shared test cases. Python AND Dart engines must
   produce identical results for every file.
 - Data: PostgreSQL, Redis (cache + job queue), S3-compatible object storage (RustFS locally, see ADR 0002).
-- External: Open Food Facts (called from the backend only, never from the app), optional LLM API.
+- External: Open Food Facts (called from the backend only, never from the app); Google Gemini
+  API as the optional LLM fallback for label parsing (backend worker only, `google-genai`).
 - Local dev: Docker Engine + Compose inside WSL 2 (no Docker Desktop) for Postgres/Redis/RustFS; backend in WSL 2; Flutter on Windows.
 
 Lookup chain for a barcode: app local cache → `GET /v1/products/{ean}` → our DB →
