@@ -14,6 +14,7 @@ from app.modules.contributions.label_parser import (
     LabelIssue,
     LabelIssueCode,
     LabelParse,
+    checked_parse,
     label_parse_result,
     normalize,
     parse_label,
@@ -340,6 +341,52 @@ def test_empty_text() -> None:
 def test_warnings_do_not_block() -> None:
     assert not LabelIssue(LabelIssueCode.BASIS_UNKNOWN).blocking
     assert LabelIssue(LabelIssueCode.MISSING, LabelField.SALT).blocking
+
+
+# ---------------------------------------------------------------- values from another parser
+
+CHECKED = {
+    LabelField.ENERGY_KCAL: Decimal(330),
+    LabelField.FAT: Decimal(10),
+    LabelField.SATURATED_FAT: Decimal(2),
+    LabelField.CARBOHYDRATES: Decimal(50),
+    LabelField.SUGARS: Decimal(5),
+    LabelField.PROTEIN: Decimal(10),
+    LabelField.SODIUM: Decimal("0.4"),
+}
+
+
+def test_checked_values_are_derived_like_the_rules_parser() -> None:
+    parsed = checked_parse(CHECKED, NutritionBasis.PER_100G)
+
+    assert parsed.ok
+    assert parsed.values[LabelField.ENERGY_KJ] == Decimal(1386)
+    assert parsed.values[LabelField.SALT] == Decimal("1.0")
+    assert parsed.derived == {LabelField.ENERGY_KJ, LabelField.SALT}
+    assert parsed.basis == NutritionBasis.PER_100G
+
+
+def test_checked_values_get_the_same_checks() -> None:
+    parsed = checked_parse(CHECKED | {LabelField.SUGARS: Decimal(51)}, NutritionBasis.PER_100G)
+
+    assert not parsed.ok
+    assert codes(parsed) == {LabelIssueCode.SUGARS_OVER_CARBOHYDRATES}
+
+
+def test_checked_values_report_missing_ones_and_an_unknown_basis() -> None:
+    parsed = checked_parse({LabelField.FAT: Decimal(1)}, None)
+
+    assert LabelIssue(LabelIssueCode.MISSING, LabelField.SALT) in parsed.issues
+    assert LabelIssue(LabelIssueCode.BASIS_UNKNOWN) in parsed.issues
+
+
+def test_checked_approximate_marks_only_values_given() -> None:
+    parsed = checked_parse(
+        CHECKED, NutritionBasis.PER_100G, approximate=[LabelField.SODIUM, LabelField.FIBRE]
+    )
+
+    assert parsed.approximate == {LabelField.SODIUM, LabelField.SALT}
+    assert parsed.ok
 
 
 # ---------------------------------------------------------------- normalisation

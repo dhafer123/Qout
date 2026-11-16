@@ -27,7 +27,7 @@ fallback parser (T28) is tried, and the contributor reviews every value anyway.
 
 import re
 import unicodedata
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from enum import StrEnum
@@ -490,14 +490,28 @@ def parse_label(text: str) -> LabelParse:
         return LabelParse(
             values={}, basis=None, issues=(LabelIssue(LabelIssueCode.NO_NUTRITION_TABLE),)
         )
+    return _finish(reading, layout.basis)
 
+
+def checked_parse(
+    values: Mapping[LabelField, Decimal],
+    basis: NutritionBasis | None,
+    approximate: Iterable[LabelField] = (),
+) -> LabelParse:
+    """Values read by another parser (the LLM fallback, T28), given the same derivations
+    and sanity checks as the rule-based parser's."""
+    reading = _Reading(values=dict(values), approximate=set(approximate) & set(values))
+    return _finish(reading, basis)
+
+
+def _finish(reading: _Reading, basis: NutritionBasis | None) -> LabelParse:
     _derive(reading)
     _check(reading)
-    if layout.basis is None:
+    if basis is None:
         reading.issue(LabelIssueCode.BASIS_UNKNOWN)
     return LabelParse(
         values=dict(reading.values),
-        basis=layout.basis,
+        basis=basis,
         derived=frozenset(reading.derived),
         approximate=frozenset(reading.approximate),
         issues=tuple(reading.issues),
