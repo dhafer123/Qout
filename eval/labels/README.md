@@ -131,3 +131,16 @@ The report gives field accuracy (printed fields read correctly), precision, labe
 correct, the parser's `ok` against the ground truth (ok but wrong is the costly case: the
 LLM fallback of T28 only runs when `ok` is false), per-field and per-tag breakdowns, and
 every label not fully correct with expected and read values.
+
+With the LLM fallback (T28):
+
+```sh
+uv run python -m scripts.eval_parser --parser rules+llm   # writes ...-rules-llm-<date>.md
+```
+
+The LLM is asked, as in the app, only for labels whose rules reading is not ok. This
+sends their OCR text to the Anthropic API (`LLM_API_KEY`, `LLM_MODEL`, `LLM_EFFORT` from
+`.env`; billed). Replies are cached in `backend/var/llm-cache/`, so running it again with
+the same settings sends nothing; delete the folder to ask again. The report adds a
+comparison with `rules` alone and what the fallback did per label (accepted, or the reason
+for manual entry); an LLM reading accepted but wrong is the new costly case.

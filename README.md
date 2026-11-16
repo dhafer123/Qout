@@ -19,7 +19,7 @@ coverage grows for local (Tunisian) products that global databases miss.
 | Mobile app | Flutter (Android first, iOS later), Riverpod, go_router, dio, drift, mobile_scanner, ML Kit text recognition |
 | Backend | Python 3.12, FastAPI, SQLAlchemy 2 (async) + Alembic, Pydantic v2, arq worker |
 | Data | PostgreSQL, Redis (cache + job queue), S3-compatible object storage (RustFS locally) |
-| External | Open Food Facts (backend only), optional LLM API for label parsing |
+| External | Open Food Facts (backend only), optional LLM (Anthropic API) for label parsing |
 | CI/CD | GitHub Actions |
 
 Architecture decisions are recorded in [`docs/adr/`](docs/adr/), starting with
@@ -192,11 +192,24 @@ Arabic; checks in `docs/specs/README.md`), and `POST /v1/score/preview` scores v
 without saving. Anyone can report an error on a product
 (`POST /v1/reports`, duplicate-safe on `client_id`, `REPORT_MAX_PER_IP` per hour).
 
+When the rule-based reading is not ok, an **LLM fallback** can read the label instead
+(off by default: `LLM_PARSER_ENABLED`, `LLM_API_KEY`; Anthropic API, model `LLM_MODEL`).
+`POST /v1/labels/parse` then also returns a `fallback` request (`pending`) and queues the
+`parse_label_with_llm` worker job; the app polls `GET /v1/labels/parse/{id}` until it is
+`done` (values with `parser_used: llm`) or `needs_manual_entry` (with the reason). Only the
+OCR text is sent. The answer must match a strict JSON schema, every value must appear in
+the OCR text, and the same checks as the rules parser's apply; otherwise the contributor
+types the values. Readings are rate-limited per user (`LLM_PARSE_MAX_PER_USER`) and given
+up after `LLM_PARSE_DEADLINE_SECONDS`. The worker must be running for the fallback to
+answer.
+
 The parser is measured on real labels in `eval/labels/` (photographed with the dev
 build's "Label OCR" screen; format and capture steps in its README). From `backend/`,
 `uv run python -m scripts.eval_parser` writes
 `docs/reports/label-parser-eval-rules-<date>.md`: field accuracy, per-field and per-tag
-breakdowns, and labels the parser calls ok but got wrong.
+breakdowns, and labels the parser calls ok but got wrong. `--parser rules+llm` measures the
+rules parser with the LLM fallback against the rules parser alone (real, billed requests
+with `LLM_API_KEY`; replies cached in `backend/var/llm-cache/`).
 
 Moderators (role `admin`) use `/v1/admin/...`: the pending queue, approve (the product
 becomes verified, source `contribution`, so OFF imports leave it alone; the nutrition is a

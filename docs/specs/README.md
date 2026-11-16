@@ -85,6 +85,12 @@ golden case:
   fibre + salt ≤ 102 g (2 g for rounding); a value written "< x" is read as x and marked
   approximate; "traces" is read as 0 and marked approximate; values declared per portion
   only are refused, not converted.
+- **LLM fallback parser (T28; data quality, never scoring):** its values get every check
+  above, plus a grounding rule (decided 2026-11-16): each value's digits must appear in a
+  number of the OCR text, as the rules parser normalises it (`0.5` matches `0,50`; `21`
+  matches `218`, an OCR misreading of `21g`). A value that isn't in the text rejects the
+  whole reading. Zero for "traces" (marked approximate) is exempt. The model returns
+  amounts as printed with their unit; mg → g (÷ 1000) is done in code, never by the model.
 - **Display only:** the app shows energy as kJ and kcal, with kcal = kJ / 4.184 (the
   thermochemical calorie, 1 kcal = 4.184 kJ exactly; decided 2026-11-13). Never used for
   scoring, which takes kJ; for kcal→kJ inputs the calculator's 4.2 above still applies.
