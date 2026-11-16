@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:qout/core/photos/photo_type.dart';
 import 'package:qout/features/label_eval/domain/inbox_photo.dart';
 import 'package:qout/features/label_eval/domain/saved_label.dart';
 
@@ -134,15 +135,7 @@ class LabelEvalStore {
 
   /// `png` for PNG data, otherwise `jpg`. Read from the content: image_picker
   /// re-encodes a picked PNG to JPEG but keeps the `.png` file name.
-  static String extensionOf(List<int> photo) {
-    const pngSignature = [0x89, 0x50, 0x4E, 0x47];
-    final isPng =
-        photo.length >= pngSignature.length &&
-        Iterable<int>.generate(
-          pngSignature.length,
-        ).every((i) => photo[i] == pngSignature[i]);
-    return isPng ? 'png' : 'jpg';
-  }
+  static String extensionOf(List<int> photo) => isPng(photo) ? 'png' : 'jpg';
 }
 
 /// `Android/data/<app id>/files/label-eval` on the phone, which `adb pull`
