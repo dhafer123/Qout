@@ -11,7 +11,7 @@ from typing import Any
 
 import pytest
 
-from app.core.config import REPO_ROOT
+from app.core.config import REPO_ROOT, Settings
 from app.modules.contributions.label_parser import (
     LabelField,
     LabelIssue,
@@ -19,6 +19,8 @@ from app.modules.contributions.label_parser import (
     LabelParse,
     parse_label,
 )
+from app.modules.contributions.llm_parser import LlmReply
+from app.modules.contributions.models import FallbackReason
 from app.modules.contributions.parser_eval import (
     EvalSet,
     GroundTruth,
@@ -29,6 +31,7 @@ from app.modules.contributions.parser_eval import (
     Tally,
     compare,
     evaluate,
+    evaluate_with_fallback,
     load_cases,
     parse_ground_truth,
     render_markdown,
@@ -517,3 +520,183 @@ def test_script_writes_the_report(tmp_path: Path, capsys: pytest.CaptureFixture[
         .out.strip()
         .endswith("1 labels, fields correct 1/1, fully correct 1/1, ok but wrong 0, not reviewed 1")
     )
+
+
+# ---------------------------------------------------------------- rules + LLM fallback (T28)
+
+TABLE = """Valeurs nutritionnelles pour 100 g
+Énergie 1386 kJ / 330 kcal
+Matières grasses 10 g
+dont acides gras saturés 2 g
+Glucides {carbohydrates}
+dont sucres 5 g
+Protéines 10 g
+Sel 1 g"""
+READABLE = TABLE.format(carbohydrates="50 g")
+MISREAD = TABLE.format(carbohydrates="508")  # `50g` read as `508`: the rules parser fails
+MISREAD_WITH_FIBRE = MISREAD + "\nFibres 3 g"
+PRINTED = {
+    F.ENERGY_KJ: "1386",
+    F.ENERGY_KCAL: "330",
+    F.FAT: "10",
+    F.SATURATED_FAT: "2",
+    F.CARBOHYDRATES: "50",
+    F.SUGARS: "5",
+    F.PROTEIN: "10",
+    F.SALT: "1",
+}
+
+
+def llm_answer(**changes: Any) -> dict[str, Any]:
+    values: dict[str, Any] = {
+        "energy_kj": {"amount": 1386},
+        "energy_kcal": {"amount": 330},
+        "total_fat_g": {"amount": 10, "unit": "g"},
+        "saturated_fat_g": {"amount": 2, "unit": "g"},
+        "carbohydrates_g": {"amount": 50, "unit": "g"},
+        "sugars_g": {"amount": 5, "unit": "g"},
+        "fibre_g": None,
+        "protein_g": {"amount": 10, "unit": "g"},
+        "salt_g": {"amount": 1, "unit": "g"},
+        "sodium_g": None,
+    }
+    return {
+        "table_found": True,
+        "basis": "per_100g",
+        "values": values | changes,
+        "approximate": [],
+    }
+
+
+class FakeLlm:
+    model = "claude-test"
+
+    def __init__(self, answers: dict[str, dict[str, Any]]) -> None:
+        self.answers = answers
+        self.texts: list[str] = []
+
+    async def read(self, ocr_text: str) -> LlmReply:
+        self.texts.append(ocr_text)
+        return LlmReply(json.dumps(self.answers[ocr_text]), "end_turn", self.model)
+
+
+ANSWERS = {
+    MISREAD: llm_answer(),
+    # Protein 12 is not in the text: rejected, the rules reading is kept.
+    MISREAD_WITH_FIBRE: llm_answer(protein_g={"amount": 12, "unit": "g"}),
+}
+FALLBACK_SET = EvalSet(
+    (
+        LabelCase(truth(PRINTED, label_id="tn-001"), READABLE),
+        LabelCase(truth(PRINTED, label_id="tn-002"), MISREAD),
+        LabelCase(truth(PRINTED | {F.FIBRE: "3"}, label_id="tn-003"), MISREAD_WITH_FIBRE),
+    )
+)
+
+
+async def test_evaluate_with_fallback() -> None:
+    llm = FakeLlm(ANSWERS)
+
+    e, use = await evaluate_with_fallback(FALLBACK_SET, llm, time_limit=1)
+
+    assert sorted(llm.texts) == sorted(ANSWERS)  # never asked for the readable label
+    assert use.outcomes == {"tn-002": None, "tn-003": FallbackReason.UNGROUNDED_VALUE}
+    assert (use.asked, use.accepted) == (2, frozenset({"tn-002"}))
+    assert use.rejected == Counter({FallbackReason.UNGROUNDED_VALUE: 1})
+    assert e.parser == "rules+llm"
+    assert e.fields == Tally(correct=24, wrong=1)
+    assert [r.fully_correct for r in e.results] == [True, True, False]
+    assert e.results[2].parse.values[F.CARBOHYDRATES] == Decimal(508)  # the rules reading
+
+
+async def test_fallback_report() -> None:
+    baseline = evaluate(FALLBACK_SET, parse_label, parser_name="rules")
+    e, use = await evaluate_with_fallback(FALLBACK_SET, FakeLlm(ANSWERS), time_limit=1)
+
+    report = render_markdown(e, generated_on=TODAY, source="x", baseline=baseline, fallback=use)
+
+    assert report.startswith("# Label parser evaluation: `rules+llm`")
+    assert "## Compared with `rules` alone\n\n| | `rules` | `rules+llm` |" in report
+    assert "| Field accuracy | 23 / 25 (92.0 %) | 24 / 25 (96.0 %) |" in report
+    assert "| Labels fully correct | 1 / 3 (33.3 %) | 2 / 3 (66.7 %) |" in report
+    assert "| **Ok but not fully correct** | 0 | 0 |" in report
+    assert "Asked for the 2 labels whose rules reading is not ok." in report
+    assert "| Reading accepted | 1 |" in report
+    assert "| **Accepted but not fully correct** | **0** |" in report
+    assert "| Manual entry: ungrounded_value | 1 |" in report
+    assert "### tn-003" in report
+    assert "LLM fallback: ungrounded_value (rules reading kept)." in report
+    assert "Read by the LLM fallback." not in report  # tn-002 is fully correct
+
+
+async def test_fallback_report_marks_llm_readings_that_are_wrong() -> None:
+    wrong_truth = EvalSet((LabelCase(truth(PRINTED | {F.SUGARS: "4"}), MISREAD),))
+    baseline = evaluate(wrong_truth, parse_label, parser_name="rules")
+    e, use = await evaluate_with_fallback(wrong_truth, FakeLlm(ANSWERS), time_limit=1)
+
+    report = render_markdown(e, generated_on=TODAY, source="x", baseline=baseline, fallback=use)
+
+    assert "| **Accepted but not fully correct** | **1** |" in report
+    assert "| **Ok but not fully correct** | 0 | 1 |" in report
+    assert "Read by the LLM fallback." in report
+
+
+def _settings(**values: Any) -> Settings:
+    return Settings(
+        _env_file=None,  # type: ignore[call-arg]
+        database_url="postgresql+asyncpg://u:p@db:5432/q",  # type: ignore[arg-type]
+        redis_url="redis://cache:6379/0",  # type: ignore[arg-type]
+        **values,
+    )
+
+
+def _labels(directory: Path) -> Path:
+    directory.mkdir()
+    for case in FALLBACK_SET.cases:
+        values = {f.value: str(v) for f, v in case.truth.values.items()}
+        write(directory, case.truth.label_id, doc(values=values), case.ocr_text)
+    return directory
+
+
+def test_script_with_the_fallback(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(eval_parser, "REPORTS_DIR", tmp_path / "reports")
+    monkeypatch.setattr(eval_parser, "get_settings", _settings)
+    labels = _labels(tmp_path / "labels")
+
+    path = eval_parser.main(labels, None, "rules+llm", "x", llm=FakeLlm(ANSWERS))
+
+    assert path.parent == tmp_path / "reports"
+    assert path.name.startswith("label-parser-eval-rules-llm-")
+    assert "## Compared with `rules` alone" in path.read_text(encoding="utf-8")
+    assert (
+        capsys.readouterr()
+        .out.strip()
+        .endswith("fully correct 2/3, ok but wrong 0, not reviewed 0, LLM accepted 1/2")
+    )
+
+
+def test_script_fallback_needs_a_key(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(eval_parser, "get_settings", _settings)
+    labels = _labels(tmp_path / "labels")
+
+    with pytest.raises(SystemExit, match="LLM_API_KEY"):
+        eval_parser.main(labels, tmp_path / "r.md", "rules+llm", "x")
+
+    assert not (tmp_path / "r.md").exists()
+
+
+async def test_cached_llm_answers_again_without_asking(tmp_path: Path) -> None:
+    llm = FakeLlm(ANSWERS)
+    cached = eval_parser.CachedLabelLlm(llm, tmp_path / "cache", effort="medium")
+    other_effort = eval_parser.CachedLabelLlm(llm, tmp_path / "cache", effort="high")
+
+    first = await cached.read(MISREAD)
+    again = await cached.read(MISREAD)
+    await other_effort.read(MISREAD)
+
+    assert first == again
+    assert cached.model == "claude-test"
+    assert llm.texts == [MISREAD, MISREAD]  # another effort is another request
+    assert len(list((tmp_path / "cache").glob("*.json"))) == 2

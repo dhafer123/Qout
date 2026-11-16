@@ -19,8 +19,15 @@ A label is fully correct when every printed field is correct, nothing is spuriou
 basis is right. The parser's own `ok` is compared with that: a label the parser calls ok
 but got wrong is the costly case, because the fallback parser (T28) is only tried when
 `ok` is False.
+
+`evaluate_with_fallback` measures `rules+llm` (T28): the rules reading when it is ok,
+otherwise the LLM fallback's reading when the fallback accepts it, otherwise the rules
+reading again (the contributor then enters the values). Its report compares it with
+`rules` alone and counts what the fallback did; an LLM reading accepted but wrong is the
+new costly case.
 """
 
+import asyncio
 import json
 import re
 from collections import Counter
@@ -31,7 +38,14 @@ from decimal import Decimal, InvalidOperation
 from enum import StrEnum
 from pathlib import Path
 
-from app.modules.contributions.label_parser import LabelField, LabelIssueCode, LabelParse
+from app.modules.contributions.label_parser import (
+    LabelField,
+    LabelIssueCode,
+    LabelParse,
+    parse_label,
+)
+from app.modules.contributions.llm_parser import LabelLlm, read_with_llm
+from app.modules.contributions.models import FallbackReason
 from app.modules.products.models import NutritionBasis
 
 Parser = Callable[[str], LabelParse]
@@ -424,10 +438,74 @@ def _ratio(part: int, whole: int) -> float | None:
     return None if whole == 0 else 100 * part / whole
 
 
+# ---------------------------------------------------------------- with the LLM fallback
+
+
+@dataclass(frozen=True)
+class FallbackUse:
+    """What the LLM fallback did in `rules+llm`, for the labels the rules parser could not
+    read: label id -> None when its reading was used, else why not."""
+
+    outcomes: dict[str, FallbackReason | None]
+
+    @property
+    def asked(self) -> int:
+        return len(self.outcomes)
+
+    @property
+    def accepted(self) -> frozenset[str]:
+        return frozenset(label for label, reason in self.outcomes.items() if reason is None)
+
+    @property
+    def rejected(self) -> Counter[FallbackReason]:
+        return Counter(reason for reason in self.outcomes.values() if reason is not None)
+
+
+@dataclass(frozen=True)
+class _Read:
+    parse: LabelParse
+    asked: bool
+    """The rules reading was not ok, so the model was asked."""
+    reason: FallbackReason | None = None
+
+
+async def evaluate_with_fallback(
+    eval_set: EvalSet, llm: LabelLlm, *, time_limit: float, concurrency: int = 4
+) -> tuple[Evaluation, FallbackUse]:
+    """`rules+llm` over the set: the model is asked (at most `concurrency` at a time) only
+    for labels whose rules reading is not ok, as in the app."""
+    limit = asyncio.Semaphore(concurrency)
+
+    async def read(case: LabelCase) -> _Read:
+        rules = parse_label(case.ocr_text)
+        if rules.ok:
+            return _Read(rules, asked=False)
+        async with limit:
+            reading = await read_with_llm(llm, case.ocr_text, time_limit=time_limit)
+        if reading.accepted and reading.parse is not None:
+            return _Read(reading.parse, asked=True)
+        return _Read(rules, asked=True, reason=reading.reason or FallbackReason.INVALID_OUTPUT)
+
+    reads = await asyncio.gather(*(read(case) for case in eval_set.cases))
+    pairs = list(zip(eval_set.cases, reads, strict=True))
+    by_text = {case.ocr_text: r.parse for case, r in pairs}
+    outcomes = {case.truth.label_id: r.reason for case, r in pairs if r.asked}
+    evaluation = evaluate(eval_set, by_text.__getitem__, parser_name="rules+llm")
+    return evaluation, FallbackUse(outcomes)
+
+
 # ---------------------------------------------------------------- Markdown
 
 
-def render_markdown(evaluation: Evaluation, *, generated_on: date, source: str) -> str:
+def render_markdown(
+    evaluation: Evaluation,
+    *,
+    generated_on: date,
+    source: str,
+    baseline: Evaluation | None = None,
+    fallback: FallbackUse | None = None,
+) -> str:
+    """With `baseline` (`rules` alone) and `fallback`: the `rules+llm` report."""
     e = evaluation
     lines = [
         f"# Label parser evaluation: `{e.parser}`",
@@ -459,9 +537,61 @@ def render_markdown(evaluation: Evaluation, *, generated_on: date, source: str) 
         f"| **Parser ok but not fully correct** | **{len(e.ok_but_wrong)}** |",
         "",
     ]
+    if baseline is not None and fallback is not None:
+        lines += _comparison(e, baseline) + _fallback(e, fallback)
     lines += _ok_matrix(e) + _by_field(e) + _groups_table("language", e.by_language)
-    lines += _groups_table("layout", e.by_layout) + _sources(e) + _issues(e) + _failures(e)
+    lines += _groups_table("layout", e.by_layout) + _sources(e) + _issues(e)
+    lines += _failures(e, fallback)
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _comparison(e: Evaluation, baseline: Evaluation) -> list[str]:
+    b = baseline
+    rows = [
+        (
+            "Field accuracy",
+            _count(b.fields.correct, b.fields.printed, b.fields.accuracy),
+            _count(e.fields.correct, e.fields.printed, e.fields.accuracy),
+        ),
+        (
+            "Field precision",
+            _count(b.fields.correct, b.fields.returned, b.fields.precision),
+            _count(e.fields.correct, e.fields.returned, e.fields.precision),
+        ),
+        ("Labels fully correct", _rate(b.fully_correct), _rate(e.fully_correct)),
+        ("Basis correct", _rate(b.basis), _rate(e.basis)),
+        ("**Ok but not fully correct**", str(len(b.ok_but_wrong)), str(len(e.ok_but_wrong))),
+    ]
+    lines = [
+        f"## Compared with `{b.parser}` alone",
+        "",
+        f"| | `{b.parser}` | `{e.parser}` |",
+        "|---|---:|---:|",
+    ]
+    lines += [f"| {name} | {before} | {after} |" for name, before, after in rows]
+    return [*lines, ""]
+
+
+def _fallback(e: Evaluation, fallback: FallbackUse) -> list[str]:
+    accepted_wrong = sum(
+        1 for r in e.results if r.truth.label_id in fallback.accepted and not r.fully_correct
+    )
+    lines = [
+        "## LLM fallback",
+        "",
+        f"Asked for the {fallback.asked} labels whose rules reading is not ok. A reading it "
+        "accepts replaces the rules reading; otherwise the contributor gets the rules "
+        "reading, flagged for manual entry.",
+        "",
+        "| Outcome | Labels |",
+        "|---|---:|",
+        f"| Reading accepted | {len(fallback.accepted)} |",
+        f"| **Accepted but not fully correct** | **{accepted_wrong}** |",
+    ]
+    lines += [
+        f"| Manual entry: {reason.value} | {n} |" for reason, n in sorted(fallback.rejected.items())
+    ]
+    return [*lines, ""]
 
 
 def _ok_matrix(e: Evaluation) -> list[str]:
@@ -536,7 +666,7 @@ def _issues(e: Evaluation) -> list[str]:
     return [*lines, ""]
 
 
-def _failures(e: Evaluation) -> list[str]:
+def _failures(e: Evaluation, fallback: FallbackUse | None) -> list[str]:
     failing = [r for r in e.results if not r.fully_correct]
     lines = ["## Labels not fully correct", ""]
     if not failing:
@@ -552,6 +682,14 @@ def _failures(e: Evaluation) -> list[str]:
             f"Issues: {', '.join(_issue_text(r)) or _EMPTY}.",
             "",
         ]
+        if fallback is not None and t.label_id in fallback.outcomes:
+            reason = fallback.outcomes[t.label_id]
+            read_by = (
+                "Read by the LLM fallback."
+                if reason is None
+                else f"LLM fallback: {reason.value} (rules reading kept)."
+            )
+            lines += [read_by, ""]
         if t.photo_url is not None:
             lines += [f"Photo: <{t.photo_url}> (Open Food Facts, CC BY-SA 3.0).", ""]
         if not r.basis_correct:
