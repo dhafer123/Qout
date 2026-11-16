@@ -55,13 +55,15 @@ extension LabelEvalStatePatterns on LabelEvalState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LabelEvalIdle value)?  idle,TResult Function( LabelEvalWorking value)?  working,TResult Function( LabelEvalSaved value)?  saved,TResult Function( LabelEvalFailed value)?  failed,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LabelEvalIdle value)?  idle,TResult Function( LabelEvalWorking value)?  working,TResult Function( LabelEvalSaved value)?  saved,TResult Function( LabelEvalReadingInbox value)?  readingInbox,TResult Function( LabelEvalInboxRead value)?  inboxRead,TResult Function( LabelEvalFailed value)?  failed,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case LabelEvalIdle() when idle != null:
 return idle(_that);case LabelEvalWorking() when working != null:
 return working(_that);case LabelEvalSaved() when saved != null:
-return saved(_that);case LabelEvalFailed() when failed != null:
+return saved(_that);case LabelEvalReadingInbox() when readingInbox != null:
+return readingInbox(_that);case LabelEvalInboxRead() when inboxRead != null:
+return inboxRead(_that);case LabelEvalFailed() when failed != null:
 return failed(_that);case _:
   return orElse();
 
@@ -80,13 +82,15 @@ return failed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LabelEvalIdle value)  idle,required TResult Function( LabelEvalWorking value)  working,required TResult Function( LabelEvalSaved value)  saved,required TResult Function( LabelEvalFailed value)  failed,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LabelEvalIdle value)  idle,required TResult Function( LabelEvalWorking value)  working,required TResult Function( LabelEvalSaved value)  saved,required TResult Function( LabelEvalReadingInbox value)  readingInbox,required TResult Function( LabelEvalInboxRead value)  inboxRead,required TResult Function( LabelEvalFailed value)  failed,}){
 final _that = this;
 switch (_that) {
 case LabelEvalIdle():
 return idle(_that);case LabelEvalWorking():
 return working(_that);case LabelEvalSaved():
-return saved(_that);case LabelEvalFailed():
+return saved(_that);case LabelEvalReadingInbox():
+return readingInbox(_that);case LabelEvalInboxRead():
+return inboxRead(_that);case LabelEvalFailed():
 return failed(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -101,13 +105,15 @@ return failed(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LabelEvalIdle value)?  idle,TResult? Function( LabelEvalWorking value)?  working,TResult? Function( LabelEvalSaved value)?  saved,TResult? Function( LabelEvalFailed value)?  failed,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LabelEvalIdle value)?  idle,TResult? Function( LabelEvalWorking value)?  working,TResult? Function( LabelEvalSaved value)?  saved,TResult? Function( LabelEvalReadingInbox value)?  readingInbox,TResult? Function( LabelEvalInboxRead value)?  inboxRead,TResult? Function( LabelEvalFailed value)?  failed,}){
 final _that = this;
 switch (_that) {
 case LabelEvalIdle() when idle != null:
 return idle(_that);case LabelEvalWorking() when working != null:
 return working(_that);case LabelEvalSaved() when saved != null:
-return saved(_that);case LabelEvalFailed() when failed != null:
+return saved(_that);case LabelEvalReadingInbox() when readingInbox != null:
+return readingInbox(_that);case LabelEvalInboxRead() when inboxRead != null:
+return inboxRead(_that);case LabelEvalFailed() when failed != null:
 return failed(_that);case _:
   return null;
 
@@ -125,12 +131,14 @@ return failed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  idle,TResult Function()?  working,TResult Function( SavedLabel label)?  saved,TResult Function( String message)?  failed,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  idle,TResult Function()?  working,TResult Function( SavedLabel label)?  saved,TResult Function( int done,  int total)?  readingInbox,TResult Function( List<String> ids)?  inboxRead,TResult Function( String message)?  failed,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case LabelEvalIdle() when idle != null:
 return idle();case LabelEvalWorking() when working != null:
 return working();case LabelEvalSaved() when saved != null:
-return saved(_that.label);case LabelEvalFailed() when failed != null:
+return saved(_that.label);case LabelEvalReadingInbox() when readingInbox != null:
+return readingInbox(_that.done,_that.total);case LabelEvalInboxRead() when inboxRead != null:
+return inboxRead(_that.ids);case LabelEvalFailed() when failed != null:
 return failed(_that.message);case _:
   return orElse();
 
@@ -149,12 +157,14 @@ return failed(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  idle,required TResult Function()  working,required TResult Function( SavedLabel label)  saved,required TResult Function( String message)  failed,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  idle,required TResult Function()  working,required TResult Function( SavedLabel label)  saved,required TResult Function( int done,  int total)  readingInbox,required TResult Function( List<String> ids)  inboxRead,required TResult Function( String message)  failed,}) {final _that = this;
 switch (_that) {
 case LabelEvalIdle():
 return idle();case LabelEvalWorking():
 return working();case LabelEvalSaved():
-return saved(_that.label);case LabelEvalFailed():
+return saved(_that.label);case LabelEvalReadingInbox():
+return readingInbox(_that.done,_that.total);case LabelEvalInboxRead():
+return inboxRead(_that.ids);case LabelEvalFailed():
 return failed(_that.message);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -169,12 +179,14 @@ return failed(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  idle,TResult? Function()?  working,TResult? Function( SavedLabel label)?  saved,TResult? Function( String message)?  failed,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  idle,TResult? Function()?  working,TResult? Function( SavedLabel label)?  saved,TResult? Function( int done,  int total)?  readingInbox,TResult? Function( List<String> ids)?  inboxRead,TResult? Function( String message)?  failed,}) {final _that = this;
 switch (_that) {
 case LabelEvalIdle() when idle != null:
 return idle();case LabelEvalWorking() when working != null:
 return working();case LabelEvalSaved() when saved != null:
-return saved(_that.label);case LabelEvalFailed() when failed != null:
+return saved(_that.label);case LabelEvalReadingInbox() when readingInbox != null:
+return readingInbox(_that.done,_that.total);case LabelEvalInboxRead() when inboxRead != null:
+return inboxRead(_that.ids);case LabelEvalFailed() when failed != null:
 return failed(_that.message);case _:
   return null;
 
@@ -320,6 +332,146 @@ $SavedLabelCopyWith<$Res> get label {
     return _then(_self.copyWith(label: value));
   });
 }
+}
+
+/// @nodoc
+
+
+class LabelEvalReadingInbox implements LabelEvalState {
+  const LabelEvalReadingInbox({required this.done, required this.total});
+  
+
+ final  int done;
+ final  int total;
+
+/// Create a copy of LabelEvalState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$LabelEvalReadingInboxCopyWith<LabelEvalReadingInbox> get copyWith => _$LabelEvalReadingInboxCopyWithImpl<LabelEvalReadingInbox>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LabelEvalReadingInbox&&(identical(other.done, done) || other.done == done)&&(identical(other.total, total) || other.total == total));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,done,total);
+
+@override
+String toString() {
+  return 'LabelEvalState.readingInbox(done: $done, total: $total)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $LabelEvalReadingInboxCopyWith<$Res> implements $LabelEvalStateCopyWith<$Res> {
+  factory $LabelEvalReadingInboxCopyWith(LabelEvalReadingInbox value, $Res Function(LabelEvalReadingInbox) _then) = _$LabelEvalReadingInboxCopyWithImpl;
+@useResult
+$Res call({
+ int done, int total
+});
+
+
+
+
+}
+/// @nodoc
+class _$LabelEvalReadingInboxCopyWithImpl<$Res>
+    implements $LabelEvalReadingInboxCopyWith<$Res> {
+  _$LabelEvalReadingInboxCopyWithImpl(this._self, this._then);
+
+  final LabelEvalReadingInbox _self;
+  final $Res Function(LabelEvalReadingInbox) _then;
+
+/// Create a copy of LabelEvalState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? done = null,Object? total = null,}) {
+  return _then(LabelEvalReadingInbox(
+done: null == done ? _self.done : done // ignore: cast_nullable_to_non_nullable
+as int,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class LabelEvalInboxRead implements LabelEvalState {
+  const LabelEvalInboxRead(final  List<String> ids): _ids = ids;
+  
+
+ final  List<String> _ids;
+ List<String> get ids {
+  if (_ids is EqualUnmodifiableListView) return _ids;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_ids);
+}
+
+
+/// Create a copy of LabelEvalState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$LabelEvalInboxReadCopyWith<LabelEvalInboxRead> get copyWith => _$LabelEvalInboxReadCopyWithImpl<LabelEvalInboxRead>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LabelEvalInboxRead&&const DeepCollectionEquality().equals(other._ids, _ids));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_ids));
+
+@override
+String toString() {
+  return 'LabelEvalState.inboxRead(ids: $ids)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $LabelEvalInboxReadCopyWith<$Res> implements $LabelEvalStateCopyWith<$Res> {
+  factory $LabelEvalInboxReadCopyWith(LabelEvalInboxRead value, $Res Function(LabelEvalInboxRead) _then) = _$LabelEvalInboxReadCopyWithImpl;
+@useResult
+$Res call({
+ List<String> ids
+});
+
+
+
+
+}
+/// @nodoc
+class _$LabelEvalInboxReadCopyWithImpl<$Res>
+    implements $LabelEvalInboxReadCopyWith<$Res> {
+  _$LabelEvalInboxReadCopyWithImpl(this._self, this._then);
+
+  final LabelEvalInboxRead _self;
+  final $Res Function(LabelEvalInboxRead) _then;
+
+/// Create a copy of LabelEvalState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? ids = null,}) {
+  return _then(LabelEvalInboxRead(
+null == ids ? _self._ids : ids // ignore: cast_nullable_to_non_nullable
+as List<String>,
+  ));
+}
+
+
 }
 
 /// @nodoc

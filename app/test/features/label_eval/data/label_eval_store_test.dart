@@ -88,6 +88,8 @@ void main() {
         'product',
         'brand',
         'ean',
+        'source',
+        'photo_url',
         'languages',
         'layout',
         'basis',
@@ -95,6 +97,87 @@ void main() {
         'approximate',
         'notes',
       ]);
+      expect(LabelEvalStore.template['source'], 'own');
+    });
+
+    test('no photo: text and template only, overrides applied', () async {
+      final saved = await store.save(
+        ocrText: 'Sel 1 g',
+        overrides: {
+          'ean': '6191509900701',
+          'source': 'open-food-facts',
+          'photo_url': 'https://images.openfoodfacts.org/x.jpg',
+          'reviewed': true, // not an inbox key: ignored
+          'values': {'salt_g': '9'},
+        },
+      );
+
+      expect(saved.id, 'tn-001');
+      expect(
+        folder.listSync().map((e) => e.uri.pathSegments.last).toList()..sort(),
+        ['tn-001.json', 'tn-001.txt'],
+      );
+      final json =
+          jsonDecode(File('${folder.path}/tn-001.json').readAsStringSync())
+              as Map<String, Object?>;
+      expect(json, {
+        ...LabelEvalStore.template,
+        'ean': '6191509900701',
+        'source': 'open-food-facts',
+        'photo_url': 'https://images.openfoodfacts.org/x.jpg',
+      });
+    });
+
+    group('inbox', () {
+      late Directory inbox;
+
+      setUp(() => inbox = Directory('${folder.path}/inbox'));
+
+      test('no inbox folder: empty', () async {
+        expect(await store.inbox(), isEmpty);
+      });
+
+      test('photos by name with their template, other files ignored', () async {
+        inbox.createSync(recursive: true);
+        File('${inbox.path}/b.PNG').writeAsBytesSync(png);
+        File('${inbox.path}/a.jpg').writeAsBytesSync(jpeg);
+        File('${inbox.path}/a.json').writeAsStringSync('{"ean": "123"}');
+        File('${inbox.path}/c.jpeg').writeAsBytesSync(jpeg);
+        File('${inbox.path}/notes.txt').writeAsStringSync('x');
+        File('${inbox.path}/orphan.json').writeAsStringSync('{}');
+        Directory('${inbox.path}/sub.jpg').createSync();
+
+        final photos = await store.inbox();
+
+        expect(photos.map((p) => p.path.split(RegExp(r'[/\\]')).last), [
+          'a.jpg',
+          'b.PNG',
+          'c.jpeg',
+        ]);
+        expect(photos.first.template, {'ean': '123'});
+        expect(photos[1].template, isEmpty);
+      });
+
+      test('a template that is not an object is an error', () async {
+        inbox.createSync(recursive: true);
+        File('${inbox.path}/a.jpg').writeAsBytesSync(jpeg);
+        File('${inbox.path}/a.json').writeAsStringSync('[1]');
+
+        await expectLater(store.inbox(), throwsFormatException);
+      });
+
+      test('remove deletes the photo and its template', () async {
+        inbox.createSync(recursive: true);
+        File('${inbox.path}/a.jpg').writeAsBytesSync(jpeg);
+        File('${inbox.path}/a.json').writeAsStringSync('{}');
+        File('${inbox.path}/b.jpg').writeAsBytesSync(jpeg);
+        final photos = await store.inbox();
+
+        await store.remove(photos.first);
+        await store.remove(photos.last); // no template
+
+        expect(inbox.listSync(), isEmpty);
+      });
     });
 
     test('numbers after the labels already saved', () async {

@@ -14,7 +14,7 @@ class LabelEvalScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(labelEvalControllerProvider);
     final controller = ref.read(labelEvalControllerProvider.notifier);
-    final working = state is LabelEvalWorking;
+    final working = state.busy;
     return Scaffold(
       appBar: AppBar(title: const Text('Label OCR (dev)')),
       body: ListView(
@@ -45,6 +45,13 @@ class LabelEvalScreen extends ConsumerWidget {
                 icon: const Icon(Icons.photo_library),
                 label: const Text('From gallery'),
               ),
+              OutlinedButton.icon(
+                onPressed: working
+                    ? null
+                    : () => unawaited(controller.readInbox()),
+                icon: const Icon(Icons.inbox),
+                label: const Text('Read inbox'),
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -52,6 +59,24 @@ class LabelEvalScreen extends ConsumerWidget {
             LabelEvalIdle() => const SizedBox.shrink(),
             LabelEvalWorking() => const Center(
               child: CircularProgressIndicator(),
+            ),
+            LabelEvalReadingInbox(:final done, :final total) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Reading the inbox: $done of $total'),
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: total == 0 ? null : done / total,
+                ),
+              ],
+            ),
+            LabelEvalInboxRead(:final ids) when ids.isEmpty => const Text(
+              'The inbox is empty. Push photos to label-eval/inbox '
+              '(eval/labels/README.md).',
+            ),
+            LabelEvalInboxRead(:final ids) => Text(
+              'Saved ${ids.length} labels: ${ids.first} to ${ids.last}',
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             LabelEvalFailed(:final message) => Text(
               'Not saved: $message',

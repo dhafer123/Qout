@@ -52,9 +52,23 @@ _KEYS = frozenset(
         "values",
         "approximate",
         "notes",
+        "source",
+        "photo_url",
     }
 )
+_PHOTO_URL = re.compile(r"https://([a-z0-9-]+\.)*openfoodfacts\.org/\S+")
 _FIELD_NAMES = frozenset(f.value for f in LabelField)
+
+
+class LabelSource(StrEnum):
+    """Who took the photo."""
+
+    OWN = "own"
+    """Taken for this set with the app (camera or gallery)."""
+    OPEN_FOOD_FACTS = "open-food-facts"
+    """An Open Food Facts contributor's photo (CC BY-SA), kept out of git: see `photo_url`."""
+
+
 _EMPTY = "-"
 
 
@@ -76,6 +90,8 @@ class GroundTruth:
     product: str | None = None
     brand: str | None = None
     ean: str | None = None
+    source: LabelSource = LabelSource.OWN
+    photo_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -146,6 +162,14 @@ def parse_ground_truth(label_id: str, data: object) -> GroundTruth | None:
     if ean is not None and not _EAN.fullmatch(ean):
         raise fail('"ean" must be 8 to 14 digits')
     _optional_text(data, "notes", fail)
+    source = data.get("source", LabelSource.OWN.value)
+    if source not in {s.value for s in LabelSource}:
+        raise fail(f'"source" must be own or open-food-facts, not {source!r}')
+    photo_url = _optional_text(data, "photo_url", fail)
+    if photo_url is not None and not _PHOTO_URL.fullmatch(photo_url):
+        raise fail('"photo_url" must be an https URL on openfoodfacts.org')
+    if source == LabelSource.OPEN_FOOD_FACTS and (photo_url is None or ean is None):
+        raise fail('an Open Food Facts photo needs its "photo_url" and "ean" (attribution)')
     return GroundTruth(
         label_id=label_id,
         basis=None if basis is None else NutritionBasis(basis),
@@ -156,6 +180,8 @@ def parse_ground_truth(label_id: str, data: object) -> GroundTruth | None:
         product=_optional_text(data, "product", fail),
         brand=_optional_text(data, "brand", fail),
         ean=ean,
+        source=LabelSource(source),
+        photo_url=photo_url,
     )
 
 
@@ -330,6 +356,7 @@ class Evaluation:
     """(parser ok, fully correct) -> labels."""
     by_language: dict[str, Group]
     by_layout: dict[str, Group]
+    by_source: dict[str, Group] = field(default_factory=dict)
     issues: Counter[LabelIssueCode] = field(default_factory=Counter)
     """Labels reporting each issue code."""
     not_reviewed: tuple[str, ...] = ()
@@ -357,6 +384,7 @@ def evaluate(eval_set: EvalSet, parser: Parser, *, parser_name: str) -> Evaluati
         ok_matrix=Counter((r.parse.ok, r.fully_correct) for r in results),
         by_language=_groups(results, lambda t: t.languages),
         by_layout=_groups(results, lambda t: t.layout),
+        by_source=_groups(results, lambda t: (t.source.value,)),
         issues=Counter(code for r in results for code in {i.code for i in r.parse.issues}),
         not_reviewed=eval_set.not_reviewed,
     )
@@ -432,7 +460,7 @@ def render_markdown(evaluation: Evaluation, *, generated_on: date, source: str) 
         "",
     ]
     lines += _ok_matrix(e) + _by_field(e) + _groups_table("language", e.by_language)
-    lines += _groups_table("layout", e.by_layout) + _issues(e) + _failures(e)
+    lines += _groups_table("layout", e.by_layout) + _sources(e) + _issues(e) + _failures(e)
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -471,9 +499,11 @@ def _groups_table(kind: str, groups: dict[str, Group]) -> list[str]:
     lines = [f"## By {kind}", ""]
     if not groups:
         return [*lines, "No tags.", ""]
-    lines += [
-        f"A label can have several {kind} tags.",
-        "",
+    return [*lines, f"A label can have several {kind} tags.", "", *_group_rows(kind, groups)]
+
+
+def _group_rows(kind: str, groups: dict[str, Group]) -> list[str]:
+    lines = [
         f"| {kind.capitalize()} | Labels | Fully correct | Field accuracy |",
         "|---|---:|---:|---:|",
     ]
@@ -482,6 +512,19 @@ def _groups_table(kind: str, groups: dict[str, Group]) -> list[str]:
         for name, g in groups.items()
     ]
     return [*lines, ""]
+
+
+def _sources(e: Evaluation) -> list[str]:
+    lines = ["## By photo source", ""]
+    if not e.by_source:
+        return [*lines, "No labels.", ""]
+    lines += [
+        "`own`: taken for this set with the app. `open-food-facts`: Open Food Facts "
+        "contributors' photos (© Open Food Facts contributors, CC BY-SA 3.0; each label "
+        "below links to its photo).",
+        "",
+    ]
+    return lines + _group_rows("source", e.by_source)
 
 
 def _issues(e: Evaluation) -> list[str]:
@@ -509,6 +552,8 @@ def _failures(e: Evaluation) -> list[str]:
             f"Issues: {', '.join(_issue_text(r)) or _EMPTY}.",
             "",
         ]
+        if t.photo_url is not None:
+            lines += [f"Photo: <{t.photo_url}> (Open Food Facts, CC BY-SA 3.0).", ""]
         if not r.basis_correct:
             lines += [f"Basis: expected {_basis(t.basis)}, read {_basis(r.parse.basis)}.", ""]
         wrong = [f for f in r.fields if f.outcome != Outcome.CORRECT]

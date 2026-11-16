@@ -13,7 +13,7 @@ normaliser's job (`off_normaliser`).
 import asyncio
 import random
 import time
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from types import TracebackType
 from typing import Any, Self
@@ -140,10 +140,13 @@ class OffClient:
     ) -> None:
         await self.aclose()
 
-    async def get_product(self, ean: str) -> dict[str, Any] | None:
-        """OFF's `product` object for `ean`, or None if OFF does not know the product."""
+    async def get_product(
+        self, ean: str, *, fields: Sequence[str] = PRODUCT_FIELDS
+    ) -> dict[str, Any] | None:
+        """OFF's `product` object for `ean` (only `fields`), or None if OFF does not know
+        the product."""
         response = await self._request(
-            f"/api/v2/product/{ean}.json", params={"fields": ",".join(PRODUCT_FIELDS)}
+            f"/api/v2/product/{ean}.json", params={"fields": ",".join(fields)}
         )
         if response.status_code == httpx.codes.NOT_FOUND:
             return None

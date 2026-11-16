@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/core/photos/label_photo_picker.dart';
+import 'package:qout/features/label_eval/domain/inbox_photo.dart';
 import 'package:qout/features/label_eval/domain/saved_label.dart';
 import 'package:qout/features/label_eval/presentation/label_eval_controller.dart';
 
@@ -38,7 +40,10 @@ void main() {
 
     expect(fake.picked, [PhotoSource.camera]);
     expect(fake.read, ['photo-1.jpg']);
-    expect(fake.store.saved, [('Pour 100 g\nSel 1,5 g', 'photo-1.jpg')]);
+    expect(fake.store.saved.map((s) => (s.$1, s.$2)), [
+      ('Pour 100 g\nSel 1,5 g', 'photo-1.jpg'),
+    ]);
+    expect(fake.store.saved.single.$3, isEmpty);
     expect(
       state(),
       const LabelEvalState.saved(
@@ -100,6 +105,106 @@ void main() {
     await controller().capture(PhotoSource.camera);
 
     expect(state(), isA<LabelEvalSaved>());
-    expect(fake.store.saved, [('', 'photo-1.jpg')]);
+    expect(fake.store.saved.map((s) => (s.$1, s.$2)), [('', 'photo-1.jpg')]);
+  });
+
+  group('inbox', () {
+    const off = InboxPhoto(
+      path: '/fake/label-eval/inbox/6191509900701.jpg',
+      template: {'ean': '6191509900701', 'source': 'open-food-facts'},
+    );
+    const own = InboxPhoto(path: '/fake/label-eval/inbox/other.png');
+
+    test('reads each photo resized and saves text and template', () async {
+      start(
+        FakeLabelEval(
+          inbox: [off, own],
+          texts: {'${off.path}.small': 'Sel 1 g', '${own.path}.small': ''},
+        ),
+      );
+
+      await controller().readInbox();
+
+      expect(fake.resized, [off.path, own.path]);
+      expect(fake.read, ['${off.path}.small', '${own.path}.small']);
+      expect(fake.store.saved, [
+        ('Sel 1 g', null, off.template),
+        ('', null, own.template),
+      ]);
+      expect(fake.store.waiting, isEmpty);
+      expect(state(), const LabelEvalState.inboxRead(['tn-001', 'tn-002']));
+      expect(fake.picked, isEmpty);
+    });
+
+    test('an empty inbox', () async {
+      start(FakeLabelEval());
+
+      await controller().readInbox();
+
+      expect(state(), const LabelEvalState.inboxRead([]));
+    });
+
+    test('progress while reading', () async {
+      start(FakeLabelEval(inbox: [off], texts: {'${off.path}.small': 'x'}));
+      fake.ocrGate = Completer<void>();
+      final states = <LabelEvalState>[];
+      container.listen(labelEvalControllerProvider, (_, next) {
+        states.add(next);
+      });
+
+      final reading = controller().readInbox();
+      await pumpEventQueue();
+      expect(state(), const LabelEvalState.readingInbox(done: 0, total: 1));
+      expect(state().busy, isTrue);
+
+      await controller().capture(PhotoSource.camera); // ignored while busy
+      await controller().readInbox(); // ignored too
+      expect(fake.picked, isEmpty);
+
+      fake.ocrGate!.complete();
+      await reading;
+      expect(states, [
+        const LabelEvalState.readingInbox(done: 0, total: 1),
+        const LabelEvalState.readingInbox(done: 1, total: 1),
+        const LabelEvalState.inboxRead(['tn-001']),
+      ]);
+    });
+
+    test('a failure keeps the photos not read yet, to resume', () async {
+      start(
+        FakeLabelEval(
+          inbox: [off, own],
+          texts: {'${off.path}.small': 'x'}, // no text for `own`: OCR throws
+        ),
+      );
+
+      await controller().readInbox();
+
+      expect(fake.store.waiting, [own]);
+      expect(
+        state(),
+        isA<LabelEvalFailed>().having(
+          (s) => s.message,
+          'message',
+          startsWith('Saved 1 before an error (other.png): '),
+        ),
+      );
+    });
+
+    test('a failure before any photo names none', () async {
+      start(FakeLabelEval());
+      fake.store.inboxError = const FileSystemException('denied');
+
+      await controller().readInbox();
+
+      expect(
+        state(),
+        isA<LabelEvalFailed>().having(
+          (s) => s.message,
+          'message',
+          startsWith('Saved 0 before an error: FileSystemException: denied'),
+        ),
+      );
+    });
   });
 }

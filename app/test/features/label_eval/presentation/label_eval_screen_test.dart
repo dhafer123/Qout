@@ -7,6 +7,7 @@ import 'package:qout/app/router.dart';
 import 'package:qout/core/env/app_env.dart';
 import 'package:qout/core/photos/label_photo_picker.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
+import 'package:qout/features/label_eval/domain/inbox_photo.dart';
 import 'package:qout/features/label_eval/presentation/label_eval_screen.dart';
 
 import '../../../helpers/fake_label_eval.dart';
@@ -115,6 +116,66 @@ void main() {
 
     expect(find.text('Saved as tn-001'), findsOneWidget);
     expect(find.text('ML Kit read no text in this photo.'), findsOneWidget);
+  });
+
+  group('inbox', () {
+    const photo = InboxPhoto(path: '/fake/label-eval/inbox/6191.jpg');
+
+    testWidgets('reads every photo and shows the ids saved', (tester) async {
+      final fake = await openScreen(
+        tester,
+        FakeLabelEval(
+          inbox: [
+            photo,
+            photo.copyWith(path: '/fake/inbox/6192.jpg'),
+          ],
+          texts: {
+            '${photo.path}.small': 'a',
+            '/fake/inbox/6192.jpg.small': 'b',
+          },
+        ),
+      );
+
+      await tester.tap(find.text('Read inbox'));
+      await tester.pumpAndSettle();
+
+      expect(fake.store.saved, hasLength(2));
+      expect(find.text('Saved 2 labels: tn-001 to tn-002'), findsOneWidget);
+    });
+
+    testWidgets('shows progress; buttons disabled meanwhile', (tester) async {
+      final fake = FakeLabelEval(
+        inbox: [photo],
+        texts: {'${photo.path}.small': 'a'},
+      )..ocrGate = Completer<void>();
+      await openScreen(tester, fake);
+
+      await tester.tap(find.text('Read inbox'));
+      await tester.pump();
+
+      expect(find.text('Reading the inbox: 0 of 1'), findsOneWidget);
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      final button = tester.widget<ButtonStyleButton>(
+        find.ancestor(
+          of: find.text('Read inbox'),
+          matching: find.bySubtype<ButtonStyleButton>(),
+        ),
+      );
+      expect(button.onPressed, isNull);
+
+      fake.ocrGate!.complete();
+      await tester.pumpAndSettle();
+      expect(find.text('Saved 1 labels: tn-001 to tn-001'), findsOneWidget);
+    });
+
+    testWidgets('an empty inbox says where to push photos', (tester) async {
+      await openScreen(tester);
+
+      await tester.tap(find.text('Read inbox'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('The inbox is empty.'), findsOneWidget);
+    });
   });
 
   testWidgets('a failure is shown', (tester) async {

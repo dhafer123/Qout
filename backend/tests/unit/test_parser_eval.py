@@ -24,6 +24,7 @@ from app.modules.contributions.parser_eval import (
     GroundTruth,
     GroundTruthError,
     LabelCase,
+    LabelSource,
     Outcome,
     Tally,
     compare,
@@ -37,6 +38,7 @@ from scripts import eval_parser
 
 F = LabelField
 G100 = NutritionBasis.PER_100G
+PHOTO = "https://images.openfoodfacts.org/images/products/619/150/724/9383/nutrition_fr.5.full.jpg"
 TODAY = date(2026, 11, 16)
 
 
@@ -108,6 +110,25 @@ def test_optional_keys_can_be_left_out() -> None:
     t = parse_ground_truth("x", {"reviewed": True, "basis": "per_100ml", "values": {}})
 
     assert t == GroundTruth(label_id="x", basis=NutritionBasis.PER_100ML, values={})
+    assert t.source == LabelSource.OWN
+
+
+def test_open_food_facts_photo() -> None:
+    t = parse_ground_truth("x", doc(source="open-food-facts", photo_url=PHOTO))
+
+    assert t is not None
+    assert (t.source, t.photo_url, t.ean) == (
+        LabelSource.OPEN_FOOD_FACTS,
+        PHOTO,
+        "6191234567890",
+    )
+
+
+def test_own_photo_may_have_a_photo_url() -> None:
+    t = parse_ground_truth("x", doc(source="own", photo_url=PHOTO))
+
+    assert t is not None
+    assert t.photo_url == PHOTO
 
 
 def test_empty_strings_are_none() -> None:
@@ -155,6 +176,13 @@ def test_not_reviewed_is_skipped() -> None:
         ("x", doc(languages="fr"), '"languages"'),
         ("x", doc(languages=["fr", "fr"]), "duplicates"),
         ("x", doc(layout=["two columns"]), '"layout"'),
+        ("x", doc(source="web"), '"source" must be own or open-food-facts'),
+        ("x", doc(photo_url="http://images.openfoodfacts.org/a.jpg"), '"photo_url"'),
+        ("x", doc(photo_url="https://example.org/a.jpg"), '"photo_url"'),
+        ("x", doc(photo_url="https://evilopenfoodfacts.org/a.jpg"), '"photo_url"'),
+        ("x", doc(photo_url=1), '"photo_url" must be a string'),
+        ("x", doc(source="open-food-facts", photo_url=None), "attribution"),
+        ("x", doc(source="open-food-facts", photo_url=PHOTO, ean=None), "attribution"),
     ],
 )
 def test_invalid_ground_truth_is_refused(label_id: str, data: object, message: str) -> None:
@@ -309,8 +337,15 @@ CASES = {
         ),
         parsed({F.SUGARS: "2.9", F.SALT: "0.62"}),
     ),
-    "tn-003": (  # missed, spurious and wrong basis, not ok
-        truth({F.SUGARS: "5", F.FAT: "3"}, languages=("ar",), layout=("columns", "curved")),
+    "tn-003": (  # missed, spurious and wrong basis, not ok; an Open Food Facts photo
+        truth(
+            {F.SUGARS: "5", F.FAT: "3"},
+            languages=("ar",),
+            layout=("columns", "curved"),
+            source=LabelSource.OPEN_FOOD_FACTS,
+            photo_url=PHOTO,
+            ean="6191507249383",
+        ),
         parsed(
             {F.SUGARS: "5", F.FIBRE: "3"},
             basis=None,
@@ -376,6 +411,10 @@ def test_groups_by_language_and_layout() -> None:
     assert e.by_language["ar"].fully_correct.matching == 0
     assert list(e.by_layout) == ["columns", "curved"]
     assert e.by_layout["columns"].labels == 2
+    assert list(e.by_source) == ["open-food-facts", "own"]
+    assert e.by_source["own"].labels == 3
+    assert e.by_source["own"].fully_correct.matching == 2
+    assert e.by_source["open-food-facts"].fields == Tally(correct=1, missed=1, spurious=1)
 
 
 def test_empty_evaluation() -> None:
@@ -388,6 +427,7 @@ def test_empty_evaluation() -> None:
     assert "| Labels | 0 |" in report
     assert "| **Field accuracy** (printed fields read correctly) | **0 / 0 (-)** |" in report
     assert report.count("No tags.") == 2
+    assert "## By photo source\n\nNo labels." in report
     assert report.endswith("## Labels not fully correct\n\nNone.\n")
 
 
@@ -420,6 +460,11 @@ def test_report() -> None:
     assert "| ar | 2 | 0 / 2 (0.0 %) | 50.0 % |" in report
     assert "| curved | 1 | 0 / 1 (0.0 %) | 50.0 % |" in report
     assert "| missing | 2 |" in report
+    assert "CC BY-SA 3.0; each label below links to its photo" in report
+    assert "| own | 3 | 2 / 3 (66.7 %) | 83.3 % |" in report
+    assert "| open-food-facts | 1 | 0 / 1 (0.0 %) | 50.0 % |" in report
+    assert f"Photo: <{PHOTO}> (Open Food Facts, CC BY-SA 3.0)." in report
+    assert report.count("Photo: <") == 1
     assert "### tn-002: Gaufrettes \\| chocolat · Marque" in report
     assert "Tags: fr, ar. Parser ok: yes. Issues: -." in report
     assert "| sugars_g | wrong | 29 | 2.9 |" in report

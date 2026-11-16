@@ -65,6 +65,14 @@ async def test_found(client: OffClient, mock: respx.MockRouter) -> None:
     assert request.url.params["fields"] == ",".join(PRODUCT_FIELDS)
 
 
+async def test_other_fields(client: OffClient, mock: respx.MockRouter) -> None:
+    route = mock.get(URL).respond(200, json=FOUND)
+
+    await client.get_product(EAN, fields=("code", "images"))
+
+    assert route.calls.last.request.url.params["fields"] == "code,images"
+
+
 async def test_not_found_as_404(client: OffClient, mock: respx.MockRouter) -> None:
     mock.get(URL).respond(404, json={"status": 0, "status_verbose": "product not found"})
     assert await client.get_product(EAN) is None
