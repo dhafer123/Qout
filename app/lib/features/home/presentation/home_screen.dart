@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qout/app/router.dart';
+import 'package:qout/core/env/app_env.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
@@ -22,6 +23,7 @@ class HomeScreen extends ConsumerWidget {
     final history = ref.watch(scanHistoryProvider);
     final hasHistory = history.valueOrNull?.isNotEmpty ?? false;
     final auth = ref.watch(authStateProvider).valueOrNull;
+    final dev = ref.watch(appEnvProvider).flavor == AppFlavor.dev;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Qout'),
@@ -43,6 +45,11 @@ class HomeScreen extends ConsumerWidget {
                 PopupMenuItem(
                   onTap: () => unawaited(_confirmClear(context, ref)),
                   child: const Text('Clear history'),
+                ),
+              if (dev)
+                PopupMenuItem(
+                  onTap: () => context.push(AppRoutes.labelOcr),
+                  child: const Text('Label OCR (dev)'),
                 ),
             ],
           ),
