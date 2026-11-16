@@ -1,0 +1,30 @@
+{
+  "reviewed": true,
+  "product": "Major ( chocolat )",
+  "brand": "Saïda",
+  "ean": "6194008534019",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/853/4019/nutrition_fr.56.full.jpg",
+  "languages": [
+    "en",
+    "fr",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "us-style"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "476.2",
+    "total_fat_g": "19.01",
+    "saturated_fat_g": "10.7",
+    "sodium_g": "0.1381",
+    "carbohydrates_g": "69.4",
+    "fibre_g": "2.6",
+    "sugars_g": "31.1",
+    "protein_g": "5.6"
+  },
+  "approximate": [],
+  "notes": "US-style 'Quantité pour 100 g'; sodium 138,1 mg; also trans, cholesterol, added sugars."
+}

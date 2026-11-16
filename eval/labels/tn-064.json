@@ -1,0 +1,30 @@
+{
+  "reviewed": true,
+  "product": "Double Concentré de Tomates",
+  "brand": "Sicam",
+  "ean": "6194055500135",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/405/550/0135/nutrition_ar.58.full.jpg",
+  "languages": [
+    "fr",
+    "en"
+  ],
+  "layout": [
+    "inline",
+    "glare"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "564",
+    "energy_kcal": "134.71",
+    "total_fat_g": "0.1",
+    "saturated_fat_g": "0.016",
+    "carbohydrates_g": "29.51",
+    "sugars_g": "25",
+    "fibre_g": "1.4",
+    "protein_g": "4",
+    "salt_g": "5.6"
+  },
+  "approximate": [],
+  "notes": "Salt in running text: 'Sel : 5,6g la teneur en sel est exclusivement due...'; also mono, poly, vitamins, calcium, iron."
+}

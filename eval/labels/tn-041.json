@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "Grain d'or (miel)",
+  "brand": "Nestlé",
+  "ean": "6194005296484",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/529/6484/nutrition_fr.10.full.jpg",
+  "languages": [
+    "ar"
+  ],
+  "layout": [
+    "arabic-only",
+    "columns"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "382",
+    "energy_kj": "1650",
+    "protein_g": "12.3",
+    "carbohydrates_g": "74.5",
+    "sugars_g": "17.5",
+    "total_fat_g": "3.9",
+    "saturated_fat_g": "1.7",
+    "fibre_g": "4.3",
+    "sodium_g": "0.18"
+  },
+  "approximate": [],
+  "notes": "Arabic only (header 'Par Portion' aside): per 100 g, per portion, %VNR, %AR; sodium 180,0 mg; also iron and vitamins."
+}

@@ -1,0 +1,25 @@
+{
+  "reviewed": true,
+  "product": "Grano daily granola croustillan",
+  "brand": "VIPA",
+  "ean": "6191462200313",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/146/220/0313/nutrition_fr.6.full.jpg",
+  "languages": [
+    "fr",
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "476",
+    "total_fat_g": "21.56",
+    "carbohydrates_g": "53.19",
+    "protein_g": "17.34"
+  },
+  "approximate": [],
+  "notes": "Basis written '100G' alone under the title."
+}

@@ -1,0 +1,23 @@
+{
+  "reviewed": true,
+  "product": "Huile d'olive vierge extra 250 mL",
+  "brand": "Terra d'Elyssa",
+  "ean": "6191509900701",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/150/990/0701/nutrition_fr.7.full.jpg",
+  "languages": ["fr"],
+  "layout": ["columns", "small-print"],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "3449",
+    "energy_kcal": "824",
+    "total_fat_g": "100.0",
+    "saturated_fat_g": "19.10",
+    "carbohydrates_g": "0.0",
+    "sugars_g": "0.0",
+    "protein_g": "0.0",
+    "salt_g": "0.0"
+  },
+  "approximate": [],
+  "notes": "Table in the middle of a tall back label with marketing text above and ingredients below; also lists mono- and polyunsaturated fats."
+}

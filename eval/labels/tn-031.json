@@ -1,0 +1,30 @@
+{
+  "reviewed": true,
+  "product": "Choco Tom gaufrettes",
+  "brand": "Tom",
+  "ean": "6194000521895",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/052/1895/nutrition_fr.55.full.jpg",
+  "languages": [
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "columns",
+    "blur"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "2171.5",
+    "protein_g": "7.12",
+    "carbohydrates_g": "57.6",
+    "sugars_g": "37.15",
+    "total_fat_g": "28.96",
+    "saturated_fat_g": "16.07",
+    "fibre_g": "9.45",
+    "sodium_g": "0.326"
+  },
+  "approximate": [],
+  "notes": "Dark photo; per 100 g and per serving (25 g); units in the names; sodium 326 mg; also cholesterol, trans fat, moisture."
+}

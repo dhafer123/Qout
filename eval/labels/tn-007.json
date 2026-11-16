@@ -1,0 +1,27 @@
+{
+  "reviewed": true,
+  "product": "p'tit Matin",
+  "brand": "LBM",
+  "ean": "6191307400083",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/130/740/0083/nutrition_fr.23.full.jpg",
+  "languages": [
+    "fr",
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "no-basis-in-photo"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "454.3",
+    "energy_kj": "1898.9",
+    "protein_g": "6.7",
+    "carbohydrates_g": "72",
+    "total_fat_g": "15.5"
+  },
+  "approximate": [],
+  "notes": "Photo cropped to the table: the basis (per 100 g on the pack) is not in it."
+}

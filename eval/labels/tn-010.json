@@ -1,0 +1,28 @@
+{
+  "reviewed": true,
+  "product": "UP",
+  "brand": "Biskart",
+  "ean": "6191327600012",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/132/760/0012/nutrition_fr.29.full.jpg",
+  "languages": [
+    "ar",
+    "fr",
+    "en"
+  ],
+  "layout": [
+    "bilingual"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "410",
+    "total_fat_g": "12",
+    "saturated_fat_g": "5.5",
+    "carbohydrates_g": "70",
+    "sugars_g": "21",
+    "protein_g": "6",
+    "salt_g": "0.8"
+  },
+  "approximate": [],
+  "notes": "Energy in kcal only."
+}

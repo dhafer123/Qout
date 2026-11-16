@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "landor crème emental",
+  "brand": "landor",
+  "ean": "6194049404029",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/404/940/4029/nutrition_fr.13.full.jpg",
+  "languages": [
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "us-style"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "197",
+    "total_fat_g": "17",
+    "saturated_fat_g": "9",
+    "sodium_g": "0.8",
+    "carbohydrates_g": "2",
+    "fibre_g": "0",
+    "sugars_g": "2",
+    "protein_g": "9"
+  },
+  "approximate": [],
+  "notes": "US-style 'Quantity per 100 grams', yellow on black; also trans, cholesterol, added sugar."
+}

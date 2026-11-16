@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "Browniz",
+  "brand": "Moulin d'Or",
+  "ean": "6194021111426",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/402/111/1426/nutrition_fr.33.full.jpg",
+  "languages": [
+    "fr",
+    "ar",
+    "en"
+  ],
+  "layout": [
+    "bilingual",
+    "cropped"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "423",
+    "energy_kj": "1769",
+    "total_fat_g": "21",
+    "carbohydrates_g": "54",
+    "fibre_g": "4",
+    "protein_g": "6",
+    "sodium_g": "0.2"
+  },
+  "approximate": [],
+  "notes": "Left edge of the French names cut off by the photo ('Gl cides', 'Pr tines')."
+}

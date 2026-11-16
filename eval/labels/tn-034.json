@@ -1,0 +1,30 @@
+{
+  "reviewed": true,
+  "product": "Harissa du Cap Bon",
+  "brand": "Neblia",
+  "ean": "6194001450026",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/145/0026/nutrition_fr.24.full.jpg",
+  "languages": [
+    "en",
+    "fr",
+    "de"
+  ],
+  "layout": [
+    "curved"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "67",
+    "energy_kj": "282",
+    "total_fat_g": "0.5",
+    "saturated_fat_g": "0.1",
+    "carbohydrates_g": "9.6",
+    "sugars_g": "6.2",
+    "fibre_g": "3.8",
+    "protein_g": "3.9",
+    "salt_g": "2.18"
+  },
+  "approximate": [],
+  "notes": "Tube; names in English / French / German followed by ':'; also vitamins and iron."
+}

@@ -1,0 +1,30 @@
+{
+  "reviewed": true,
+  "product": "Harissa du Cap Bon",
+  "brand": "SICAM",
+  "ean": "6194055500234",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/405/550/0234/nutrition_fr.62.full.jpg",
+  "languages": [
+    "fr",
+    "en"
+  ],
+  "layout": [
+    "curved",
+    "small-print"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "327.38",
+    "energy_kcal": "78.18",
+    "total_fat_g": "1.35",
+    "saturated_fat_g": "0.25",
+    "carbohydrates_g": "12.21",
+    "sugars_g": "4.73",
+    "fibre_g": "1.99",
+    "protein_g": "2.61",
+    "salt_g": "2.75"
+  },
+  "approximate": [],
+  "notes": "Tube; also mono, poly, vitamins, calcium."
+}

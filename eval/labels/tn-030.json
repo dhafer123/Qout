@@ -1,0 +1,30 @@
+{
+  "reviewed": true,
+  "product": "Chocotom",
+  "brand": "L'Appetissante",
+  "ean": "6194000521017",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/052/1017/nutrition_fr.46.full.jpg",
+  "languages": [
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "columns",
+    "blur"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "1979.28",
+    "protein_g": "5.95",
+    "carbohydrates_g": "77.47",
+    "sugars_g": "48.03",
+    "total_fat_g": "15.25",
+    "saturated_fat_g": "8.39",
+    "fibre_g": "7.55",
+    "sodium_g": "0.44449"
+  },
+  "approximate": [],
+  "notes": "Units in the names; sodium 444,49 mg. OFF's values are for an older recipe."
+}

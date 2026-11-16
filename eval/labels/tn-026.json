@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "Harrisa Du Cap bon",
+  "brand": "Carthage food",
+  "ean": "6191537700090",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/153/770/0090/nutrition_fr.36.full.jpg",
+  "languages": [
+    "fr",
+    "nl",
+    "en"
+  ],
+  "layout": [
+    "curved"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "71",
+    "energy_kj": "297",
+    "total_fat_g": "2.2",
+    "saturated_fat_g": "0.61",
+    "carbohydrates_g": "10.88",
+    "sugars_g": "5.24",
+    "protein_g": "2.1",
+    "salt_g": "1.89"
+  },
+  "approximate": [],
+  "notes": "Can; names in French / Dutch / English on wrapped lines."
+}

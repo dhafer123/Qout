@@ -1,0 +1,27 @@
+{
+  "reviewed": true,
+  "product": "Chewing-gum Florida fourrè",
+  "brand": "Florida",
+  "ean": "6194017506113",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/401/750/6113/nutrition_en.9.full.jpg",
+  "languages": [
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "320",
+    "energy_kj": "1338",
+    "total_fat_g": "0",
+    "carbohydrates_g": "80",
+    "sugars_g": "76",
+    "protein_g": "0",
+    "sodium_g": "0"
+  },
+  "approximate": [],
+  "notes": "'Serving Size 100g'; kcal and kJ on separate lines with the unit first."
+}

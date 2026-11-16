@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "Choco poudre Saïd",
+  "brand": "Saïd",
+  "ean": "6194005420049",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/542/0049/nutrition_en.13.full.jpg",
+  "languages": [
+    "ar",
+    "fr",
+    "en"
+  ],
+  "layout": [
+    "bilingual"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "383",
+    "energy_kj": "1615",
+    "protein_g": "6.4",
+    "total_fat_g": "3",
+    "saturated_fat_g": "1.9",
+    "carbohydrates_g": "77",
+    "sugars_g": "73",
+    "salt_g": "0.08"
+  },
+  "approximate": [],
+  "notes": "Also water and monounsaturated fat rows."
+}

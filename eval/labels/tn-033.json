@@ -1,0 +1,33 @@
+{
+  "reviewed": true,
+  "product": "Margarine pasteurisée",
+  "brand": "jadida",
+  "ean": "6194000802383",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/080/2383/nutrition_fr.48.full.jpg",
+  "languages": [
+    "fr",
+    "ar"
+  ],
+  "layout": [
+    "bilingual"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "756",
+    "energy_kj": "3165",
+    "protein_g": "0.1",
+    "carbohydrates_g": "0.1",
+    "total_fat_g": "80",
+    "saturated_fat_g": "28",
+    "fibre_g": "0.1",
+    "sodium_g": "0.2"
+  },
+  "approximate": [
+    "protein_g",
+    "carbohydrates_g",
+    "fibre_g",
+    "sodium_g"
+  ],
+  "notes": "Same table as tn-032, clean photo. '(< 0,1) g'; fat '(min. 80) g'; sodium '(max. 200) mg'."
+}

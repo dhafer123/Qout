@@ -1,0 +1,19 @@
+{
+  "reviewed": true,
+  "product": "Tropico ( cocktail de fruits )",
+  "brand": "Tropico",
+  "ean": "6194007891793",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/789/1793/nutrition_ar.50.full.jpg",
+  "languages": [
+    "ar"
+  ],
+  "layout": [
+    "arabic-only",
+    "per-portion-only"
+  ],
+  "basis": null,
+  "values": {},
+  "approximate": [],
+  "notes": "Arabic only, declared per 200 mL only."
+}

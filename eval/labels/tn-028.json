@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "margarine",
+  "brand": "Regina",
+  "ean": "6191574600100",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/157/460/0100/nutrition_fr.7.full.jpg",
+  "languages": [
+    "fr",
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "750",
+    "energy_kj": "3138",
+    "protein_g": "0",
+    "carbohydrates_g": "0",
+    "total_fat_g": "80",
+    "saturated_fat_g": "33.5",
+    "sodium_g": "0.006",
+    "fibre_g": "0"
+  },
+  "approximate": [],
+  "notes": "Lower rows printed half a row above their names; sodium 6 mg; also mono, poly, omega, cholesterol, vitamins."
+}

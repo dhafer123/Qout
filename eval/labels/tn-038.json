@@ -1,0 +1,30 @@
+{
+  "reviewed": true,
+  "product": "Binto",
+  "brand": "Kif",
+  "ean": "6194002510071",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/251/0071/nutrition_fr.22.full.jpg",
+  "languages": [
+    "fr",
+    "en"
+  ],
+  "layout": [
+    "us-style"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "2024",
+    "energy_kcal": "484",
+    "total_fat_g": "25",
+    "saturated_fat_g": "11.8",
+    "carbohydrates_g": "57",
+    "sugars_g": "25",
+    "fibre_g": "3.9",
+    "sodium_g": "0.11376",
+    "protein_g": "6.2",
+    "salt_g": "0.28"
+  },
+  "approximate": [],
+  "notes": "Per 100 g with %VR (sodium 113,76 mg) next to a US-style per-serving (12,5 g) table."
+}

@@ -1,0 +1,25 @@
+{
+  "reviewed": true,
+  "product": "Yaourt saveur Fraise",
+  "brand": "Danone",
+  "ean": "6194003800119",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/380/0119/nutrition_fr.20.full.jpg",
+  "languages": [
+    "ar",
+    "fr"
+  ],
+  "layout": [
+    "tiles"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "96.1",
+    "energy_kj": "402.3",
+    "protein_g": "3.3",
+    "carbohydrates_g": "15.1",
+    "total_fat_g": "2.5"
+  },
+  "approximate": [],
+  "notes": "Four tiles: Arabic name above the value, French name below."
+}

@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "Flocons d´avoine",
+  "brand": "Gepro's",
+  "ean": "6194001641080",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/164/1080/nutrition_fr.5.full.jpg",
+  "languages": [
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "us-style"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "361",
+    "total_fat_g": "7.1",
+    "saturated_fat_g": "1.3",
+    "sodium_g": "0.008",
+    "carbohydrates_g": "59.8",
+    "fibre_g": "5.6",
+    "sugars_g": "1",
+    "protein_g": "11.7"
+  },
+  "approximate": [],
+  "notes": "US-style: amounts next to the names (per 100 g), columns are % daily value per 100 g and per serving with milk; sodium 8 mg."
+}

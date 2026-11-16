@@ -1,0 +1,31 @@
+{
+  "reviewed": true,
+  "product": "Tris",
+  "brand": "Saïd",
+  "ean": "6194005412037",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/541/2037/nutrition_ar.29.full.jpg",
+  "languages": [
+    "fr",
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "tiles",
+    "blur"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "525",
+    "energy_kj": "2194",
+    "total_fat_g": "32",
+    "saturated_fat_g": "17",
+    "carbohydrates_g": "57",
+    "sugars_g": "42",
+    "protein_g": "7.4",
+    "salt_g": "0.19"
+  },
+  "approximate": [],
+  "notes": "Coloured boxes in two columns, small blurry print."
+}

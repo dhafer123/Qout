@@ -1,0 +1,30 @@
+{
+  "reviewed": true,
+  "product": "Nectar multivitaminé",
+  "brand": "Delice",
+  "ean": "6191534802117",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/153/480/2117/nutrition_fr.29.full.jpg",
+  "languages": [
+    "fr",
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual"
+  ],
+  "basis": "per_100ml",
+  "values": {
+    "energy_kj": "216",
+    "energy_kcal": "51",
+    "total_fat_g": "0",
+    "saturated_fat_g": "0",
+    "carbohydrates_g": "12.7",
+    "sugars_g": "12.7",
+    "protein_g": "0",
+    "salt_g": "0",
+    "fibre_g": "0"
+  },
+  "approximate": [],
+  "notes": "Followed by a vitamin table per 100 mL with %RDA."
+}

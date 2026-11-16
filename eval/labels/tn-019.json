@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "Yaourt Fruits Des Bois",
+  "brand": "Vitalait",
+  "ean": "6191507249833",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/150/724/9833/nutrition_fr.29.full.jpg",
+  "languages": [
+    "fr",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "curved"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "385",
+    "energy_kcal": "91",
+    "total_fat_g": "2.6",
+    "saturated_fat_g": "1.7",
+    "carbohydrates_g": "14",
+    "sugars_g": "13.9",
+    "protein_g": "3.1",
+    "salt_g": "0.11"
+  },
+  "approximate": [],
+  "notes": "Yogurt pot; also calcium with %AQR."
+}

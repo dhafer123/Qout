@@ -1,0 +1,28 @@
+{
+  "reviewed": true,
+  "product": "Biscottes multi-cerial",
+  "brand": "Mama Mia",
+  "ean": "6191427600745",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/142/760/0745/nutrition_fr.19.full.jpg",
+  "languages": [
+    "fr",
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "261.93",
+    "energy_kj": "1102",
+    "protein_g": "9.05",
+    "total_fat_g": "8.73",
+    "carbohydrates_g": "36.79",
+    "salt_g": "1.23",
+    "fibre_g": "3.26"
+  },
+  "approximate": [],
+  "notes": "Names in three columns (French, English, Arabic), values in the fourth."
+}

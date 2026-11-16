@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "Prince creme vanille carousel",
+  "brand": "LU",
+  "ean": "6194008533920",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/853/3920/nutrition_nl.25.full.jpg",
+  "languages": [
+    "fr",
+    "nl"
+  ],
+  "layout": [
+    "columns",
+    "blur"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "2146",
+    "energy_kcal": "513",
+    "total_fat_g": "23",
+    "saturated_fat_g": "12",
+    "carbohydrates_g": "70",
+    "sugars_g": "32",
+    "protein_g": "5.0",
+    "salt_g": "0.25"
+  },
+  "approximate": [],
+  "notes": "French / Dutch, per 100 g and per 10 g; condensed font, blurry."
+}

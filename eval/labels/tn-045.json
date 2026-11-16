@@ -1,0 +1,27 @@
+{
+  "reviewed": true,
+  "product": "Crème à tartiner Noisette Said",
+  "brand": "Mille Recettes",
+  "ean": "6194005420155",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/542/0155/nutrition_en.13.full.jpg",
+  "languages": [
+    "fr",
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "glare"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "559",
+    "energy_kj": "2336.62",
+    "carbohydrates_g": "52.1",
+    "total_fat_g": "36.4",
+    "protein_g": "4.8"
+  },
+  "approximate": [],
+  "notes": "Shiny red print; each value printed about a row above its name. Consistent: 4 x 52.1 + 9 x 36.4 + 4 x 4.8 = 555 kcal."
+}

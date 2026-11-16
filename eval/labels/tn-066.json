@@ -1,0 +1,27 @@
+{
+  "reviewed": true,
+  "product": "crème à tartiner aux noisettes",
+  "brand": "Auchan",
+  "ean": "6199001002053",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/900/100/2053/nutrition_fr.7.full.jpg",
+  "languages": [
+    "fr",
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "curved",
+    "cropped"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "549.44",
+    "protein_g": "3.39",
+    "total_fat_g": "34.52",
+    "carbohydrates_g": "56.30"
+  },
+  "approximate": [],
+  "notes": "Names in three columns (French, English, Arabic); the kcal unit is cut off ('549,44 Kc')."
+}

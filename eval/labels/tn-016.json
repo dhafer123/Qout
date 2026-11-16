@@ -1,0 +1,25 @@
+{
+  "reviewed": true,
+  "product": "Crème fraîche",
+  "brand": "Natilait",
+  "ean": "6191442500358",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/144/250/0358/nutrition_fr.32.full.jpg",
+  "languages": [
+    "fr",
+    "ar"
+  ],
+  "layout": [
+    "bilingual"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "290",
+    "energy_kj": "1196",
+    "protein_g": "2.4",
+    "carbohydrates_g": "2.8",
+    "total_fat_g": "31"
+  },
+  "approximate": [],
+  "notes": "Also vitamins A, B9, B2 with %AJR. OFF's values (207 kcal) are for another recipe."
+}

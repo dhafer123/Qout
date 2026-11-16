@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "Croquette",
+  "brand": "TOM",
+  "ean": "6194000500395",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/050/0395/nutrition_fr.9.full.jpg",
+  "languages": [
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "columns"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "1993.18",
+    "protein_g": "7.27",
+    "carbohydrates_g": "76.00",
+    "sugars_g": "47.12",
+    "total_fat_g": "15.76",
+    "saturated_fat_g": "7.25",
+    "fibre_g": "8.67",
+    "sodium_g": "0.92939"
+  },
+  "approximate": [],
+  "notes": "Per 100 g and per serving (56 g); units in the names ('Energy (KJ)', 'Total sodium (mg)' 929,39)."
+}

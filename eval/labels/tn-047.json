@@ -1,0 +1,31 @@
+{
+  "reviewed": true,
+  "product": "Dégustation - Chocolat Noir 72% Cacao",
+  "brand": "Maestro",
+  "ean": "6194005446100",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/544/6100/nutrition_fr.65.full.jpg",
+  "languages": [
+    "ar",
+    "fr",
+    "en"
+  ],
+  "layout": [
+    "bilingual",
+    "columns"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "562",
+    "energy_kj": "2332",
+    "total_fat_g": "39",
+    "saturated_fat_g": "23",
+    "carbohydrates_g": "32",
+    "sugars_g": "28",
+    "fibre_g": "11",
+    "protein_g": "8",
+    "salt_g": "0.08"
+  },
+  "approximate": [],
+  "notes": "Light print on black; per 100 g, per portion (10 g), %AR; also mono, poly, trans, cholesterol."
+}

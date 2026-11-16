@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "Lait demi- écrémé UHT",
+  "brand": "Vitalait",
+  "ean": "6191507220214",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/150/722/0214/nutrition_fr.80.full.jpg",
+  "languages": [
+    "fr",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "glare"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "181",
+    "energy_kcal": "43",
+    "total_fat_g": "1.5",
+    "saturated_fat_g": "0.95",
+    "carbohydrates_g": "4.4",
+    "sugars_g": "4.4",
+    "protein_g": "3",
+    "salt_g": "0.15"
+  },
+  "approximate": [],
+  "notes": "Milk carton, declared per 100 g; table on a patterned background."
+}

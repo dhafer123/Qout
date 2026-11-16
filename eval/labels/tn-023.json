@@ -1,0 +1,20 @@
+{
+  "reviewed": true,
+  "product": "Orangina et sa pulpe!",
+  "brand": "Orangina",
+  "ean": "6191525200182",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/152/520/0182/nutrition_fr.14.full.jpg",
+  "languages": [
+    "fr",
+    "ar"
+  ],
+  "layout": [
+    "per-portion-only",
+    "bilingual"
+  ],
+  "basis": null,
+  "values": {},
+  "approximate": [],
+  "notes": "Declared per 330 mL can only, with %RNJ."
+}

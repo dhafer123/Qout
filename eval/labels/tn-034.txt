@@ -1,0 +1,25 @@
+Nutrition facts -Valeur nutritive
+Amount
+Teneur
+Per 100g / Pour 100g/ je 100g
+Energy/Energie(Calories):67kcal /282 KJ
+Fat /Matiéres grasses/Fett:
+Saturated /Saturés /gesättigte Fettsäuren:
+% Daily Value
+%Valeur Quotidienne
+Carbohydrates/Glucides/Kohlenhydrate:
+Sugars/Sucres/Zu cker:
+Dietary Fibre/Fibres/Ballaststoffe:
+Protein/Protéines/Eiwei B:
+Salt/Sel/Salz:
+Vitamin AVitamine A: <0,2 ug
+Vitamin C/Vitamine C: 120 mg
+Vitamin E/Vitamine E: 0.7 mg
+Iron/Fer/Eisen: 2.7 mg
+0.58
+0.1g
+9.6g
+6.28
+3.8g
+3.93
+2.18g

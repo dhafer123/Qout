@@ -1,0 +1,31 @@
+{
+  "reviewed": true,
+  "product": "Start",
+  "brand": "saïda",
+  "ean": "6194008515520",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/851/5520/nutrition_fr.62.full.jpg",
+  "languages": [
+    "en",
+    "fr",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "us-style",
+    "small-print"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "483",
+    "total_fat_g": "17.3",
+    "saturated_fat_g": "7.5",
+    "sodium_g": "0.156",
+    "carbohydrates_g": "74.2",
+    "fibre_g": "2.4",
+    "sugars_g": "23.9",
+    "protein_g": "6.5"
+  },
+  "approximate": [],
+  "notes": "US-style 'Quantité pour 100 g': amounts next to the names, then % daily value; sodium 156 mg; also trans, cholesterol, added sugars."
+}

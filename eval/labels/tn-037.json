@@ -1,0 +1,32 @@
+{
+  "reviewed": true,
+  "product": "Fourré",
+  "brand": "Kif",
+  "ean": "6194002510064",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/251/0064/nutrition_fr.86.full.jpg",
+  "languages": [
+    "fr",
+    "ar",
+    "en"
+  ],
+  "layout": [
+    "bilingual",
+    "us-style"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "1980",
+    "energy_kcal": "473",
+    "total_fat_g": "23",
+    "saturated_fat_g": "10.9",
+    "carbohydrates_g": "58",
+    "sugars_g": "23",
+    "fibre_g": "4.0",
+    "sodium_g": "0.1231",
+    "protein_g": "6.4",
+    "salt_g": "0.31"
+  },
+  "approximate": [],
+  "notes": "Per 100 g table (sodium 123,10 mg) next to a US-style per-serving (21,7 g) table with its own fat, sodium, carbohydrate, sugars, protein."
+}

@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "Etoile",
+  "brand": "Spiga",
+  "ean": "6194011873280",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/401/187/3280/nutrition_fr.7.full.jpg",
+  "languages": [
+    "en",
+    "fr"
+  ],
+  "layout": [
+    "us-style",
+    "glare"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "376",
+    "total_fat_g": "0.64",
+    "saturated_fat_g": "0.117",
+    "sodium_g": "0.00982",
+    "carbohydrates_g": "77.43",
+    "fibre_g": "5",
+    "sugars_g": "0",
+    "protein_g": "12.75"
+  },
+  "approximate": [],
+  "notes": "US-style 'Quantité par 100 g', light print on green, glare; sodium 9,82 mg; also cholesterol, vitamins, calcium, iron."
+}

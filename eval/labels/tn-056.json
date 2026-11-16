@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "Chamia Nature",
+  "brand": "Le Moulin",
+  "ean": "6194017503785",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/401/750/3785/nutrition_fr.28.full.jpg",
+  "languages": [
+    "en",
+    "fr",
+    "ar"
+  ],
+  "layout": [
+    "bilingual"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "2100",
+    "energy_kcal": "502",
+    "total_fat_g": "30.1",
+    "saturated_fat_g": "4.5",
+    "carbohydrates_g": "45",
+    "sugars_g": "39.2",
+    "protein_g": "12.6",
+    "salt_g": "0.167"
+  },
+  "approximate": [],
+  "notes": "Last row printed 'Salt / Sel 167mg' (the Arabic name says sodium); read as salt, as written in Latin script. Also polyols 0 g."
+}

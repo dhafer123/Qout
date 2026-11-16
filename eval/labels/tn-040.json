@@ -1,0 +1,26 @@
+{
+  "reviewed": true,
+  "product": "Le Nature",
+  "brand": "Danone",
+  "ean": "6194003800317",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/380/0317/nutrition_fr.46.full.jpg",
+  "languages": [
+    "ar",
+    "fr"
+  ],
+  "layout": [
+    "tiles",
+    "curved"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kj": "285",
+    "energy_kcal": "68",
+    "protein_g": "3.6",
+    "carbohydrates_g": "5.4",
+    "total_fat_g": "3.6"
+  },
+  "approximate": [],
+  "notes": "Four tiles, French name above the value; yogurt pot."
+}

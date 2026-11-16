@@ -1,0 +1,32 @@
+{
+  "reviewed": true,
+  "product": "Sensations - Chocolat Extra Fin Noir",
+  "brand": "Maestro",
+  "ean": "6194005443031",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/544/3031/nutrition_fr.60.full.jpg",
+  "languages": [
+    "fr",
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "columns",
+    "small-print"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "575",
+    "energy_kj": "2392",
+    "total_fat_g": "38",
+    "saturated_fat_g": "23",
+    "carbohydrates_g": "45",
+    "sugars_g": "43",
+    "fibre_g": "7.4",
+    "protein_g": "4.8",
+    "salt_g": "0.08"
+  },
+  "approximate": [],
+  "notes": "One wide strip of four tables side by side (per 100 g, per 10 g portion, %AR each); also mono, poly, trans, cholesterol."
+}

@@ -1,0 +1,27 @@
+{
+  "reviewed": true,
+  "product": "Boisson au jus De Fruits multivitaminé",
+  "brand": "Tropico",
+  "ean": "6194007880018",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/400/788/0018/nutrition_fr.23.full.jpg",
+  "languages": [
+    "en"
+  ],
+  "layout": [
+    "glare"
+  ],
+  "basis": "per_100ml",
+  "values": {
+    "energy_kcal": "53",
+    "energy_kj": "229.5",
+    "carbohydrates_g": "12",
+    "sugars_g": "10.65",
+    "protein_g": "0.12",
+    "total_fat_g": "0.05",
+    "saturated_fat_g": "0.01",
+    "sodium_g": "0.00702"
+  },
+  "approximate": [],
+  "notes": "Glare over the '100 ml' header; sodium 7,02 mg; also vitamins with %RDA."
+}

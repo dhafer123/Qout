@@ -1,0 +1,29 @@
+{
+  "reviewed": true,
+  "product": "Toast artisanal",
+  "brand": "Mama mia",
+  "ean": "6191427600974",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/142/760/0974/nutrition_fr.25.full.jpg",
+  "languages": [
+    "ar",
+    "fr",
+    "en"
+  ],
+  "layout": [
+    "bilingual",
+    "columns"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "215",
+    "energy_kj": "899",
+    "protein_g": "9",
+    "total_fat_g": "7",
+    "carbohydrates_g": "29",
+    "salt_g": "0.15",
+    "fibre_g": "3.3"
+  },
+  "approximate": [],
+  "notes": "Per 100 g and per 2 slices (20 g)."
+}

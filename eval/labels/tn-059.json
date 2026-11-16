@@ -1,0 +1,36 @@
+{
+  "reviewed": true,
+  "product": "Boga Lim",
+  "brand": "Boga",
+  "ean": "6194019605241",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/401/960/5241/nutrition_fr.32.full.jpg",
+  "languages": [
+    "fr",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "horizontal",
+    "tiles"
+  ],
+  "basis": "per_100ml",
+  "values": {
+    "energy_kcal": "30.59",
+    "energy_kj": "128.07",
+    "carbohydrates_g": "7.64",
+    "sugars_g": "7.64",
+    "protein_g": "0.1",
+    "total_fat_g": "0.1",
+    "saturated_fat_g": "0.1",
+    "sodium_g": "0.00329",
+    "fibre_g": "0.1"
+  },
+  "approximate": [
+    "protein_g",
+    "total_fat_g",
+    "saturated_fat_g",
+    "fibre_g"
+  ],
+  "notes": "Horizontal table: names in a row of columns, values in the row below; '< 0,1 g'; sodium 3,29 mg. Followed by per-250 mL tiles (sugars 19,10 g, sodium 8,22 mg, 76,5 kcal)."
+}

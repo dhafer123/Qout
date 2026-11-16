@@ -1,0 +1,33 @@
+{
+  "reviewed": true,
+  "product": "goldina plus",
+  "brand": "GIAS",
+  "ean": "6191402901270",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/140/290/1270/nutrition_fr.41.full.jpg",
+  "languages": [
+    "fr",
+    "en",
+    "ar"
+  ],
+  "layout": [
+    "bilingual",
+    "blur"
+  ],
+  "basis": "per_100g",
+  "values": {
+    "energy_kcal": "539",
+    "energy_kj": "2217",
+    "protein_g": "1",
+    "carbohydrates_g": "1",
+    "total_fat_g": "59",
+    "saturated_fat_g": "25",
+    "sodium_g": "0.15",
+    "fibre_g": "0"
+  },
+  "approximate": [
+    "protein_g",
+    "carbohydrates_g"
+  ],
+  "notes": "Blurry. Protein and carbohydrate printed '< 1 g'; sodium 150 mg; also trans, mono, poly, omega, cholesterol, vitamins."
+}

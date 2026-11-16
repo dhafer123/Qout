@@ -1,0 +1,25 @@
+{
+  "reviewed": true,
+  "product": "Lait demi écrémé UHT",
+  "brand": "délice",
+  "ean": "6194043001668",
+  "source": "open-food-facts",
+  "photo_url": "https://images.openfoodfacts.org/images/products/619/404/300/1668/nutrition_fr.80.full.jpg",
+  "languages": [
+    "ar",
+    "fr"
+  ],
+  "layout": [
+    "bilingual"
+  ],
+  "basis": "per_100ml",
+  "values": {
+    "energy_kj": "183",
+    "energy_kcal": "43.5",
+    "total_fat_g": "1.5",
+    "protein_g": "3",
+    "carbohydrates_g": "4.5"
+  },
+  "approximate": [],
+  "notes": "Also calcium."
+}
