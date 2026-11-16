@@ -73,7 +73,7 @@ void main() {
       tokens: tokens,
       overrides: [
         productRepositoryProvider.overrideWithValue(repository),
-        qoutApiProvider.overrideWithValue(authApi),
+        authApiProvider.overrideWithValue(authApi),
         ...overrides,
       ],
     );

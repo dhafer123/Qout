@@ -14,31 +14,6 @@ import '../helpers/fake_contribution.dart';
 import '../helpers/fake_product_repository.dart';
 import '../helpers/pump_app.dart';
 
-/// The app's API: sign-in from [FakeAuthApi], the contribution calls from
-/// [FakeContributionApi]; nothing else is expected.
-class _Api extends FakeAuthApi {
-  _Api(this.contributions);
-
-  final FakeContributionApi contributions;
-
-  @override
-  Future<LabelParseResult> parseLabelText({required LabelParseRequest body}) =>
-      contributions.parseLabelText(body: body);
-
-  @override
-  Future<LabelFallbackRead> getLabelFallback({required String fallbackId}) =>
-      contributions.getLabelFallback(fallbackId: fallbackId);
-
-  @override
-  Future<UploadTicket> createUpload({required UploadRequest body}) =>
-      contributions.createUpload(body: body);
-
-  @override
-  Future<ContributionRead> submitContribution({
-    required ContributionCreate body,
-  }) => contributions.submitContribution(body: body);
-}
-
 const _ean = '6191234567897';
 
 /// End to end with a fake API: an unknown product is added from three
@@ -60,12 +35,12 @@ void main() {
     );
     fake.api.parseResults.add(recordedLabelParse('label-parse-salt-missing'));
     fake.api.fallbackResults.add(recordedFallback('label-fallback-done'));
-    final api = _Api(fake.api)..loginResults.add(pair('1'));
+    final authApi = FakeAuthApi()..loginResults.add(pair('1'));
 
     await tester.pumpQoutApp(
       overrides: [
         ...fake.overrides,
-        qoutApiProvider.overrideWithValue(api),
+        authApiProvider.overrideWithValue(authApi),
         productRepositoryProvider.overrideWithValue(
           FakeProductRepository(
             results: [const ProductResult.notFound(ean: _ean)],

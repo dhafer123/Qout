@@ -159,7 +159,7 @@ class AuthRepository {
 final Provider<AuthRepository> authRepositoryProvider =
     Provider<AuthRepository>(
       (ref) => AuthRepository(
-        api: ref.watch(qoutApiProvider),
+        api: ref.watch(authApiProvider),
         store: ref.watch(tokenStoreProvider),
       ),
     );

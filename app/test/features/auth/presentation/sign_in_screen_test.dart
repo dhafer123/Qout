@@ -23,7 +23,7 @@ void main() {
   Future<void> openSignIn(WidgetTester tester) async {
     await tester.pumpQoutApp(
       tokens: tokens,
-      overrides: [qoutApiProvider.overrideWithValue(api)],
+      overrides: [authApiProvider.overrideWithValue(api)],
     );
     await tester.pushRoute(AppRoutes.signIn);
     await tester.pumpAndSettle();
@@ -239,7 +239,7 @@ void main() {
       tokens.session = session;
       await tester.pumpQoutApp(
         tokens: tokens,
-        overrides: [qoutApiProvider.overrideWithValue(api)],
+        overrides: [authApiProvider.overrideWithValue(api)],
       );
 
       await tester.tap(find.byTooltip('More'));
