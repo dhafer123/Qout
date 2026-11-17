@@ -167,6 +167,7 @@ uv run python -m app.worker enqueue export           # queue: full export (seed;
 uv run python -m app.worker enqueue export --force   # re-import the same export version
 uv run python -m app.worker run deltas               # run now, in this process (no worker)
 uv run python -m app.worker run images               # copy product photos now
+uv run python -m app.worker run cleanup              # delete old uploads and fallbacks now
 ```
 
 Only one import runs at a time (Postgres advisory lock); a queued job that finds another
@@ -255,6 +256,23 @@ User-Agent and rate limit, at most `PRODUCT_IMAGE_MAX_BYTES`, JPEG or PNG only) 
 `S3_PUBLIC_BUCKET` as `products/{ean}/front-{hash}.jpg`, and the API returns
 `MEDIA_BASE_URL` + that key as `image_url` (null until copied). Photos OFF no longer has
 are deleted; unusable ones are not fetched again until OFF's URL changes.
+
+#### Cleanup
+
+The `clean_up` job runs every day at `CLEANUP_CRON_HOUR` UTC (`CLEANUP_CRON_ENABLED`; by
+hand: `uv run python -m app.worker run cleanup`) and deletes what contributions leave
+behind:
+
+| What | When | Setting (default) |
+|---|---|---|
+| LLM fallback requests (`label_fallbacks`, they hold the OCR text), any status | days after they were asked for | `LABEL_FALLBACK_RETENTION_DAYS` (7) |
+| Photos of rejected contributions (the keys stay as history; `photos_deleted_at` is set) | days after the rejection | `REJECTED_PHOTO_RETENTION_DAYS` (30) |
+| Uploads no contribution refers to (never submitted, retaken, refused or deleted in the app's outbox) | days after the upload | `UNSUBMITTED_UPLOAD_RETENTION_DAYS` (7) |
+
+Photos of pending and approved contributions are kept. A delete that fails is counted and
+tried again on the next run; a storage outage doesn't stop the database cleanup. Only one
+cleanup runs at a time (Postgres advisory lock). An app that uploaded photos and then stayed
+closed longer than the upload retention gets its contribution refused ("photo not uploaded").
 
 #### Rescoring and engine validation
 
