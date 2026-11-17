@@ -143,6 +143,19 @@ class Settings(BaseSettings):
     """LLM readings one user may ask for per window; beyond, manual entry."""
     llm_parse_window_seconds: int = Field(default=3600, ge=1, le=86_400)
 
+    # Daily cleanup (worker): what contributions leave behind, and how long it is kept.
+    cleanup_cron_enabled: bool = True
+    cleanup_cron_hour: int = Field(default=3, ge=0, le=23)
+    """Hour (UTC) of the daily cleanup."""
+    unsubmitted_upload_retention_days: int = Field(default=7, ge=1, le=365)
+    """Uploaded photos no contribution refers to are deleted this long after the upload.
+    The app's outbox submits soon after uploading, but only while the app is open."""
+    rejected_photo_retention_days: int = Field(default=30, ge=1, le=3650)
+    """Photos of a rejected contribution are deleted this long after the rejection."""
+    label_fallback_retention_days: int = Field(default=7, ge=1, le=3650)
+    """LLM fallback requests (they hold the label's OCR text) are deleted this long after
+    they were asked for (the app waits for an answer for 90 s at most)."""
+
     @field_validator("off_user_agent")
     @classmethod
     def _real_user_agent(cls, value: str) -> str:

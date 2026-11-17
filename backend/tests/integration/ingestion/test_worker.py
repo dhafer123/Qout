@@ -36,6 +36,7 @@ JOBS = [
     "import_off_export",
     "import_off_deltas",
     "copy_product_images",
+    "clean_up",
     "rescore_products",
     "parse_label_with_llm",
 ]
@@ -49,6 +50,7 @@ def settings(make_settings: Callable[..., Settings], tmp_path: Path) -> Settings
         import_download_dir=tmp_path / "downloads",
         off_max_retries=0,
         import_delta_cron_hour=3,
+        cleanup_cron_hour=2,
     )
 
 
@@ -118,20 +120,25 @@ def test_worker_settings(settings: Settings) -> None:
     config = worker_settings(settings, queue_name="q")
 
     assert [f.name for f in config["functions"]] == JOBS
-    deltas, images = config["cron_jobs"]
+    deltas, images, cleanup = config["cron_jobs"]
     assert (deltas.name, deltas.hour, deltas.minute) == ("cron:import_off_deltas", {3}, {0})
     assert (images.name, images.hour, images.minute) == (
         "cron:copy_product_images",
         None,
         {0, 15, 30, 45},
     )
+    assert (cleanup.name, cleanup.hour, cleanup.minute) == ("cron:clean_up", {2}, {0})
     assert (config["queue_name"], config["timezone"]) == ("q", UTC)
     assert config["ctx"] == {"settings": settings}
     assert worker_settings(settings)["queue_name"] == QUEUE_NAME
 
 
 def test_cron_can_be_disabled(make_settings: Callable[..., Settings]) -> None:
-    settings = make_settings(import_delta_cron_enabled=False, product_images_cron_enabled=False)
+    settings = make_settings(
+        import_delta_cron_enabled=False,
+        product_images_cron_enabled=False,
+        cleanup_cron_enabled=False,
+    )
     assert worker_settings(settings)["cron_jobs"] == []
 
 

@@ -79,9 +79,10 @@ class Contribution(IdTimestampMixin, Base):
         ForeignKey("users.id", ondelete="SET NULL"), index=True
     )
     """The contributor; None once their account is deleted (the history stays)."""
-    client_id: Mapped[uuid.UUID]
+    client_id: Mapped[uuid.UUID] = mapped_column(index=True)
     """The app's id for the contribution (also in its photo keys): a resend is the same
-    contribution."""
+    contribution. Indexed on its own for the upload cleanup, which finds contributions
+    from photo keys (`user_id` is None once the account is deleted)."""
     ean: Mapped[str] = mapped_column(String(14), index=True)
     name: Mapped[str | None] = mapped_column(Text)
     brand: Mapped[str | None] = mapped_column(Text)
@@ -93,7 +94,10 @@ class Contribution(IdTimestampMixin, Base):
     """Declared amounts per 100 g / 100 mL as exact decimal strings (`"1.5"`), booleans for
     flags; a missing key is not declared."""
     photos: Mapped[dict[str, str]] = mapped_column(JSONB)
-    """Photo kind (`front`, `nutrition`, `ingredients`) -> key in the private bucket."""
+    """Photo kind (`front`, `nutrition`, `ingredients`) -> key in the private bucket. Kept
+    as history once the photos are deleted (`photos_deleted_at`)."""
+    photos_deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    """When the cleanup deleted the photos from storage (rejected contributions)."""
     ocr_text: Mapped[dict[str, str]] = mapped_column(JSONB)
     """Photo kind -> text read on the phone (ML Kit)."""
     parser_used: Mapped[ParserUsed] = mapped_column(str_enum(ParserUsed, "contribution_parser"))

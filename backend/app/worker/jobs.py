@@ -7,7 +7,8 @@ rescoring for the current engine version (once per version: the job id says whic
 deploying a new engine rescores outdated products. Product photos are copied into our
 storage by their own job (every 15 minutes, one run at a time). Labels the rule-based
 parser can't read are read by the LLM fallback (`parse_label_with_llm`, queued by the API)
-when it is enabled.
+when it is enabled. A daily cleanup deletes uploads never submitted, photos of rejected
+contributions and old LLM fallback requests (`clean_up`, one run at a time).
 """
 
 import logging
@@ -27,6 +28,7 @@ from app.core.config import Settings, get_settings
 from app.core.db import create_engine, create_session_factory
 from app.core.logging import configure_logging
 from app.core.storage import Storage, open_storage
+from app.modules.contributions.cleanup import Cleanup, CleanupSettings, CleanupStats
 from app.modules.contributions.fallbacks import FallbackRunner, FallbackSettings
 from app.modules.contributions.llm_client import GeminiLabelLlm
 from app.modules.ingestion.download import download_client
@@ -44,6 +46,8 @@ IMPORT_LOCK_KEY = 0x516F757401
 """Advisory lock id for bulk imports ("Qout" + 1)."""
 IMAGES_LOCK_KEY = 0x516F757402
 """Advisory lock id for the product photo copy ("Qout" + 2)."""
+CLEANUP_LOCK_KEY = 0x516F757403
+"""Advisory lock id for the daily cleanup ("Qout" + 3)."""
 BUSY_RETRY_SECONDS = 600
 RESCORE_BATCH_SIZE = 500
 
@@ -51,7 +55,7 @@ Context = dict[str, Any]
 
 
 class ImportBusyError(Exception):
-    """Another run holds the job's lock (a bulk import, or the photo copy)."""
+    """Another run holds the job's lock (a bulk import, the photo copy, the cleanup)."""
 
 
 # ---------------------------------------------------------------- worker lifecycle
@@ -134,6 +138,16 @@ async def copy_product_images(ctx: Context) -> dict[str, int] | None:
     return asdict(stats)
 
 
+async def clean_up(ctx: Context) -> dict[str, int] | None:
+    """Delete uploads never submitted, photos of rejected contributions and old LLM
+    fallback requests (daily cron). Skipped (None) while another cleanup runs."""
+    try:
+        stats = await run_cleanup(ctx)
+    except ImportBusyError:
+        return None
+    return asdict(stats)
+
+
 async def parse_label_with_llm(ctx: Context, fallback_id: str) -> str | None:
     """Read a label with the LLM fallback (queued by `POST /v1/labels/parse`). Returns
     the status it ended with; None if the request was no longer pending."""
@@ -161,6 +175,14 @@ async def run_copy_images(ctx: Context) -> ImageCopyStats:
     )
     async with _exclusive(ctx["engine"], IMAGES_LOCK_KEY):
         return await copier.run()
+
+
+async def run_cleanup(ctx: Context) -> CleanupStats:
+    settings: Settings = ctx["settings"]
+    storage: Storage = ctx["storage"]
+    cleanup = Cleanup(ctx["sessions"], storage.uploads, CleanupSettings.from_settings(settings))
+    async with _exclusive(ctx["engine"], CLEANUP_LOCK_KEY):
+        return await cleanup.run()
 
 
 async def run_rescore(ctx: Context) -> RescoreStats:

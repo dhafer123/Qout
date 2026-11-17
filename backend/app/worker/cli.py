@@ -5,6 +5,7 @@ uv run python -m app.worker enqueue export --force
 uv run python -m app.worker run deltas              # runs now, in this process
 uv run python -m app.worker run rescore             # score outdated products now
 uv run python -m app.worker run images              # copy product photos now
+uv run python -m app.worker run cleanup             # delete old uploads and fallbacks now
 """
 
 import argparse
@@ -26,6 +27,7 @@ _JOBS = {
     "deltas": "import_off_deltas",
     "rescore": "rescore_products",
     "images": "copy_product_images",
+    "cleanup": "clean_up",
 }
 
 
@@ -35,7 +37,10 @@ def parser() -> argparse.ArgumentParser:
     cli.add_argument(
         "job",
         choices=sorted(_JOBS),
-        help="OFF full export, new OFF delta files, rescore outdated products, copy photos",
+        help=(
+            "OFF full export, new OFF delta files, rescore outdated products, copy photos, "
+            "clean up old uploads and LLM fallback requests"
+        ),
     )
     cli.add_argument(
         "--force", action="store_true", help="export: import again even if already imported"
@@ -85,6 +90,8 @@ async def _run(settings: Settings, job: str, *, force: bool) -> int:
             output = asdict(await jobs.run_rescore(ctx))
         elif job == "images":
             output = asdict(await jobs.run_copy_images(ctx))
+        elif job == "cleanup":
+            output = asdict(await jobs.run_cleanup(ctx))
         else:
             output = [jobs.summary(result) for result in await jobs.run_deltas(ctx)]
     except jobs.ImportBusyError:

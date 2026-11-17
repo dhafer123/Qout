@@ -7,12 +7,20 @@ so database defaults (id, timestamps) are populated.
 """
 
 import itertools
+import uuid
 from collections.abc import Iterator
 from decimal import Decimal
 from typing import Any, ClassVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.modules.auth.models import User
+from app.modules.contributions.models import (
+    Contribution,
+    ContributionStatus,
+    LabelFallback,
+    ParserUsed,
+)
 from app.modules.products.ean import check_digit
 from app.modules.products.models import (
     DataSource,
@@ -23,7 +31,7 @@ from app.modules.products.models import (
     ScanOutcome,
     Score,
 )
-from app.modules.scoring import ENGINE_VERSION, Grade
+from app.modules.scoring import ENGINE_VERSION, Category, Grade
 from tests.models import Widget
 
 
@@ -129,3 +137,43 @@ class ScanEventFactory(Factory[ScanEvent]):
     @classmethod
     def defaults(cls) -> dict[str, Any]:
         return {"ean": f"{3000000000000 + cls.next_n()}", "outcome": ScanOutcome.NOT_FOUND}
+
+
+class UserFactory(Factory[User]):
+    """A contributor. The hash is not a real Argon2 hash: such users can't sign in."""
+
+    model = User
+
+    @classmethod
+    def defaults(cls) -> dict[str, Any]:
+        return {"email": f"user{cls.next_n()}@example.tn", "password_hash": "not-a-real-hash"}
+
+
+class ContributionFactory(Factory[Contribution]):
+    """Pass `user_id` (or None). Photo keys are the caller's: the factory doesn't upload."""
+
+    model = Contribution
+
+    @classmethod
+    def defaults(cls) -> dict[str, Any]:
+        return {
+            "client_id": uuid.uuid4(),
+            "ean": _ean13(210000000000 + cls.next_n()),
+            "category": Category.GENERAL,
+            "basis": NutritionBasis.PER_100G,
+            "nutrition": {"energy_kj": "1000"},
+            "photos": {},
+            "ocr_text": {},
+            "parser_used": ParserUsed.MANUAL,
+            "status": ContributionStatus.PENDING,
+        }
+
+
+class LabelFallbackFactory(Factory[LabelFallback]):
+    """Pass `user_id`. A pending request."""
+
+    model = LabelFallback
+
+    @classmethod
+    def defaults(cls) -> dict[str, Any]:
+        return {"ocr_text": f"Energie {cls.next_n()} kJ"}
