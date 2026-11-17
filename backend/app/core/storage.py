@@ -12,6 +12,7 @@ second client that never sends requests (signing is local).
 from collections.abc import AsyncIterator
 from contextlib import AsyncExitStack, asynccontextmanager
 from dataclasses import dataclass
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from aiobotocore.config import AioConfig
@@ -35,6 +36,13 @@ class StorageError(Exception):
 class StoredObject:
     size: int
     content_type: str | None
+
+
+@dataclass(frozen=True)
+class ListedObject:
+    key: str
+    last_modified: datetime
+    """When the object was last written (the storage's clock, timezone-aware)."""
 
 
 class Bucket:
@@ -115,6 +123,19 @@ class Bucket:
         return StoredObject(
             size=response["ContentLength"], content_type=response.get("ContentType")
         )
+
+    async def pages(self, prefix: str) -> AsyncIterator[list[ListedObject]]:
+        """Every object whose key starts with `prefix`, a page (up to 1000) at a time, in
+        key order. Raises StorageError, possibly after some pages."""
+        paginator = self._client.get_paginator("list_objects_v2")
+        try:
+            async for page in paginator.paginate(Bucket=self.name, Prefix=prefix):
+                yield [
+                    ListedObject(key=item["Key"], last_modified=item["LastModified"])
+                    for item in page.get("Contents", [])
+                ]
+        except (ClientError, BotoCoreError) as error:
+            raise StorageError(f"could not list {prefix}: {error}") from error
 
     async def delete(self, key: str) -> None:
         """Deleting a missing object is not an error (S3 semantics)."""

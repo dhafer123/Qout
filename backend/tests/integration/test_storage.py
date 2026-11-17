@@ -1,6 +1,8 @@
 """Object storage against real RustFS: objects in both buckets, and presigned uploads that
 storage itself holds to the signed content type and size."""
 
+from datetime import UTC, datetime, timedelta
+
 import httpx
 import pytest
 
@@ -26,6 +28,19 @@ async def test_put_head_and_delete(storage: Storage) -> None:
 
 async def test_deleting_a_missing_object_is_fine(storage: Storage) -> None:
     await storage.uploads.delete("never/stored.jpg")
+
+
+async def test_listing_by_prefix_in_key_order(storage: Storage) -> None:
+    keys = ["contributions/u/c/b.jpg", "contributions/u/c/a.jpg", "contributions/v/d/c.png"]
+    for key in [*keys, "products/1/front.jpg"]:
+        await storage.uploads.put(key, b"x", content_type="image/jpeg")
+    before = datetime.now(UTC) - timedelta(minutes=5)
+
+    listed = [item async for page in storage.uploads.pages("contributions/") for item in page]
+
+    assert [item.key for item in listed] == sorted(keys)
+    assert all(item.last_modified > before for item in listed)  # timezone-aware
+    assert [page async for page in storage.uploads.pages("nothing/")] == [[]]
 
 
 async def test_buckets_are_separate(storage: Storage) -> None:
@@ -120,6 +135,8 @@ async def test_storage_down_raises_storage_error(make_settings: object) -> None:
             await opened.uploads.head(KEY)
         with pytest.raises(StorageError):
             await opened.uploads.delete(KEY)
+        with pytest.raises(StorageError):
+            await anext(opened.uploads.pages(""))
 
 
 async def test_refused_credentials_raise_storage_error(make_settings: object) -> None:
