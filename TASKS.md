@@ -268,7 +268,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - [ ] Decide localization (French, Arabic with right-to-left): own task or a stated non-goal (`flutter_localizations` / `intl` are new packages: ask first)
 - [ ] Optional: short first-run onboarding (what the grade means; scanning needs no account)
 - Tests: **W** golden or widget tests for the reworked screens in light and dark; text scaling doesn't overflow.
-- Placed after T31 (every screen exists) and before the release pipeline and T37's screenshots.
+- Placed after T31 (every screen exists) and before the release pipeline, the download site (T33b, reuses the screenshots) and T37's screenshots.
 
 ---
 
@@ -280,13 +280,25 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - [ ] Replace the placeholder staging/prod API URLs (`*.qout.invalid`) in `app/lib/core/env/app_env.dart`
 - Acceptance: merge to `main` → staging updated automatically.
 
-### T33 · Android release pipeline
-- [ ] Release signing via GitHub Secrets; fastlane lane uploading AAB to Play internal testing on merge to `main`; build number from CI run
+### T33 · Android release pipeline (APK, no Play Store)
+- [ ] Release signing via GitHub Secrets (keystore I create myself; no Play Console account); version name from the tag, build number from the CI run
+- [ ] Merge to `main`: signed release APK pointing at **staging**, kept as a CI artifact (for testing on my phone)
+- [ ] Tag `v*`: signed release APK pointing at **prod**, attached to a **GitHub Release** with its SHA-256 checksum (the APK is never committed to git)
 - [ ] Declare `android.permission.INTERNET` in the main manifest: only the debug/profile manifests have it, so a release build has no network (found 2026-11-13). Release builds keep cleartext HTTP blocked (only debug allows it, for local backends)
-- Acceptance: merge → new internal test build. (I create the Play Console account and keystore.)
+- Acceptance: tag → a GitHub Release whose signed APK installs and works on a real phone. (I create the keystore.)
+
+### T33b · Download website
+- [ ] Small static site (plain HTML/CSS, no framework, English) in `site/`, deployed to **GitHub Pages** by GitHub Actions
+- [ ] Home page: what Qout does, screenshots, **Download** button for the latest APK (GitHub's stable "latest release" download link, so the site doesn't change per release) with version, size, date and SHA-256
+- [ ] Install guide, step by step: allow installs from the browser ("install unknown apps"), the Play Protect warning for apps from outside the Play Store, checking the SHA-256, updating (install over the old version: same signing key, data kept), uninstalling
+- [ ] Privacy policy page (what is sent to the backend and to Gemini, what is stored, photo retention from T30b) and a changelog page
+- [ ] `latest.json` on the site (version, build number, APK URL, SHA-256, release notes), updated by the release workflow (T34)
+- [ ] **In-app update notice**: sideloaded apps never update themselves, so the app reads `latest.json` (at most once a day, on start), and when a newer build exists shows a dismissible "New version available" banner that opens the download page; no notice when offline or when the file can't be read
+- Tests: **U** version comparison and `latest.json` parsing (malformed, missing fields); **W** banner shown / hidden / dismissed; CI checks the site's links and that `latest.json` matches its schema.
+- Acceptance: following the site's steps on a phone from scratch installs the app and it works; installing an older build shows the update notice.
 
 ### T34 · Production release
-- [ ] On tag `v*`: promote the staging image to prod (manual approval via GitHub Environments), backup DB before migrate, promote Android build track, generate changelog from commits
+- [ ] On tag `v*`: promote the staging image to prod (manual approval via GitHub Environments), backup DB before migrate, publish the GitHub Release (APK + SHA-256, T33) and update the site's `latest.json` and changelog (T33b), generate the changelog from commits (release notes and site)
 - Acceptance: tagging releases to prod; rollback procedure documented.
 
 ### T35 · Observability and hardening
@@ -299,13 +311,14 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Acceptance: E2E job in CI green.
 
 ### T37 · Portfolio polish
-- [ ] README: screenshots/GIF, architecture diagram, metrics (OFF agreement %, parser accuracy, test counts, latency), how to run, Play Store link
-- [ ] `docs/` cleanup; license file; privacy policy page (required for Play Store)
+- [ ] README: screenshots/GIF, architecture diagram, metrics (OFF agreement %, parser accuracy, test counts, latency), how to run, link to the download site (T33b)
+- [ ] `docs/` cleanup; license file (the privacy policy is on the download site, T33b)
 
 ---
 
 ## Notes / decisions log
 - (add decisions here as tasks are done)
+- 2026-11-17 (planning): no Google Play release (no Play Console account). The app is distributed as a signed APK: GitHub Releases hold the files, a download website on GitHub Pages explains how to install it (T33b), and the app shows a notice when a newer version is published (sideloaded apps don't update themselves). T33, T34 and T37 changed accordingly. The public APK talks to the prod backend, so T32/T34 must host the API publicly before the site is useful to others.
 - 2026-11-11 (T01): added `.gitattributes` forcing LF line endings (Windows + WSL + shell hooks). Solo workflow: work is pushed directly to `main` (no PRs) unless decided otherwise. Shared `.claude/settings.json` is tracked; `.claude/settings.local.json` is ignored.
 - 2026-11-11 (T02): MinIO replaced by RustFS 1.0.5 (MinIO archived, images unpublished), see ADR 0002. Bucket created by a one-shot `amazon/aws-cli` container. Containers run on Docker Engine inside WSL 2, not Docker Desktop. Workflow changed to direct commits on `main` (CLAUDE.md updated).
 - 2026-11-11 (T03): backend runs in WSL with uv; virtualenv kept on the Linux side via `UV_PROJECT_ENVIRONMENT` (repo stays on `C:`). Integration tests fail fast with a clear message when the compose stack is down.
