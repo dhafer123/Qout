@@ -1049,6 +1049,182 @@
         }
       }
     },
+    "/v1/admin/contributions/{contribution_id}": {
+      "get": {
+        "tags": [
+          "moderation"
+        ],
+        "summary": "One contribution, with links to its photos",
+        "description": "The photo links work for `ADMIN_PHOTO_URL_TTL_SECONDS`.",
+        "operationId": "getContribution",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contribution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contribution Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a moderator",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such contribution",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "moderation"
+        ],
+        "summary": "Correct a pending contribution",
+        "description": "Only the fields sent change; `nutrition` replaces all the values. The contributor's own values are kept in `submitted_values` the first time.",
+        "operationId": "editContribution",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contribution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contribution Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContributionEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionReview"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a moderator",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such contribution",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Already decided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/admin/contributions/{contribution_id}/approve": {
       "post": {
         "tags": [
@@ -1339,6 +1515,182 @@
           }
         }
       }
+    },
+    "/v1/admin/reports/{report_id}/resolve": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "summary": "Mark a report resolved (the product was fixed)",
+        "operationId": "resolveReport",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorReportRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a moderator",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Already decided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/reports/{report_id}/dismiss": {
+      "post": {
+        "tags": [
+          "moderation"
+        ],
+        "summary": "Dismiss a report (nothing to fix)",
+        "operationId": "dismissReport",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorReportRead"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a moderator",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Already decided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1518,6 +1870,259 @@
           "parser_used"
         ],
         "title": "ContributionCreate"
+      },
+      "ContributionDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "client_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Client Id"
+          },
+          "ean": {
+            "type": "string",
+            "title": "Ean"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ContributionStatus"
+          },
+          "review_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed At"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "basis": {
+            "$ref": "#/components/schemas/NutritionBasis"
+          },
+          "nutrition": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Nutrition"
+          },
+          "photos": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Photos"
+          },
+          "ocr_text": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Ocr Text"
+          },
+          "parser_used": {
+            "$ref": "#/components/schemas/ParserUsed"
+          },
+          "reviewed_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed By"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "submitted_values": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted Values"
+          },
+          "photos_deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photos Deleted At"
+          },
+          "photo_urls": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Photo Urls"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "client_id",
+          "ean",
+          "name",
+          "brand",
+          "category",
+          "status",
+          "review_note",
+          "created_at",
+          "reviewed_at",
+          "user_id",
+          "basis",
+          "nutrition",
+          "photos",
+          "ocr_text",
+          "parser_used",
+          "reviewed_by",
+          "product_id",
+          "submitted_values",
+          "photos_deleted_at",
+          "photo_urls"
+        ],
+        "title": "ContributionDetail"
+      },
+      "ContributionEdit": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Category"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionBasis"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nutrition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NutritionValues"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ContributionEdit",
+        "description": "A moderator's corrections to a pending contribution; only the fields sent change.\n`nutrition` replaces all the values (missing ones: not declared)."
       },
       "ContributionList": {
         "properties": {
@@ -1837,6 +2442,30 @@
               }
             ],
             "title": "Product Id"
+          },
+          "submitted_values": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted Values"
+          },
+          "photos_deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photos Deleted At"
           }
         },
         "type": "object",
@@ -1858,7 +2487,9 @@
           "ocr_text",
           "parser_used",
           "reviewed_by",
-          "product_id"
+          "product_id",
+          "submitted_values",
+          "photos_deleted_at"
         ],
         "title": "ContributionReview",
         "description": "Everything a moderator needs to decide."
@@ -2009,6 +2640,30 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "resolved_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
           }
         },
         "type": "object",
@@ -2023,7 +2678,9 @@
           "product_updated_at",
           "reported_at",
           "status",
-          "created_at"
+          "created_at",
+          "resolved_by",
+          "resolved_at"
         ],
         "title": "ErrorReportRead"
       },

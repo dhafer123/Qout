@@ -69,6 +69,15 @@ class Bucket:
             HttpMethod="PUT",
         )
 
+    async def presign_get(self, key: str, *, expires_in: int) -> str:
+        """URL to read one object for a while (private photos in the admin panel)."""
+        return await self._presign_client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": self.name, "Key": key},
+            ExpiresIn=expires_in,
+            HttpMethod="GET",
+        )
+
     async def put(
         self, key: str, data: bytes, *, content_type: str, cache_control: str | None = None
     ) -> None:

@@ -93,6 +93,9 @@ class Contribution(IdTimestampMixin, Base):
     nutrition: Mapped[dict[str, Any]] = mapped_column(JSONB)
     """Declared amounts per 100 g / 100 mL as exact decimal strings (`"1.5"`), booleans for
     flags; a missing key is not declared."""
+    submitted_values: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    """The contributor's own name, brand, category, basis and nutrition, saved when a
+    moderator first edits them (None: never edited)."""
     photos: Mapped[dict[str, str]] = mapped_column(JSONB)
     """Photo kind (`front`, `nutrition`, `ingredients`) -> key in the private bucket. Kept
     as history once the photos are deleted (`photos_deleted_at`)."""
@@ -196,3 +199,8 @@ class ErrorReport(IdTimestampMixin, Base):
     status: Mapped[ReportStatus] = mapped_column(
         str_enum(ReportStatus, "report_status"), server_default=ReportStatus.OPEN.value
     )
+    resolved_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )
+    """The moderator who resolved or dismissed it."""
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

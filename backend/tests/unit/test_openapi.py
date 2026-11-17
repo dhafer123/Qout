@@ -46,7 +46,11 @@ def test_operation_ids_name_the_route_functions() -> None:
         "GET /v1/admin/contributions": "listContributions",
         "POST /v1/admin/contributions/{contribution_id}/approve": "approveContribution",
         "POST /v1/admin/contributions/{contribution_id}/reject": "rejectContribution",
+        "GET /v1/admin/contributions/{contribution_id}": "getContribution",
+        "PATCH /v1/admin/contributions/{contribution_id}": "editContribution",
         "GET /v1/admin/reports": "listReports",
+        "POST /v1/admin/reports/{report_id}/resolve": "resolveReport",
+        "POST /v1/admin/reports/{report_id}/dismiss": "dismissReport",
     }
 
 

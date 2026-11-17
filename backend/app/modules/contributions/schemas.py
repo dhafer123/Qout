@@ -195,6 +195,39 @@ class ContributionReview(ContributionRead):
     parser_used: ParserUsed
     reviewed_by: uuid.UUID | None
     product_id: uuid.UUID | None
+    submitted_values: dict[str, Any] | None
+    """What the contributor sent (name, brand, category, basis, nutrition) when a moderator
+    has edited it; None if never edited."""
+    photos_deleted_at: datetime | None
+    """Set once the cleanup deleted the photos (rejected contributions)."""
+
+
+class ContributionDetail(ContributionReview):
+    photo_urls: dict[str, str]
+    """Photo kind -> a link to the private photo that works for a few minutes. Empty once
+    the photos are deleted."""
+
+
+class ContributionEdit(_Request):
+    """A moderator's corrections to a pending contribution; only the fields sent change.
+    `nutrition` replaces all the values (missing ones: not declared)."""
+
+    name: str | None = Field(default=None, max_length=MAX_TEXT_LENGTH)
+    brand: str | None = Field(default=None, max_length=MAX_TEXT_LENGTH)
+    category: Category | None = None
+    basis: NutritionBasis | None = None
+    nutrition: NutritionValues | None = None
+
+    _clean_text = field_validator("name", "brand", mode="before")(_clean)
+
+    @model_validator(mode="after")
+    def _something_to_change(self) -> Self:
+        if not self.model_fields_set:
+            raise ValueError("nothing to change")
+        for name in ("category", "basis", "nutrition"):
+            if name in self.model_fields_set and getattr(self, name) is None:
+                raise ValueError(f"{name} can't be removed")
+        return self
 
 
 class ContributionReviewList(BaseModel):
@@ -260,6 +293,8 @@ class ErrorReportRead(BaseModel):
     reported_at: datetime
     status: ReportStatus
     created_at: datetime
+    resolved_by: uuid.UUID | None
+    resolved_at: datetime | None
 
 
 class ErrorReportList(BaseModel):
