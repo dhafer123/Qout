@@ -17,7 +17,7 @@ coverage grows for local (Tunisian) products that global databases miss.
 | Layer | Technology |
 |---|---|
 | Mobile app | Flutter (Android first, iOS later), Riverpod, go_router, dio, drift, mobile_scanner, ML Kit text recognition |
-| Backend | Python 3.12, FastAPI, SQLAlchemy 2 (async) + Alembic, Pydantic v2, arq worker |
+| Backend | Python 3.12, FastAPI, SQLAlchemy 2 (async) + Alembic, Pydantic v2, arq worker, SQLAdmin (admin panel) |
 | Data | PostgreSQL, Redis (cache + job queue), S3-compatible object storage (RustFS locally) |
 | External | Open Food Facts (backend only), optional LLM (Google Gemini API) for label parsing |
 | CI/CD | GitHub Actions |
@@ -240,11 +240,43 @@ breakdowns, and labels the parser calls ok but got wrong. `--parser rules+llm` m
 rules parser with the LLM fallback against the rules parser alone (real requests with
 `LLM_API_KEY`; replies cached in `backend/var/llm-cache/`).
 
-Moderators (role `admin`) use `/v1/admin/...`: the pending queue, approve (the product
-becomes verified, source `contribution`, so OFF imports leave it alone; the nutrition is a
-new scored version; the front photo becomes the product photo) or reject (product
-unchanged), and open reports. Until the admin panel (T31), make an account a moderator
-in SQL: `UPDATE users SET role = 'admin' WHERE email = '...';`
+Moderators (role `admin`) use `/v1/admin/...`: the queue, one contribution with links to
+its private photos, corrections before deciding (`PATCH`; the contributor's own values are
+kept in `submitted_values`), approve (the product becomes verified, source `contribution`,
+so OFF imports leave it alone; the nutrition is a new scored version; the front photo
+becomes the product photo) or reject (product unchanged), and error reports (resolve or
+dismiss).
+
+#### Admin panel
+
+The API serves an admin panel at <http://localhost:8000/admin> (SQLAdmin), for moderators
+only. Make the first moderator from an account created in the app (from `backend/`):
+
+```sh
+uv run python -m app.admin make-admin someone@example.com
+```
+
+Further moderators are promoted in the panel (Users > edit > role). Sign in with the
+account's email and password: same checks and rate limits as the app, no tokens issued.
+The session is a signed cookie (`ADMIN_SESSION_SECRET`, `SameSite=strict`, HTTPS only in
+staging/prod) that ends `ADMIN_SESSION_TTL_SECONDS` after signing in, or at once when the
+account loses the role or is deactivated.
+
+- **Moderation > Contributions**: pending, approved and rejected contributions. The review
+  page shows the photos (links valid `ADMIN_PHOTO_URL_TTL_SECONDS`; "photos deleted" after
+  the cleanup) and the text read on the phone next to an editable form: name, brand,
+  category, basis, amounts (decimal comma accepted, blank for "not declared"), sweetener
+  flag. "Preview score" runs the engine on the typed values without saving; "Save
+  changes", "Approve" (saves the changes, then approves) and "Reject" take an optional note
+  for the contributor.
+- **Moderation > Error reports**: open reports with a link to the product; resolve or
+  dismiss.
+- **Catalogue**: products (search by barcode, name or brand; only name, brand and status
+  are editable, and the cached lookup is dropped; hide a product rather than delete it),
+  nutrition facts and scores (read-only).
+- **Users**: role and active flag only; nobody can remove their own admin access.
+
+Nothing is created or deleted in the panel.
 
 #### Product photos
 
