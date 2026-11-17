@@ -111,6 +111,15 @@ class AuthService:
 
     async def login(self, email: str, password: str, *, client_ip: str) -> Tokens:
         """Raises InvalidCredentialsError, RateLimitedError."""
+        user = await self.verify_credentials(email, password, client_ip=client_ip)
+        tokens = await self._start_family(user)
+        await self._session.commit()
+        return tokens
+
+    async def verify_credentials(self, email: str, password: str, *, client_ip: str) -> User:
+        """The active account with this email and password, with the login rate limits;
+        records the login (the admin panel signs in with this, without tokens). Raises
+        InvalidCredentialsError, RateLimitedError."""
         ip_limit = await self._limiter.hit(
             f"login:ip:{client_ip}",
             limit=self._settings.login_max_attempts_per_ip,
@@ -145,9 +154,8 @@ class AuthService:
         if needs_rehash(user.password_hash):
             user.password_hash = await hash_password_async(password)
         user.last_login_at = self._clock()
-        tokens = await self._start_family(user)
         await self._session.commit()
-        return tokens
+        return user
 
     # ------------------------------------------------------------ refresh / logout
 
