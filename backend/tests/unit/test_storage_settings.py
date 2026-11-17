@@ -7,6 +7,7 @@ from app.core.config import DEV_S3_ACCESS_KEY, DEV_S3_SECRET_KEY, Settings
 from app.core.storage import media_url
 
 REAL_JWT = "a-real-jwt-secret-of-at-least-32-characters"
+REAL_ADMIN = "a-real-admin-session-secret-of-32-characters"
 
 
 def settings(**values: object) -> Settings:
@@ -94,7 +95,7 @@ def test_invalid_bucket_names(name: str) -> None:
 )
 def test_dev_keys_are_refused_when_deployed(env: str, keys: dict[str, str]) -> None:
     with pytest.raises(ValidationError, match="S3_ACCESS_KEY"):
-        settings(app_env=env, jwt_secret=REAL_JWT, **keys)
+        settings(app_env=env, jwt_secret=REAL_JWT, admin_session_secret=REAL_ADMIN, **keys)
 
 
 @pytest.mark.parametrize("env", ["staging", "prod"])
@@ -102,6 +103,7 @@ def test_real_keys_are_accepted_when_deployed(env: str) -> None:
     loaded = settings(
         app_env=env,
         jwt_secret=REAL_JWT,
+        admin_session_secret=REAL_ADMIN,
         s3_access_key="real-access-key",
         s3_secret_key="real-secret-key",
     )

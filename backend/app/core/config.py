@@ -30,6 +30,7 @@ AppEnv = Literal["dev", "test", "staging", "prod"]
 DEV_JWT_SECRET = "dev-only-jwt-secret-never-use-in-staging-or-prod"  # noqa: S105 - refused outside dev/test
 """Lets dev and tests run without configuration; refused in staging and prod."""
 _MIN_JWT_SECRET_LENGTH = 32
+DEV_ADMIN_SESSION_SECRET = "dev-only-admin-session-secret-never-use-when-deployed"  # noqa: S105 - refused outside dev/test
 DEV_S3_ACCESS_KEY = "qout-dev-access-key"
 DEV_S3_SECRET_KEY = "qout-dev-secret-key"  # noqa: S105 - local RustFS only, refused when deployed
 _BUCKET_NAME = r"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
@@ -96,6 +97,14 @@ class Settings(BaseSettings):
     login_window_seconds: int = Field(default=900, ge=1, le=86_400)
     register_max_per_ip: int = Field(default=5, ge=1, le=1000)
     register_window_seconds: int = Field(default=3600, ge=1, le=86_400)
+
+    # Admin panel (`/admin`, moderators only): signed session cookie.
+    admin_session_secret: SecretStr = SecretStr(DEV_ADMIN_SESSION_SECRET)
+    """Signs the panel's session cookie: at least 32 characters, a real secret outside
+    dev/test, different from JWT_SECRET."""
+    admin_session_ttl_seconds: int = Field(default=8 * 3600, ge=300, le=7 * 86_400)
+    admin_photo_url_ttl_seconds: int = Field(default=300, ge=30, le=3600)
+    """How long the links to a contribution's private photos work."""
 
     # Object storage: any S3-compatible service (RustFS locally, ADR 0002), path-style.
     s3_endpoint_url: HttpUrl = HttpUrl("http://localhost:9000")
@@ -211,6 +220,31 @@ class Settings(BaseSettings):
             msg = "JWT_SECRET: set a real random secret in staging and prod"
             raise ValueError(msg)
         return self
+
+    @field_validator("admin_session_secret")
+    @classmethod
+    def _long_admin_secret(cls, value: SecretStr) -> SecretStr:
+        if len(value.get_secret_value()) < _MIN_JWT_SECRET_LENGTH:
+            msg = f"ADMIN_SESSION_SECRET must be at least {_MIN_JWT_SECRET_LENGTH} characters"
+            raise ValueError(msg)
+        return value
+
+    @model_validator(mode="after")
+    def _real_admin_secret_when_deployed(self) -> "Settings":
+        secret = self.admin_session_secret.get_secret_value()
+        if self.app_env in ("staging", "prod") and (
+            secret == DEV_ADMIN_SESSION_SECRET
+            or secret.startswith("change-me")
+            or secret == self.jwt_secret.get_secret_value()
+        ):
+            msg = "ADMIN_SESSION_SECRET: set a real random secret (not JWT_SECRET) when deployed"
+            raise ValueError(msg)
+        return self
+
+    @property
+    def deployed(self) -> bool:
+        """Staging or prod (cookies are then HTTPS only)."""
+        return self.app_env in ("staging", "prod")
 
     @model_validator(mode="after")
     def _real_s3_keys_when_deployed(self) -> "Settings":

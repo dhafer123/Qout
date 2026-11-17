@@ -1,0 +1,53 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+<div class="col-12">
+  <div class="card">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        {% for status in statuses %}
+        <li class="nav-item">
+          <a class="nav-link {% if status == shown %}active{% endif %}"
+            href="{{ url_for('admin:view-moderation') }}?status={{ status.value }}">{{ status.value | capitalize }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="table-responsive">
+      <table class="table card-table table-vcenter table-hover" id="contributions">
+        <thead>
+          <tr>
+            <th>Sent</th>
+            <th>Barcode</th>
+            <th>Name</th>
+            <th>Brand</th>
+            <th>Category</th>
+            <th>Read by</th>
+            <th>Edited</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>{{ item.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            <td>{{ item.ean }}</td>
+            <td>{{ item.name or "–" }}</td>
+            <td>{{ item.brand or "–" }}</td>
+            <td>{{ item.category.value }}</td>
+            <td>{{ item.parser_used.value }}</td>
+            <td>{% if item.submitted_values %}yes{% endif %}</td>
+            <td><a class="btn btn-sm btn-primary"
+                href="{{ url_for('admin:view-review', contribution_id=item.id | string) }}">Review</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="text-muted">No {{ shown.value }} contributions.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if items | length >= limit %}
+    <div class="card-footer text-muted">Showing the oldest {{ limit }}.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

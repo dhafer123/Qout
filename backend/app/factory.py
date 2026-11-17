@@ -10,6 +10,7 @@ from fastapi.routing import APIRoute
 from redis.asyncio import Redis
 
 from app import __version__
+from app.admin import mount_admin
 from app.api.admin import router as admin_router
 from app.api.auth import router as auth_router
 from app.api.contributions import router as contributions_router
@@ -30,16 +31,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     """Build the API. Connections are opened on startup and closed on shutdown."""
     settings = settings or get_settings()
     configure_logging(settings.log_level)
+    # Created here, not in the lifespan: the admin panel needs the session factory when it
+    # is mounted. Creating the engine opens no connection.
+    engine = create_engine(settings)
+    sessions = create_session_factory(engine)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        engine = create_engine(settings)
         redis = Redis.from_url(str(settings.redis_url))
         checks: dict[str, ReadinessCheck] = {
             "database": partial(check_database, engine),
             "redis": partial(check_redis, redis),
         }
-        app.state.session_factory = create_session_factory(engine)
         app.state.readiness_checks = checks
         app.state.redis = redis
         # Queues worker jobs (the LLM label fallback) over the same connections.
@@ -61,6 +64,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         generate_unique_id_function=operation_id,
     )
     app.state.settings = settings
+    app.state.session_factory = sessions
     app.add_middleware(RequestIdMiddleware)
     app.include_router(health_router)
     app.include_router(products_router)
@@ -68,6 +72,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(uploads_router)
     app.include_router(contributions_router)
     app.include_router(admin_router)
+    mount_admin(app, settings, sessions)
     return app
 
 

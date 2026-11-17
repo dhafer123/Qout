@@ -1,0 +1,62 @@
+{% extends "sqladmin/layout.html" %}
+{% block content %}
+<div class="col-12">
+  <div class="card">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        {% for status in statuses %}
+        <li class="nav-item">
+          <a class="nav-link {% if status == shown %}active{% endif %}"
+            href="{{ url_for('admin:view-error-reports') }}?status={{ status.value }}">{{ status.value | capitalize }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="table-responsive">
+      <table class="table card-table table-vcenter table-hover" id="reports">
+        <thead>
+          <tr>
+            <th>Reported</th>
+            <th>Barcode</th>
+            <th>Reasons</th>
+            <th>Comment</th>
+            <th>Product seen as of</th>
+            {% if shown.value == "open" %}<th></th>{% else %}<th>Handled</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>{{ item.reported_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            <td>
+              {% if item.product_id %}
+              <a href="{{ url_for('admin:details', identity='product', pk=item.product_id | string) }}">{{ item.ean }}</a>
+              {% else %}{{ item.ean }}{% endif %}
+            </td>
+            <td>{{ item.reasons | join(", ") }}</td>
+            <td style="white-space: pre-wrap">{{ item.comment or "" }}</td>
+            <td>{{ item.product_updated_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            {% if shown.value == "open" %}
+            <td class="text-nowrap">
+              <form method="post" class="d-inline"
+                action="{{ url_for('admin:view-report-decision', report_id=item.id | string, decision='resolve') }}">
+                <button class="btn btn-sm btn-success" type="submit">Resolve</button>
+              </form>
+              <form method="post" class="d-inline"
+                action="{{ url_for('admin:view-report-decision', report_id=item.id | string, decision='dismiss') }}">
+                <button class="btn btn-sm btn-secondary" type="submit">Dismiss</button>
+              </form>
+            </td>
+            {% else %}
+            <td>{{ item.resolved_at.strftime("%Y-%m-%d %H:%M") if item.resolved_at else "" }}</td>
+            {% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="text-muted">No {{ shown.value }} reports.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
