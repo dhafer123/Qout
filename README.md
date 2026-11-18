@@ -16,7 +16,7 @@ coverage grows for local (Tunisian) products that global databases miss.
 
 | Layer | Technology |
 |---|---|
-| Mobile app | Flutter (Android first, iOS later), Riverpod, go_router, dio, drift, mobile_scanner, ML Kit text recognition |
+| Mobile app | Flutter (Android first, iOS later), Riverpod, go_router, dio, drift, mobile_scanner, ML Kit text recognition, Lottie, Phosphor icons |
 | Backend | Python 3.12, FastAPI, SQLAlchemy 2 (async) + Alembic, Pydantic v2, arq worker, SQLAdmin (admin panel) |
 | Data | PostgreSQL, Redis (cache + job queue), S3-compatible object storage (RustFS locally) |
 | External | Open Food Facts (backend only), optional LLM (Google Gemini API) for label parsing |
