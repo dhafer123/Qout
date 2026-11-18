@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/credentials.dart';
@@ -89,7 +91,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       appBar: AppBar(title: Text(title)),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           child: Form(
             key: _form,
             child: AutofillGroup(
@@ -100,7 +102,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     widget.reason ??
                         'An account is only needed to add products. '
                             'Scanning works without one.',
-                    style: theme.textTheme.bodyMedium,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: QoutPalette.of(context).muted,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   TextFormField(
@@ -109,10 +113,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const [AutofillHints.email],
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                    ),
+                    decoration: const InputDecoration(labelText: 'Email'),
                     validator: (value) => emailProblem(value ?? ''),
                   ),
                   const SizedBox(height: 16),
@@ -133,15 +134,14 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       helperText: _newAccount
                           ? 'At least $minPasswordLength characters.'
                           : null,
-                      border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         tooltip: _showPassword
                             ? 'Hide password'
                             : 'Show password',
                         icon: Icon(
                           _showPassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
+                              ? PhosphorIconsRegular.eyeSlash
+                              : PhosphorIconsRegular.eye,
                         ),
                         onPressed: () =>
                             setState(() => _showPassword = !_showPassword),
@@ -152,9 +152,22 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   ),
                   if (_error case final error?) ...[
                     const SizedBox(height: 16),
-                    Text(
-                      error,
-                      style: TextStyle(color: theme.colorScheme.error),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          PhosphorIconsRegular.warningCircle,
+                          size: 20,
+                          color: theme.colorScheme.error,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            error,
+                            style: TextStyle(color: theme.colorScheme.error),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                   const SizedBox(height: 24),

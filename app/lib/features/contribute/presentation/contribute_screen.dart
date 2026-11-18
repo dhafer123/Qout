@@ -3,9 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
+import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart' show PhotoKind;
 import 'package:qout/core/photos/label_photo_picker.dart';
+import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/contribute/presentation/contribute_labels.dart';
 import 'package:qout/features/contribute/presentation/contribution_controller.dart';
 import 'package:qout/features/contribute/presentation/review_form.dart';
@@ -37,18 +40,27 @@ class ContributeScreen extends ConsumerWidget {
           }),
         ),
         body: SafeArea(
-          child: switch (step) {
-            ContributionStep.photos => _PhotosStep(ean: ean),
-            ContributionStep.review => ReviewForm(ean: ean),
-            ContributionStep.sent => const _Done(),
-            ContributionStep.saved => _Done(
-              savedReason: ref.watch(provider.select((s) => s.savedReason)),
-            ),
-          },
+          child: Column(
+            children: [
+              ContributionStepper(step: step),
+              Expanded(child: _body(ref, step)),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  Widget _body(WidgetRef ref, ContributionStep step) => switch (step) {
+    ContributionStep.photos => _PhotosStep(ean: ean),
+    ContributionStep.review => ReviewForm(ean: ean),
+    ContributionStep.sent => const _Done(),
+    ContributionStep.saved => _Done(
+      savedReason: ref.watch(
+        contributionControllerProvider(ean).select((s) => s.savedReason),
+      ),
+    ),
+  };
 }
 
 class _PhotosStep extends ConsumerWidget {
@@ -65,11 +77,14 @@ class _PhotosStep extends ConsumerWidget {
       children: [
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             children: [
               Text(
                 'Barcode $ean. Take three photos; the values are read from '
                 'the nutrition table and you check them next.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: QoutPalette.of(context).muted,
+                ),
               ),
               const SizedBox(height: 16),
               for (final kind in const [
@@ -139,7 +154,7 @@ class _PhotoTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(photoTitle(kind), style: theme.textTheme.titleMedium),
+                  Text(photoTitle(kind), style: theme.textTheme.titleSmall),
                   const SizedBox(height: 4),
                   Text(status, style: theme.textTheme.bodySmall),
                   Wrap(
@@ -147,12 +162,12 @@ class _PhotoTile extends StatelessWidget {
                     children: [
                       TextButton.icon(
                         onPressed: () => onCapture(PhotoSource.camera),
-                        icon: const Icon(Icons.photo_camera_outlined),
+                        icon: const Icon(PhosphorIconsRegular.camera, size: 20),
                         label: Text(path == null ? 'Camera' : 'Retake'),
                       ),
                       TextButton.icon(
                         onPressed: () => onCapture(PhotoSource.gallery),
-                        icon: const Icon(Icons.photo_library_outlined),
+                        icon: const Icon(PhosphorIconsRegular.images, size: 20),
                         label: const Text('Gallery'),
                       ),
                     ],
@@ -175,18 +190,18 @@ class _Thumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final palette = QoutPalette.of(context);
     const size = 72.0;
     final placeholder = Icon(
-      Icons.add_a_photo_outlined,
-      color: scheme.onSurfaceVariant,
+      PhosphorIconsRegular.cameraPlus,
+      color: palette.muted,
     );
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Container(
         width: size,
         height: size,
-        color: scheme.surfaceContainerHighest,
+        color: palette.track,
         alignment: Alignment.center,
         child: path == null
             ? placeholder
@@ -198,7 +213,7 @@ class _Thumbnail extends StatelessWidget {
                     fit: BoxFit.cover,
                     cacheWidth: 200,
                     errorBuilder: (_, _, _) =>
-                        Icon(Icons.image_outlined, color: scheme.primary),
+                        Icon(PhosphorIconsRegular.image, color: palette.muted),
                   ),
                   if (reading)
                     const Center(
@@ -223,37 +238,84 @@ class _Done extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
+    return StateMessage(
+      icon: savedReason == null
+          ? PhosphorIconsRegular.checkCircle
+          : PhosphorIconsRegular.cloudArrowUp,
+      title: 'Thank you!',
+      message: savedReason == null
+          ? 'Your product is waiting for review. It appears in the app '
+                'once a moderator has checked it against your photos.'
+          : '$savedReason It is saved on this phone and will be sent '
+                'automatically. You can follow it from the home screen.',
+      actions: [
+        FilledButton(
+          onPressed: () => context.go(AppRoutes.home),
+          child: const Text('Done'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Where the contributor is: Photos, Check, Send, as three short bars.
+class ContributionStepper extends StatelessWidget {
+  const ContributionStepper({required this.step, super.key});
+
+  final ContributionStep step;
+
+  static const _labels = ['Photos', 'Check', 'Send'];
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = QoutPalette.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    final current = switch (step) {
+      ContributionStep.photos => 0,
+      ContributionStep.review => 1,
+      ContributionStep.sent || ContributionStep.saved => 3,
+    };
+    return Semantics(
+      label: current < 3
+          ? 'Step ${current + 1} of 3: ${_labels[current]}'
+          : 'All steps done',
+      excludeSemantics: true,
       child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+        child: Row(
           children: [
-            Icon(
-              savedReason == null
-                  ? Icons.check_circle_outline
-                  : Icons.outbox_outlined,
-              size: 64,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
-            Text('Thank you!', style: theme.textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            Text(
-              savedReason == null
-                  ? 'Your product is waiting for review. It appears in the app '
-                        'once a moderator has checked it against your photos.'
-                  : '$savedReason It is saved on this phone and will be sent '
-                        'automatically. You can follow it from the home '
-                        'screen.',
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: () => context.go(AppRoutes.home),
-              child: const Text('Done'),
-            ),
+            for (final (i, label) in _labels.indexed) ...[
+              if (i > 0) const SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: i <= current ? palette.accent : palette.track,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.bodySmall?.copyWith(
+                        fontSize: 11,
+                        color: i == current
+                            ? Theme.of(context).colorScheme.onSurface
+                            : palette.muted,
+                        fontWeight: i == current
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

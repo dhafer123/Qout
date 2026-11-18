@@ -9,6 +9,7 @@ import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/database/database.dart';
 import 'package:qout/core/database/database_provider.dart';
+import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/outbox/data/outbox.dart';
 import 'package:qout/features/outbox/domain/queued_contribution.dart';
 import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
@@ -71,27 +72,29 @@ class OutboxScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Waiting to be sent')),
       body: switch (entries) {
-        AsyncData(value: final rows) when rows.isEmpty => const Center(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              'Nothing waiting. Everything has been sent.',
-              textAlign: TextAlign.center,
-            ),
-          ),
+        AsyncData(value: final rows) when rows.isEmpty => const StateMessage(
+          icon: PhosphorIconsRegular.checkCircle,
+          title: 'Nothing waiting',
+          message: 'Everything has been sent.',
         ),
         AsyncData(value: final rows) => ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           children: [
-            const Text(
+            Text(
               'Sent automatically while the app is open and online.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: QoutPalette.of(context).muted,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             for (final row in rows)
               _EntryCard(row: row, sending: row.clientId == sending),
           ],
         ),
-        AsyncError() => const Center(child: Text('Could not read the queue.')),
+        AsyncError() => const StateMessage(
+          icon: PhosphorIconsRegular.warningCircle,
+          title: 'Could not read the queue.',
+        ),
         _ => const Center(child: CircularProgressIndicator()),
       },
     );
@@ -141,42 +144,68 @@ class _EntryCard extends ConsumerWidget {
     final label = outboxEntryLabel(row);
     final refused = row.state == OutboxState.refused;
     final needsSignIn = row.state == OutboxState.needsSignIn;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label.title, style: theme.textTheme.titleMedium),
-            Text(label.subtitle, style: theme.textTheme.bodySmall),
-            const SizedBox(height: 4),
-            Text(
-              outboxStatusText(row, sending: sending),
-              style: refused ? TextStyle(color: theme.colorScheme.error) : null,
-            ),
-            OverflowBar(
-              alignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: sending
-                      ? null
-                      : () => unawaited(_delete(context, ref)),
-                  child: const Text('Delete'),
-                ),
-                if (needsSignIn)
-                  TextButton(
-                    onPressed: () => context.push(AppRoutes.signIn),
-                    child: const Text('Sign in'),
-                  )
-                else if (!refused)
-                  TextButton(
-                    onPressed: sending ? null : () => unawaited(_tryNow(ref)),
-                    child: const Text('Try now'),
+    final palette = QoutPalette.of(context);
+    final statusColor = refused ? theme.colorScheme.error : palette.muted;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 8, 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label.title, style: theme.textTheme.titleSmall),
+              Text(label.subtitle, style: theme.textTheme.bodySmall),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Icon(
+                      refused
+                          ? PhosphorIconsRegular.warningCircle
+                          : needsSignIn
+                          ? PhosphorIconsRegular.signIn
+                          : PhosphorIconsRegular.cloudArrowUp,
+                      size: 18,
+                      color: statusColor,
+                    ),
                   ),
-              ],
-            ),
-          ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      outboxStatusText(row, sending: sending),
+                      style: TextStyle(
+                        color: refused ? theme.colorScheme.error : null,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              OverflowBar(
+                alignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: sending
+                        ? null
+                        : () => unawaited(_delete(context, ref)),
+                    child: const Text('Delete'),
+                  ),
+                  if (needsSignIn)
+                    TextButton(
+                      onPressed: () => context.push(AppRoutes.signIn),
+                      child: const Text('Sign in'),
+                    )
+                  else if (!refused)
+                    TextButton(
+                      onPressed: sending ? null : () => unawaited(_tryNow(ref)),
+                      child: const Text('Try now'),
+                    ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

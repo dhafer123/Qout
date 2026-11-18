@@ -238,10 +238,8 @@ void main() {
     // Back online: sent at once on request.
     await tester.tap(find.text('Try now'));
     await tester.pumpAndSettle();
-    expect(
-      find.text('Nothing waiting. Everything has been sent.'),
-      findsOneWidget,
-    );
+    expect(find.text('Nothing waiting'), findsOneWidget);
+    expect(find.text('Everything has been sent.'), findsOneWidget);
     final body = fake.api.submitted.single;
     expect(body.ean, _ean);
     expect(body.nutrition.saltG, 0.85);

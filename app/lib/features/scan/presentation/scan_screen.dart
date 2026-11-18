@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:qout/app/theme.dart';
+import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/scan/domain/barcode.dart';
 import 'package:qout/features/scan/domain/scan_acceptor.dart';
 
@@ -94,8 +97,17 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         title: const Text('Scan a barcode'),
-        actions: [_TorchButton(controller: _controller)],
+        titleTextStyle: Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
+          color: Colors.white,
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          _TorchButton(controller: _controller),
+          const SizedBox(width: 4),
+        ],
       ),
       body: MobileScanner(
         controller: _controller,
@@ -129,8 +141,9 @@ class _TorchButton extends StatelessWidget {
         return IconButton(
           tooltip: on ? 'Turn off the flashlight' : 'Turn on the flashlight',
           isSelected: on,
-          icon: const Icon(Icons.flashlight_off),
-          selectedIcon: const Icon(Icons.flashlight_on),
+          color: Colors.white,
+          icon: const Icon(PhosphorIconsRegular.flashlight),
+          selectedIcon: const Icon(PhosphorIconsFill.flashlight),
           onPressed: () => unawaited(controller.toggleTorch()),
         );
       },
@@ -138,32 +151,102 @@ class _TorchButton extends StatelessWidget {
   }
 }
 
-/// Where to aim: a frame shaped like a barcode, with a hint below.
+/// Where to aim: accent corner brackets shaped like a barcode, with a hint
+/// below. Still on purpose: the camera image already moves.
 class _ScanFrame extends StatelessWidget {
   const _ScanFrame();
 
+  static const Size size = Size(260, 150);
+
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    const palette = QoutPalette.dark;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          width: 280,
-          height: 160,
-          decoration: BoxDecoration(
-            border: Border.all(color: colors.primaryContainer, width: 3),
-            borderRadius: BorderRadius.circular(16),
-          ),
+        SizedBox.fromSize(
+          size: size,
+          child: CustomPaint(painter: _BracketsPainter(palette.accent)),
         ),
         const SizedBox(height: 24),
-        const Text(
-          'Point the camera at the barcode',
-          style: TextStyle(color: Colors.white, fontSize: 16),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xB3161826),
+            borderRadius: BorderRadius.circular(QoutRadius.lg),
+            border: Border.all(color: palette.edge),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            child: Text(
+              'Point the camera at the barcode',
+              style: TextStyle(color: Color(0xFFE9E9ED), fontSize: 14),
+            ),
+          ),
         ),
       ],
     );
   }
+}
+
+/// Four rounded corners with a soft glow.
+class _BracketsPainter extends CustomPainter {
+  const _BracketsPainter(this.color);
+
+  final Color color;
+
+  static const double _arm = 28;
+  static const double _radius = 10;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path();
+    final w = size.width;
+    final h = size.height;
+    // Top left, top right, bottom right, bottom left.
+    path
+      ..moveTo(0, _arm)
+      ..lineTo(0, _radius)
+      ..arcToPoint(
+        const Offset(_radius, 0),
+        radius: const Radius.circular(_radius),
+      )
+      ..lineTo(_arm, 0)
+      ..moveTo(w - _arm, 0)
+      ..lineTo(w - _radius, 0)
+      ..arcToPoint(Offset(w, _radius), radius: const Radius.circular(_radius))
+      ..lineTo(w, _arm)
+      ..moveTo(w, h - _arm)
+      ..lineTo(w, h - _radius)
+      ..arcToPoint(
+        Offset(w - _radius, h),
+        radius: const Radius.circular(_radius),
+      )
+      ..lineTo(w - _arm, h)
+      ..moveTo(_arm, h)
+      ..lineTo(_radius, h)
+      ..arcToPoint(
+        Offset(0, h - _radius),
+        radius: const Radius.circular(_radius),
+      )
+      ..lineTo(0, h - _arm);
+    final glow = Paint()
+      ..color = color.withValues(alpha: 0.55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+    final line = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5
+      ..strokeCap = StrokeCap.round;
+    canvas
+      ..drawPath(path, glow)
+      ..drawPath(path, line);
+  }
+
+  @override
+  bool shouldRepaint(_BracketsPainter old) => old.color != color;
 }
 
 /// Shown instead of the camera when it can't start.
@@ -181,7 +264,7 @@ class ScannerErrorView extends StatelessWidget {
   Widget build(BuildContext context) {
     final (icon, title, message, canRetry) = switch (error.errorCode) {
       MobileScannerErrorCode.permissionDenied => (
-        Icons.no_photography_outlined,
+        PhosphorIconsRegular.cameraSlash,
         'Camera access needed',
         'Qout uses the camera only to read barcodes. Allow camera access, '
             "or turn it on in your phone's settings (Apps > Qout > "
@@ -189,50 +272,30 @@ class ScannerErrorView extends StatelessWidget {
         true,
       ),
       MobileScannerErrorCode.unsupported => (
-        Icons.videocam_off_outlined,
+        PhosphorIconsRegular.cameraSlash,
         'No camera available',
         'This device has no camera Qout can use to read barcodes.',
         false,
       ),
       _ => (
-        Icons.error_outline,
+        PhosphorIconsRegular.warningCircle,
         'Camera unavailable',
         'The camera could not be started. Close other apps using it and '
             'try again.',
         true,
       ),
     };
-    final theme = Theme.of(context);
     return ColoredBox(
-      color: theme.colorScheme.surface,
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 64, color: theme.colorScheme.onSurfaceVariant),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: theme.textTheme.titleLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message,
-                style: theme.textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              if (canRetry) ...[
-                const SizedBox(height: 24),
-                FilledButton(
-                  onPressed: onRetry,
-                  child: const Text('Try again'),
-                ),
-              ],
-            ],
-          ),
+      color: Theme.of(context).colorScheme.surface,
+      child: SafeArea(
+        child: StateMessage(
+          icon: icon,
+          title: title,
+          message: message,
+          actions: [
+            if (canRetry)
+              FilledButton(onPressed: onRetry, child: const Text('Try again')),
+          ],
         ),
       ),
     );

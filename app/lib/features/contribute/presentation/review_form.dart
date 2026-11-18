@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart'
     show Grade, NutritionBasis, ParserUsed;
 import 'package:qout/features/contribute/domain/contribution_draft.dart';
@@ -51,7 +53,6 @@ class ReviewForm extends ConsumerWidget {
                 textCapitalization: TextCapitalization.sentences,
                 decoration: const InputDecoration(
                   labelText: 'Product name (optional)',
-                  border: OutlineInputBorder(),
                 ),
                 onChanged: controller.setName,
               ),
@@ -62,7 +63,6 @@ class ReviewForm extends ConsumerWidget {
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
                   labelText: 'Brand (optional)',
-                  border: OutlineInputBorder(),
                 ),
                 onChanged: controller.setBrand,
               ),
@@ -143,35 +143,35 @@ class _ReadingBanner extends StatelessWidget {
     final readByParser = state.draft.parserUsed != ParserUsed.manual;
     final (icon, text) = switch (state.reading) {
       LabelReadingStatus.none => (
-        Icons.edit_note,
+        PhosphorIconsRegular.pencilSimpleLine,
         'Type the values from the nutrition table.',
       ),
       LabelReadingStatus.reading => (
-        Icons.hourglass_top,
+        PhosphorIconsRegular.hourglassMedium,
         'Reading the nutrition table…',
       ),
       LabelReadingStatus.askingAi => (
-        Icons.hourglass_top,
+        PhosphorIconsRegular.hourglassMedium,
         readByParser
             ? 'Some values could not be read. Reading the table again, more '
                   'carefully…'
             : 'Reading the table again, more carefully…',
       ),
       LabelReadingStatus.aiOffered => (
-        Icons.auto_awesome_outlined,
+        PhosphorIconsRegular.sparkle,
         'A second reading found values. Use them instead of yours?',
       ),
       LabelReadingStatus.aiApplied => (
-        Icons.auto_awesome_outlined,
+        PhosphorIconsRegular.sparkle,
         'Read by AI from the nutrition table. Check every value against the '
             'photo.',
       ),
       LabelReadingStatus.done when readByParser => (
-        Icons.fact_check_outlined,
+        PhosphorIconsRegular.listChecks,
         'Read from the nutrition table. Check every value against the photo.',
       ),
       LabelReadingStatus.done || LabelReadingStatus.failed => (
-        Icons.edit_note,
+        PhosphorIconsRegular.pencilSimpleLine,
         'The table could not be read. Type the values from the photo.',
       ),
     };
@@ -187,7 +187,7 @@ class _ReadingBanner extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon),
+                Icon(icon, color: QoutPalette.of(context).accentText),
                 const SizedBox(width: 12),
                 Expanded(child: Text(text)),
               ],
@@ -240,25 +240,34 @@ class _ProvisionalGrade extends StatelessWidget {
       ),
       null => (null, 'Correct the values marked in red to see the grade.'),
     };
-    return Row(
-      children: [
-        GradeBadge(grade: grade, size: 56),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Chip(
-                avatar: const Icon(Icons.pending_outlined, size: 18),
-                label: const Text('Unverified'),
-                visualDensity: VisualDensity.compact,
-                backgroundColor: theme.colorScheme.secondaryContainer,
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            GradeBadge(grade: grade, size: 56),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Chip(
+                    avatar: Icon(
+                      PhosphorIconsRegular.hourglass,
+                      size: 16,
+                      color: theme.chipTheme.labelStyle?.color,
+                    ),
+                    label: const Text('Unverified'),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(text, style: theme.textTheme.bodySmall),
+                ],
               ),
-              Text(text, style: theme.textTheme.bodySmall),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -277,7 +286,6 @@ class _CategoryField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: 'Kind of product',
         helperText: categoryHint(category),
-        border: const OutlineInputBorder(),
       ),
       items: [
         for (final option in scoring.Category.values)
@@ -298,9 +306,11 @@ class _BasisField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Expanded(child: Text('The table shows values')),
+        const Text('The table shows values'),
+        const SizedBox(height: 8),
         SegmentedButton<NutritionBasis>(
           segments: const [
             ButtonSegment(
@@ -384,6 +394,11 @@ class _AmountFieldState extends State<_AmountField> {
   @override
   Widget build(BuildContext context) {
     final problem = widget.problem;
+    final doubt = QoutPalette.of(context).doubt;
+    final doubtBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(QoutRadius.md),
+      borderSide: BorderSide(color: doubt, width: 1.5),
+    );
     return TextField(
       controller: _controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -391,11 +406,12 @@ class _AmountFieldState extends State<_AmountField> {
       decoration: InputDecoration(
         labelText: fieldLabel(widget.field),
         suffixText: widget.unit,
-        border: const OutlineInputBorder(),
         errorText: problem == null ? null : problemText(problem),
         helperText: widget.flagged ? 'Check this one against the photo' : null,
+        helperStyle: widget.flagged ? TextStyle(color: doubt) : null,
+        enabledBorder: widget.flagged ? doubtBorder : null,
         prefixIcon: widget.flagged
-            ? const Icon(Icons.warning_amber_outlined)
+            ? Icon(PhosphorIconsRegular.warning, color: doubt)
             : null,
       ),
       onChanged: widget.onChanged,

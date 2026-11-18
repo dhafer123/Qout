@@ -120,7 +120,12 @@ class _ReportErrorSheetState extends ConsumerState<ReportErrorSheet> {
           children: [
             Text('Report an error', style: theme.textTheme.titleLarge),
             const SizedBox(height: 8),
-            const Text('What is wrong with this product?'),
+            Text(
+              'What is wrong with this product?',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
             for (final MapEntry(key: reason, value: label) in _labels.entries)
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
@@ -147,7 +152,6 @@ class _ReportErrorSheetState extends ConsumerState<ReportErrorSheet> {
               decoration: InputDecoration(
                 labelText: 'Details (optional)',
                 hintText: 'For example: salt is 0.3 g on the label',
-                border: const OutlineInputBorder(),
                 errorText: switch (problem) {
                   ErrorReportProblem.otherNeedsComment => 'Say what is wrong.',
                   ErrorReportProblem.commentTooLong =>

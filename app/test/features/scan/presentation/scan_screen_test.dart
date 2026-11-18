@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/features/scan/presentation/scan_screen.dart';
 
 import '../../../helpers/fake_scanner_platform.dart';
@@ -151,7 +152,7 @@ void main() {
       await tester.pump();
       expect(scanner.toggleTorchCalls, 1);
       expect(find.byTooltip('Turn off the flashlight'), findsOneWidget);
-      expect(find.byIcon(Icons.flashlight_on), findsOneWidget);
+      expect(find.byIcon(PhosphorIconsFill.flashlight), findsOneWidget);
 
       await tester.tap(find.byTooltip('Turn off the flashlight'));
       await tester.pump();
@@ -163,15 +164,15 @@ void main() {
       scanner.initialTorch = TorchState.unavailable;
       await pumpScanScreen(tester);
 
-      expect(find.byIcon(Icons.flashlight_off), findsNothing);
-      expect(find.byIcon(Icons.flashlight_on), findsNothing);
+      expect(find.byIcon(PhosphorIconsRegular.flashlight), findsNothing);
+      expect(find.byIcon(PhosphorIconsFill.flashlight), findsNothing);
     });
 
     testWidgets('is hidden when the camera could not start', (tester) async {
       scanner.startError = scannerError(MobileScannerErrorCode.genericError);
       await pumpScanScreen(tester);
 
-      expect(find.byIcon(Icons.flashlight_off), findsNothing);
+      expect(find.byIcon(PhosphorIconsRegular.flashlight), findsNothing);
     });
   });
 

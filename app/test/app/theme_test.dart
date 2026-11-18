@@ -37,6 +37,7 @@ void main() {
           expect(contrast(palette.muted, ground), greaterThan(4.5));
           expect(contrast(palette.accentText, ground), greaterThan(4.5));
           expect(contrast(scheme.error, ground), greaterThan(4.5));
+          expect(contrast(palette.doubt, ground), greaterThan(4.5));
         });
 
         test('outlines and bars stand out from the $name (3:1)', () {

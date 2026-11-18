@@ -246,10 +246,8 @@ void main() {
 
     testWidgets('nothing waiting', (tester) async {
       await open(tester, route: AppRoutes.outbox);
-      expect(
-        find.text('Nothing waiting. Everything has been sent.'),
-        findsOneWidget,
-      );
+      expect(find.text('Nothing waiting'), findsOneWidget);
+      expect(find.text('Everything has been sent.'), findsOneWidget);
       await tester.unmountQoutApp();
     });
   });

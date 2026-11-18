@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/features/contribute/presentation/contribute_screen.dart';
@@ -440,7 +441,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.byIcon(Icons.outbox_outlined), findsOneWidget);
+      expect(find.byIcon(PhosphorIconsRegular.cloudArrowUp), findsOneWidget);
       expect(fake.api.submitted, isEmpty);
 
       await tester.tap(find.text('Done'));

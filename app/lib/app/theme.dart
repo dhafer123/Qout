@@ -34,6 +34,7 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     required this.inFavour,
     required this.photoStripeA,
     required this.photoStripeB,
+    required this.doubt,
   });
 
   /// Secondary text: captions, barcodes, dates, section labels.
@@ -70,6 +71,9 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
   final Color photoStripeA;
   final Color photoStripeB;
 
+  /// Values a reader is unsure of ("check this one against the photo").
+  final Color doubt;
+
   static const QoutPalette dark = QoutPalette(
     muted: Color(0xFF9EA2B6),
     edge: Color(0xFF3F424D),
@@ -84,6 +88,7 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     inFavour: Color(0xFF72D48A),
     photoStripeA: Color(0xFF232532),
     photoStripeB: Color(0xFF2E3140),
+    doubt: Color(0xFFF6A14F),
   );
 
   static const QoutPalette light = QoutPalette(
@@ -100,6 +105,7 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     inFavour: Color(0xFF399D57),
     photoStripeA: Color(0xFFFBFBFE),
     photoStripeB: Color(0xFFE4E7F5),
+    doubt: Color(0xFF9A5400),
   );
 
   List<Color> get _values => [
@@ -116,6 +122,7 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     inFavour,
     photoStripeA,
     photoStripeB,
+    doubt,
   ];
 
   @override
@@ -152,6 +159,7 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     Color? inFavour,
     Color? photoStripeA,
     Color? photoStripeB,
+    Color? doubt,
   }) => QoutPalette(
     muted: muted ?? this.muted,
     edge: edge ?? this.edge,
@@ -166,6 +174,7 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     inFavour: inFavour ?? this.inFavour,
     photoStripeA: photoStripeA ?? this.photoStripeA,
     photoStripeB: photoStripeB ?? this.photoStripeB,
+    doubt: doubt ?? this.doubt,
   );
 
   @override
@@ -186,6 +195,7 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
       inFavour: mix(inFavour, other.inFavour),
       photoStripeA: mix(photoStripeA, other.photoStripeA),
       photoStripeB: mix(photoStripeB, other.photoStripeB),
+      doubt: mix(doubt, other.doubt),
     );
   }
 }
