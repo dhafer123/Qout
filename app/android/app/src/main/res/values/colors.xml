@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The logo's navy, behind the launcher icon and the splash icon. -->
+    <color name="ic_launcher_background">#061F49</color>
+    <!-- The app's ground (Nocturne light), shown while the app starts. -->
+    <color name="splash_background">#F3F5FE</color>
+</resources>
