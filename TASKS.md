@@ -262,12 +262,16 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Follow-ups: the panel's photo links point at `S3_PUBLIC_ENDPOINT_URL` (or `S3_ENDPOINT_URL`), which the moderator's browser must reach (fine locally; a deployment detail for T32). Approving keeps the edit and the approval in two commits: if approval fails (storage down), the corrections stay saved and the contribution stays pending. No audit log of panel edits beyond `submitted_values`, `reviewed_by` and `resolved_by` (SQLAdmin has an audit backend if ever wanted). Security headers for `/admin` with T35. CLAUDE.md's architecture summary doesn't list `app/admin/` yet.
 
 ### T31b · UI/UX polish (app)
-- [ ] Visual identity: adaptive app icon, splash screen, palette and type scale beyond the seed colour, consistent spacing and components
-- [ ] Screen pass: home (scan, history, outbox card), product result, sign-in, contribution flow, outbox; consistent empty, loading and error states; wording reviewed in one go
-- [ ] Accessibility: screen-reader labels, contrast in both themes, large-text scaling, touch targets of at least 48 dp
+Design: the "Nocturne" direction (option 1a) from the Claude Design handoff of 2026-11-18 (Home and Product, dark and light); the other screens follow the same system. Split into steps (2026-11-18):
+- [ ] **T31b.1 Theme:** Nocturne tokens for dark and light, Inter (bundled), Phosphor icons, component themes (outlined primary actions, tonal cards, fading rules), grade colours
+- [ ] **T31b.2 Home and Product:** history rows with photo thumbnails, grade card with the A–E track, "Why this score" split into against / in favour with bars, sections restyled
+- [ ] **T31b.3 Other screens:** scanner, sign-in, contribution flow, outbox, report sheet; consistent empty, loading and error states; wording reviewed in one go
+- [ ] **T31b.4 Scan animation:** the success part of "QR Scan Successful" (Lottie) after a barcode is accepted, recoloured to the theme, skipped with reduced motion
+- [ ] **T31b.5 App icon and splash:** adaptive icon (foreground, background, monochrome) and Android 12+ splash from the logo
+- [ ] **T31b.6 Accessibility:** screen-reader labels, contrast in both themes, large-text scaling, touch targets of at least 48 dp
 - [ ] Decide localization (French, Arabic with right-to-left): own task or a stated non-goal (`flutter_localizations` / `intl` are new packages: ask first)
 - [ ] Optional: short first-run onboarding (what the grade means; scanning needs no account)
-- Tests: **W** golden or widget tests for the reworked screens in light and dark; text scaling doesn't overflow.
+- Tests: **W** widget tests for the reworked screens in light and dark; text scaling doesn't overflow. (No pixel goldens: font rendering differs between Windows and the Linux CI.)
 - Placed after T31 (every screen exists) and before the release pipeline, the download site (T33b, reuses the screenshots) and T37's screenshots.
 
 ---
