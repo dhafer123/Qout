@@ -36,13 +36,8 @@ void main() {
 
     final theme = Theme.of(tester.element(find.byType(HomeScreen)));
     expect(theme.brightness, Brightness.dark);
-    expect(
-      theme.colorScheme,
-      ColorScheme.fromSeed(
-        seedColor: qoutSeedColor,
-        brightness: Brightness.dark,
-      ),
-    );
+    expect(theme.colorScheme, buildQoutTheme(Brightness.dark).colorScheme);
+    expect(theme.extension<QoutPalette>(), QoutPalette.dark);
   });
 
   testWidgets('shows the debug banner only outside prod', (tester) async {
