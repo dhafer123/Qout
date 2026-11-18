@@ -140,7 +140,11 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byKey(ProductPhoto.unavailableKey), findsOneWidget);
+    // Zero height, so the list counts it as off screen.
+    expect(
+      find.byKey(ProductPhoto.unavailableKey, skipOffstage: false),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
     expect(find.text('Header'), findsOneWidget);
   });

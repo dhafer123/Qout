@@ -4,7 +4,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
+import 'package:qout/app/theme.dart';
 import 'package:qout/core/database/database.dart';
 import 'package:qout/core/database/database_provider.dart';
 import 'package:qout/features/outbox/data/outbox.dart';
@@ -189,7 +191,8 @@ class OutboxCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final rows = ref.watch(outboxEntriesProvider).valueOrNull ?? const [];
     if (rows.isEmpty) return const SizedBox.shrink();
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final palette = QoutPalette.of(context);
     final refused = rows.where((r) => r.state == OutboxState.refused).length;
     final signIn = rows.where((r) => r.state == OutboxState.needsSignIn).length;
     final waiting = rows.length - refused - signIn;
@@ -198,15 +201,52 @@ class OutboxCard extends ConsumerWidget {
       if (signIn > 0) '$signIn need you to sign in',
       if (refused > 0) '$refused not accepted',
     ];
+    final hint = refused > 0
+        ? 'Open to see why.'
+        : signIn > 0
+        ? 'Open to sign in and send them.'
+        : 'Sent automatically when Qout can be reached.';
     return Card(
-      color: refused > 0 ? scheme.errorContainer : scheme.secondaryContainer,
-      child: ListTile(
-        leading: Icon(
-          refused > 0 ? Icons.error_outline : Icons.outbox_outlined,
-        ),
-        title: Text(parts.join(' · ')),
-        trailing: const Icon(Icons.chevron_right),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
         onTap: () => context.push(AppRoutes.outbox),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 56),
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 8, 10),
+            child: Row(
+              children: [
+                Icon(
+                  refused > 0
+                      ? PhosphorIconsRegular.warningCircle
+                      : PhosphorIconsRegular.cloudArrowUp,
+                  size: 22,
+                  color: refused > 0
+                      ? theme.colorScheme.error
+                      : palette.accentText,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        parts.join(' · '),
+                        style: theme.textTheme.titleSmall,
+                      ),
+                      Text(hint, style: theme.textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+                Icon(
+                  PhosphorIconsRegular.caretRight,
+                  size: 20,
+                  color: palette.muted,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

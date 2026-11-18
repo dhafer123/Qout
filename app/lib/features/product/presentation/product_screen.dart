@@ -3,8 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
+import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart';
+import 'package:qout/core/ui/fading_rule.dart';
+import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/product/domain/product_result.dart';
@@ -26,13 +30,22 @@ class ProductScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final result = ref.watch(productResultProvider(ean));
     void retry() => ref.invalidate(productResultProvider(ean));
-    final refreshing = switch (result.valueOrNull) {
-      ProductFound(freshness: ProductFreshness.refreshing) => true,
-      _ => false,
+    final found = switch (result.valueOrNull) {
+      final ProductFound found => found,
+      _ => null,
     };
+    final refreshing = found?.freshness == ProductFreshness.refreshing;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product'),
+        actions: [
+          if (found != null)
+            IconButton(
+              tooltip: 'Report an error',
+              icon: const Icon(PhosphorIconsRegular.flag),
+              onPressed: () => _report(context, found.product),
+            ),
+          const SizedBox(width: 4),
+        ],
         bottom: refreshing
             ? const PreferredSize(
                 preferredSize: Size.fromHeight(4),
@@ -45,23 +58,27 @@ class ProductScreen extends ConsumerWidget {
       body: result.when(
         skipLoadingOnRefresh: false,
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => _Message(
-          icon: Icons.error_outline,
+        error: (_, _) => StateMessage(
+          icon: PhosphorIconsRegular.warningCircle,
           title: 'Something went wrong',
           message: 'The product could not be shown.',
-          action: FilledButton(onPressed: retry, child: const Text('Retry')),
+          actions: [
+            FilledButton(onPressed: retry, child: const Text('Retry')),
+          ],
         ),
         data: (result) => switch (result) {
           final ProductFound found => _ProductView(found),
           ProductNotFound(:final ean) => _NotFound(ean: ean),
-          InvalidBarcode(:final ean, :final message) => _Message(
-            icon: Icons.qr_code_2,
+          InvalidBarcode(:final ean, :final message) => StateMessage(
+            icon: PhosphorIconsRegular.barcode,
             title: 'This barcode is not valid',
             message: '$ean: $message',
-            action: const _ScanAgainButton(filled: true),
+            actions: const [_ScanAgainButton(primary: true)],
           ),
-          final ProductUnavailable unavailable => _Message(
-            icon: unavailable.isOffline ? Icons.cloud_off : Icons.dns_outlined,
+          final ProductUnavailable unavailable => StateMessage(
+            icon: unavailable.isOffline
+                ? PhosphorIconsRegular.wifiSlash
+                : PhosphorIconsRegular.cloudSlash,
             title: unavailable.isOffline
                 ? 'You are offline'
                 : 'Qout is unavailable right now',
@@ -72,13 +89,22 @@ class ProductScreen extends ConsumerWidget {
                     final wait? => 'Try again in ${wait.inSeconds} seconds.',
                     null => 'Try again in a moment.',
                   },
-            action: FilledButton(onPressed: retry, child: const Text('Retry')),
+            actions: [
+              FilledButton(onPressed: retry, child: const Text('Retry')),
+            ],
           ),
         },
       ),
     );
   }
 }
+
+void _report(BuildContext context, ProductDetail product) =>
+    showReportErrorSheet(
+      context,
+      ean: product.ean,
+      productUpdatedAt: product.updatedAt,
+    );
 
 class _ProductView extends StatelessWidget {
   const _ProductView(this.found);
@@ -90,13 +116,14 @@ class _ProductView extends StatelessWidget {
     final product = found.product;
     final explanation = explainScore(product);
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(bottom: 24),
       children: [
         if (found.freshness == ProductFreshness.refreshFailed)
           _StaleBanner(found),
         ProductPhoto(imageUrl: product.imageUrl, name: product.name),
-        ProductHeader(product: product, explanation: explanation),
-        ScoreSection(explanation: explanation),
+        ProductHeader(product: product),
+        GradeCard(explanation: explanation),
+        ScoreSection(explanation: explanation, nutrition: product.nutrition),
         AlternativesSection(
           ean: product.ean,
           grade: explanation.displayGrade,
@@ -105,14 +132,24 @@ class _ProductView extends StatelessWidget {
         ProcessingSection(novaGroup: product.novaGroup),
         AdditivesSection(additives: product.additives),
         SourceSection(product: product),
-        OutlinedButton.icon(
-          onPressed: () => showReportErrorSheet(
-            context,
-            ean: product.ean,
-            productUpdatedAt: product.updatedAt,
+        const Padding(
+          padding: EdgeInsets.only(top: 8),
+          child: FadingRule(),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              OutlinedButton.icon(
+                onPressed: () => _report(context, product),
+                icon: const Icon(PhosphorIconsRegular.flag, size: 20),
+                label: const Text('Report an error'),
+              ),
+              const SizedBox(height: 8),
+              const _ScanAgainButton(),
+            ],
           ),
-          icon: const Icon(Icons.flag_outlined),
-          label: const Text('Report an error'),
         ),
       ],
     );
@@ -127,19 +164,27 @@ class _StaleBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final palette = QoutPalette.of(context);
     final why = found.refreshError is ApiConnectionError
         ? 'You are offline.'
         : 'Qout could not be reached.';
-    return Card(
-      color: colors.secondaryContainer,
-      margin: const EdgeInsets.only(bottom: 16),
-      child: ListTile(
-        leading: Icon(Icons.cloud_off, color: colors.onSecondaryContainer),
-        title: Text(
-          '$why Showing the version saved on '
-          '${formatDateTime(context, found.fetchedAt)}.',
-          style: TextStyle(color: colors.onSecondaryContainer),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Icon(PhosphorIconsRegular.cloudSlash, color: palette.muted),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '$why Showing the version saved on '
+                  '${formatDateTime(context, found.fetchedAt)}.',
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -167,79 +212,35 @@ class _NotFound extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return _Message(
-      icon: Icons.search_off,
+    return StateMessage(
+      icon: PhosphorIconsRegular.magnifyingGlass,
       title: 'We do not know this product yet',
       message:
           'Barcode $ean. You can help by adding it from photos of its '
           'label.',
-      action: Column(
-        children: [
-          FilledButton.icon(
-            onPressed: () => _add(context, ref),
-            icon: const Icon(Icons.add_a_photo_outlined),
-            label: const Text('Add this product'),
-          ),
-          const SizedBox(height: 8),
-          const _ScanAgainButton(),
-        ],
-      ),
+      actions: [
+        FilledButton.icon(
+          onPressed: () => _add(context, ref),
+          icon: const Icon(PhosphorIconsRegular.cameraPlus, size: 20),
+          label: const Text('Add this product'),
+        ),
+        const _ScanAgainButton(),
+      ],
     );
   }
 }
 
 class _ScanAgainButton extends StatelessWidget {
-  const _ScanAgainButton({this.filled = false});
+  const _ScanAgainButton({this.primary = false});
 
-  final bool filled;
+  final bool primary;
 
   @override
   Widget build(BuildContext context) {
     void scan() => context.pushReplacement(AppRoutes.scan);
     const label = Text('Scan another barcode');
-    return filled
+    return primary
         ? FilledButton(onPressed: scan, child: label)
         : TextButton(onPressed: scan, child: label);
-  }
-}
-
-/// A centred icon, title, explanation and action.
-class _Message extends StatelessWidget {
-  const _Message({
-    required this.icon,
-    required this.title,
-    required this.message,
-    required this.action,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final Widget action;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 64, color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: theme.textTheme.titleLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 24),
-            action,
-          ],
-        ),
-      ),
-    );
   }
 }

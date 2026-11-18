@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 /// Qout's look: the "Nocturne" direction (Claude Design handoff, 2026-11-18).
 /// A blue-grey ground, Inter at medium weight, 8 px corners, and one blurple
@@ -321,6 +322,11 @@ ThemeData buildQoutTheme(Brightness brightness) {
     splashFactory: InkSparkle.splashFactory,
     extensions: [p],
     iconTheme: IconThemeData(color: scheme.onSurface, size: 24),
+    actionIconTheme: ActionIconThemeData(
+      backButtonIconBuilder: (context) =>
+          const Icon(PhosphorIconsRegular.arrowLeft),
+      closeButtonIconBuilder: (context) => const Icon(PhosphorIconsRegular.x),
+    ),
     appBarTheme: AppBarTheme(
       backgroundColor: scheme.surface,
       foregroundColor: scheme.onSurface,

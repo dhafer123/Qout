@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
@@ -25,7 +26,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byIcon(Icons.qr_code_scanner), findsOneWidget);
+    expect(find.byIcon(PhosphorIconsRegular.barcode), findsOneWidget);
   });
 
   testWidgets('Scan opens the scanner', (tester) async {

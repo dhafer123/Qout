@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/api_providers.dart';
 import 'package:qout/core/api/qout_api.dart';
@@ -116,7 +117,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      expect(find.byIcon(PhosphorIconsRegular.warningCircle), findsOneWidget);
 
       await tester.tap(find.byType(OutboxCard));
       await tester.pumpAndSettle();
@@ -129,7 +130,7 @@ void main() {
       await queue('a', 'error_report', _report('a'));
       await tester.pumpAndSettle();
       expect(find.text('1 waiting to be sent'), findsOneWidget);
-      expect(find.byIcon(Icons.outbox_outlined), findsOneWidget);
+      expect(find.byIcon(PhosphorIconsRegular.cloudArrowUp), findsOneWidget);
 
       await dao().remove((await dao().find('a'))!.id);
       await tester.pumpAndSettle();

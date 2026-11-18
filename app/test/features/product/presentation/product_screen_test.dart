@@ -130,13 +130,44 @@ void main() {
       expect(find.text('Barcode 9557062321136'), findsOneWidget);
       // Why this score.
       expect(find.text('Why this score'), findsOneWidget);
-      expect(find.text('Negative points: 22'), findsOneWidget);
-      expect(find.text('Positive points: 2'), findsOneWidget);
-      expect(_row('Energy', '6 / 10'), findsOneWidget);
-      expect(_row('Saturated fat', '10 / 10'), findsOneWidget);
-      expect(_row('Salt', '6 / 20'), findsOneWidget);
-      expect(_row('Protein (not counted)', '2 / 7'), findsOneWidget);
-      expect(find.text('Score: 22 − 0 = 22, grade E'), findsOneWidget);
+      expect(find.text('COUNTS AGAINST IT'), findsOneWidget);
+      expect(find.text('22 PTS'), findsOneWidget);
+      expect(find.text('COUNTS IN ITS FAVOUR'), findsOneWidget);
+      expect(find.text('0 PTS'), findsOneWidget);
+      expect(_component('energy', 'Energy', '6 / 10', '2056 kJ'), findsOne);
+      expect(
+        _component('saturated_fat', 'Saturated fat', '10 / 10', '12.5 g'),
+        findsOne,
+      );
+      expect(_component('salt', 'Salt', '6 / 20', '1.23 g'), findsOne);
+      expect(
+        _component('protein', 'Protein (not counted)', '2 / 7', null),
+        findsOne,
+      );
+      expect(find.text('22 against − 0 in favour'), findsOneWidget);
+      expect(find.text('22 pts · E'), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (w) =>
+              w is Semantics &&
+              w.properties.label ==
+                  'Total: 22 against minus 0 in favour makes 22 points, '
+                      'grade E',
+        ),
+        findsOneWidget,
+      );
+      // Grade card.
+      expect(find.text('Grade E'), findsOneWidget);
+      expect(
+        find.text('On a scale from A (best) to E (worst)'),
+        findsOneWidget,
+      );
+      expect(
+        tester.getSize(find.byKey(const ValueKey('grade-track-E'))).height,
+        greaterThan(
+          tester.getSize(find.byKey(const ValueKey('grade-track-A'))).height,
+        ),
+      );
       expect(
         find.textContaining('with 11 or more negative points'),
         findsOneWidget,
@@ -149,7 +180,7 @@ void main() {
       expect(find.text('Nutrition per 100 g'), findsOneWidget);
       expect(_row('Energy', '2056 kJ / 491 kcal'), findsOneWidget);
       expect(_row('Fat', '25 g'), findsOneWidget);
-      expect(_row('of which saturated', '12.5 g'), findsOneWidget);
+      expect(_row('of which saturates', '12.5 g'), findsOneWidget);
       expect(_row('Salt', '1.23 g'), findsOneWidget);
       expect(_row('Fibre', '–'), findsOneWidget);
       expect(find.text('Sweeteners'), findsNothing);
@@ -174,9 +205,17 @@ void main() {
       await openProduct(tester);
 
       expect(find.text('Nutrition per 100 mL'), findsOneWidget);
-      expect(_row('Sweeteners', '4 / 4'), findsOneWidget);
+      expect(
+        _component(
+          'non_nutritive_sweeteners',
+          'Sweeteners',
+          '4 / 4',
+          'Contains sweeteners',
+        ),
+        findsOne,
+      );
       expect(_row('Sweeteners', 'Yes'), findsOneWidget);
-      expect(_row('Protein', '0 / 7'), findsOneWidget);
+      expect(_component('protein', 'Protein', '0 / 7', null), findsOne);
       expect(find.textContaining('Protein does not count'), findsNothing);
       expect(find.textContaining('Fibre is not declared'), findsNothing);
     });
@@ -602,17 +641,35 @@ void main() {
 /// A row showing [label] and [value] side by side.
 Finder _row(String label, String value) => find.byWidgetPredicate(
   (widget) =>
-      widget is Row &&
-      widget.children.length == 2 &&
-      _text(widget.children.first) == label &&
-      _text(widget.children.last) == value,
+      (widget is Row || widget is Wrap) &&
+      _children(widget).length == 2 &&
+      _text(_children(widget).first) == label &&
+      _text(_children(widget).last) == value,
 );
+
+List<Widget> _children(Widget widget) => switch (widget) {
+  Row(:final children) || Wrap(:final children) => children,
+  _ => const [],
+};
 
 String? _text(Widget widget) => switch (widget) {
   Text(:final data) => data,
   Expanded(child: Text(:final data)) => data,
   _ => null,
 };
+
+/// A score component row: its label, points and (when declared) amount.
+Finder _component(String name, String label, String points, String? amount) {
+  final row = find.byKey(ValueKey('component-$name'));
+  return find.byWidgetPredicate((widget) {
+    if (widget.key != ValueKey('component-$name')) return false;
+    bool has(String text) => find
+        .descendant(of: row, matching: find.text(text))
+        .evaluate()
+        .isNotEmpty;
+    return has(label) && has(points) && (amount == null || has(amount));
+  });
+}
 
 /// The grade badge showing [grade] (null: no grade).
 Finder _badge(Grade? grade) => find.byWidgetPredicate(
