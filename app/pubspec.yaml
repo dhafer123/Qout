@@ -35,6 +35,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/animations/
     - assets/brand/
     - assets/fonts/inter/OFL.txt
   fonts:

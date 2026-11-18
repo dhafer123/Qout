@@ -8,18 +8,23 @@ import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/scan/domain/barcode.dart';
 import 'package:qout/features/scan/domain/scan_acceptor.dart';
+import 'package:qout/features/scan/presentation/scan_success.dart';
 
 /// Camera barcode scanner. Reads EAN-13, EAN-8, UPC-A and UPC-E, accepts a
-/// code once [ScanAcceptor] trusts it, then calls [onScanned] with the
-/// normalised code (EAN-13 or EAN-8).
+/// code once [ScanAcceptor] trusts it, calls [onAccepted] at once (to start
+/// loading the product), plays [ScanSuccess], then calls [onScanned] with the
+/// normalised code (EAN-13 or EAN-8). With reduced motion there is no
+/// animation.
 class ScanScreen extends StatefulWidget {
   const ScanScreen({
     required this.onScanned,
+    this.onAccepted,
     this.requiredReads = ScanAcceptor.defaultRequiredReads,
     super.key,
   });
 
   final void Function(BuildContext context, String ean) onScanned;
+  final void Function(String ean)? onAccepted;
   final int requiredReads;
 
   @override
@@ -30,6 +35,9 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
   late final ScanAcceptor _acceptor = ScanAcceptor(
     requiredReads: widget.requiredReads,
   );
+
+  /// The accepted code while the success animation plays.
+  String? _celebrating;
 
   final _controller = MobileScannerController(
     formats: _formats.keys.toList(),
@@ -89,7 +97,12 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
     if (ean == null || !mounted) return;
     unawaited(HapticFeedback.mediumImpact());
     unawaited(_controller.stop());
-    widget.onScanned(context, ean);
+    widget.onAccepted?.call(ean);
+    if (MediaQuery.disableAnimationsOf(context)) {
+      widget.onScanned(context, ean);
+    } else {
+      setState(() => _celebrating = ean);
+    }
   }
 
   @override
@@ -109,14 +122,22 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
           const SizedBox(width: 4),
         ],
       ),
-      body: MobileScanner(
-        controller: _controller,
-        onDetect: _onDetect,
-        errorBuilder: (context, error) => ScannerErrorView(
-          error: error,
-          onRetry: () => unawaited(_controller.start()),
-        ),
-        overlayBuilder: (context, constraints) => const _ScanFrame(),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          MobileScanner(
+            controller: _controller,
+            onDetect: _onDetect,
+            errorBuilder: (context, error) => ScannerErrorView(
+              error: error,
+              onRetry: () => unawaited(_controller.start()),
+            ),
+            overlayBuilder: (context, constraints) =>
+                _celebrating == null ? const _ScanFrame() : const SizedBox(),
+          ),
+          if (_celebrating case final ean?)
+            ScanSuccess(onDone: () => widget.onScanned(context, ean)),
+        ],
       ),
     );
   }

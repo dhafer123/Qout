@@ -9,6 +9,7 @@ import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/label_eval/presentation/label_eval_screen.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
+import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/presentation/product_screen.dart';
 import 'package:qout/features/scan/presentation/scan_screen.dart';
 
@@ -39,6 +40,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.scan,
         builder: (context, state) => ScanScreen(
+          // Start loading while the success animation plays: the product
+          // screen then finds it saved on the phone.
+          onAccepted: (ean) => unawaited(
+            ref
+                .read(productRepositoryProvider)
+                .get(ean)
+                .first
+                .then<void>((_) {}, onError: (Object _) {}),
+          ),
           onScanned: (context, ean) {
             // History is a convenience: a failed write must not block the
             // result.

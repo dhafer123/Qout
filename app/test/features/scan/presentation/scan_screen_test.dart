@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/features/scan/presentation/scan_screen.dart';
+import 'package:qout/features/scan/presentation/scan_success.dart';
 
 import '../../../helpers/fake_scanner_platform.dart';
 
@@ -12,15 +13,20 @@ const _ean = '6191234567897';
 void main() {
   late FakeScannerPlatform scanner;
   late List<String> scanned;
+  late List<String> accepted;
   late List<String> haptics;
 
   setUp(() {
     scanner = installFakeScanner();
     scanned = [];
+    accepted = [];
     haptics = [];
   });
 
-  Future<void> pumpScanScreen(WidgetTester tester) async {
+  Future<void> pumpScanScreen(
+    WidgetTester tester, {
+    bool reduceMotion = false,
+  }) async {
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
       SystemChannels.platform,
       (call) async {
@@ -38,9 +44,24 @@ void main() {
     );
     await tester.pumpWidget(
       MaterialApp(
-        home: ScanScreen(onScanned: (_, ean) => scanned.add(ean)),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(disableAnimations: reduceMotion),
+          child: child!,
+        ),
+        home: ScanScreen(
+          onScanned: (_, ean) => scanned.add(ean),
+          onAccepted: accepted.add,
+        ),
       ),
     );
+    await tester.pumpAndSettle();
+  }
+
+  /// Lets the success animation start and run to its end.
+  Future<void> finishAnimation(WidgetTester tester) async {
+    await tester.pump();
     await tester.pumpAndSettle();
   }
 
@@ -81,9 +102,31 @@ void main() {
       expect(haptics, isEmpty);
 
       await emit(tester, _ean);
-      expect(scanned, [_ean]);
+      // Accepted at once (the product starts loading), shown as read, then
+      // reported when the animation ends.
+      expect(accepted, [_ean]);
       expect(haptics, ['HapticFeedbackType.mediumImpact']);
       expect(scanner.stopCalls, 1);
+      await tester.pump();
+      expect(find.byType(ScanSuccess), findsOneWidget);
+      expect(find.text('Point the camera at the barcode'), findsNothing);
+      expect(scanned, isEmpty);
+
+      await finishAnimation(tester);
+      expect(scanned, [_ean]);
+    });
+
+    testWidgets('with reduced motion: no animation, reported at once', (
+      tester,
+    ) async {
+      await pumpScanScreen(tester, reduceMotion: true);
+
+      for (var i = 0; i < 3; i++) {
+        await emit(tester, _ean);
+      }
+      expect(accepted, [_ean]);
+      expect(scanned, [_ean]);
+      expect(find.byType(ScanSuccess), findsNothing);
     });
 
     testWidgets('reports a code once, however many reads follow', (
@@ -94,6 +137,8 @@ void main() {
       for (var i = 0; i < 6; i++) {
         await emit(tester, _ean);
       }
+      await finishAnimation(tester);
+      expect(accepted, [_ean]);
       expect(scanned, [_ean]);
     });
 
@@ -113,6 +158,7 @@ void main() {
       for (var i = 0; i < 3; i++) {
         await emit(tester, '04252614', BarcodeFormat.upcE);
       }
+      await finishAnimation(tester);
       expect(scanned, ['0042100005264']);
     });
 

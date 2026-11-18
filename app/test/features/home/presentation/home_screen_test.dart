@@ -62,7 +62,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ProductScreen), findsOneWidget);
-    expect(repository.requested, ['6191234567897']);
+    // Loaded once when accepted (during the animation), then by the screen.
+    expect(repository.requested.toSet(), {'6191234567897'});
     expect(find.text('Plain water is always graded A.'), findsOneWidget);
     expect(find.byType(ScanScreen), findsNothing);
 
