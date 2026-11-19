@@ -60,6 +60,37 @@ class NutritionBasis(StrEnum):
     PER_100ML = "per_100ml"
 
 
+class ServingUnit(StrEnum):
+    """Unit of a serving, as Open Food Facts gives it (`serving_quantity_unit`)."""
+
+    G = "g"
+    ML = "ml"
+
+
+class Allergen(StrEnum):
+    """The 14 allergens of Regulation (EU) 1169/2011 Annex II, in its order
+    (docs/specs/README.md, "Allergens and servings"). Keys shared with the app."""
+
+    GLUTEN = "gluten"
+    CRUSTACEANS = "crustaceans"
+    EGGS = "eggs"
+    FISH = "fish"
+    PEANUTS = "peanuts"
+    SOYBEANS = "soybeans"
+    MILK = "milk"
+    NUTS = "nuts"
+    CELERY = "celery"
+    MUSTARD = "mustard"
+    SESAME = "sesame"
+    SULPHITES = "sulphites"
+    LUPIN = "lupin"
+    MOLLUSCS = "molluscs"
+
+
+MAX_SERVING = 1000
+"""Largest serving amount kept (g or mL): catches bad data, not a nutrition value."""
+
+
 class ScanOutcome(StrEnum):
     FOUND = "found"
     NOT_FOUND = "not_found"
@@ -70,6 +101,12 @@ class Product(IdTimestampMixin, Base):
     __table_args__ = (
         CheckConstraint(f"ean ~ '{EAN_PATTERN}'", name="ean_digits"),
         CheckConstraint("nova_group BETWEEN 1 AND 4", name="nova_group_range"),
+        CheckConstraint(
+            "serving_quantity > 0 AND serving_quantity <= 1000", name="serving_quantity_range"
+        ),
+        CheckConstraint(
+            "(serving_quantity IS NULL) = (serving_unit IS NULL)", name="serving_with_unit"
+        ),
         Index("ix_products_food_categories", "food_categories", postgresql_using="gin"),
     )
 
@@ -104,6 +141,16 @@ class Product(IdTimestampMixin, Base):
     source_modified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     """When the source last changed the product (OFF `last_modified_t`). Imports never
     replace newer data with an older record."""
+    serving_quantity: Mapped[Decimal | None] = mapped_column(Numeric(7, 2))
+    """One serving in `serving_unit` (T40); null when unknown or unusable."""
+    serving_unit: Mapped[ServingUnit | None] = mapped_column(str_enum(ServingUnit, "serving_unit"))
+    serving_size: Mapped[str | None] = mapped_column(Text)
+    """The serving as the label words it (OFF `serving_size`, e.g. "1 portion (13.8 g)")."""
+    allergens: Mapped[list[str] | None] = mapped_column(ARRAY(String(16)))
+    """Annex II allergen keys the product contains (`Allergen`), in Annex II order. Empty:
+    none listed (maybe not entered); null: not imported yet (stored before T40)."""
+    traces: Mapped[list[str] | None] = mapped_column(ARRAY(String(16)))
+    """Annex II allergen keys the product may contain traces of; same conventions."""
 
 
 AMOUNT_COLUMNS = (

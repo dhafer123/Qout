@@ -8,12 +8,18 @@ from typing import Any
 
 import pytest
 
-from app.modules.ingestion.off_normaliser import NormalizedProduct, normalize
+from app.modules.ingestion.off_normaliser import (
+    NormalizedProduct,
+    allergens_from_off,
+    normalize,
+)
 from app.modules.products.models import (
+    Allergen,
     DataSource,
     NutritionBasis,
     NutritionFacts,
     QualityFlag,
+    ServingUnit,
 )
 from app.modules.products.scoring import nutrition_input
 from app.modules.scoring import Category, Grade, NutriScore, score
@@ -47,6 +53,14 @@ EXPECTED: dict[
         Grade.E,
         G,
         {"energy_kj": "2252", "sugars_g": "56.3", "salt_g": "0.107", "fibre_g": "0"},
+        [],
+    ),
+    "general-tunisian-biscuits-serving-allergens": (
+        Category.GENERAL,
+        QC,
+        Grade.E,
+        G,
+        {"energy_kj": "1980", "sugars_g": "23", "saturated_fat_g": "10.9", "fibre_g": "4"},
         [],
     ),
     "general-per-serving-biscuits": (
@@ -737,3 +751,90 @@ def test_food_categories_capped() -> None:
     assert normalize("6194001800104", off).product.food_categories == [
         f"en:c{i}" for i in range(40)
     ]
+
+
+# ---------------------------------------------------------------- serving and allergens (T40)
+
+
+def test_serving_and_allergens_from_a_recorded_product() -> None:
+    product = normalized("general-tunisian-biscuits-serving-allergens").product
+    assert (product.serving_quantity, product.serving_unit, product.serving_size) == (
+        Decimal("21.70"),
+        ServingUnit.G,
+        "21.7g",
+    )
+    # Annex II order, not OFF's: gluten (1), soybeans (6), milk (7).
+    assert product.allergens == [Allergen.GLUTEN, Allergen.SOYBEANS, Allergen.MILK]
+    assert product.traces == [Allergen.NUTS]
+
+
+def test_older_records_without_the_fields_list_no_allergens() -> None:
+    product = normalized("general-complete-spread").product
+    assert (product.allergens, product.traces) == ([], [])
+    assert product.serving_quantity is None
+
+
+def _serving(**fields: Any) -> tuple[Decimal | None, ServingUnit | None, str | None]:
+    product = normalize("6191234567897", {"product_name": "x", **fields}).product
+    return product.serving_quantity, product.serving_unit, product.serving_size
+
+
+@pytest.mark.parametrize(
+    ("fields", "expected"),
+    [
+        (
+            {"serving_quantity": 330, "serving_quantity_unit": "ml", "serving_size": "1 can"},
+            (Decimal("330.00"), ServingUnit.ML, "1 can"),
+        ),
+        (
+            {"serving_quantity": "13,8", "serving_quantity_unit": "G"},
+            (Decimal("13.80"), ServingUnit.G, None),
+        ),
+        # Rounded like the column, so re-importing changes nothing.
+        (
+            {"serving_quantity": 13.333, "serving_quantity_unit": "g"},
+            (Decimal("13.33"), ServingUnit.G, None),
+        ),
+        (
+            {"serving_quantity": 1000, "serving_quantity_unit": "g"},
+            (Decimal("1000.00"), ServingUnit.G, None),
+        ),
+        # Unusable amounts or units: the label's words are still kept.
+        (
+            {"serving_quantity": 1000.01, "serving_quantity_unit": "g", "serving_size": " 1 kg "},
+            (None, None, "1 kg"),
+        ),
+        ({"serving_quantity": 0, "serving_quantity_unit": "g"}, (None, None, None)),
+        ({"serving_quantity": -5, "serving_quantity_unit": "g"}, (None, None, None)),
+        ({"serving_quantity": 30, "serving_quantity_unit": "oz"}, (None, None, None)),
+        ({"serving_quantity": 30}, (None, None, None)),
+        ({"serving_quantity_unit": "g", "serving_size": "1 bar"}, (None, None, "1 bar")),
+        ({"serving_quantity": "abc", "serving_quantity_unit": "g"}, (None, None, None)),
+        ({"serving_quantity": True, "serving_quantity_unit": "g"}, (None, None, None)),
+        ({"serving_size": "x" * 150}, (None, None, "x" * 100)),
+    ],
+)
+def test_serving_values(
+    fields: dict[str, Any], expected: tuple[Decimal | None, ServingUnit | None, str | None]
+) -> None:
+    assert _serving(**fields) == expected
+
+
+@pytest.mark.parametrize(
+    ("tags", "expected"),
+    [
+        (
+            ["en:sesame-seeds", "en:sulphur-dioxide-and-sulphites"],
+            [Allergen.SESAME, Allergen.SULPHITES],
+        ),
+        (["en:molluscs", "en:gluten", "en:gluten"], [Allergen.GLUTEN, Allergen.MOLLUSCS]),
+        # Not in Annex II, untranslated, or not a tag: dropped.
+        (["en:kiwi", "fr:avoine", "en:none", 3, None, ["en:milk"], {"en": "milk"}], []),
+        ([], []),
+        (None, []),
+        ("en:milk", []),
+    ],
+)
+def test_allergen_tags(tags: Any, expected: list[Allergen]) -> None:
+    assert allergens_from_off(tags) == expected
+    assert normalize("6191234567897", {"traces_tags": tags}).product.traces == expected

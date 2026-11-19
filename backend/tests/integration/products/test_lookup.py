@@ -190,6 +190,28 @@ async def test_off_hit_is_saved_scored_and_then_served_from_the_db(
     assert await count(sessions, Score) == 1
 
 
+async def test_off_hit_has_serving_and_allergens(api: httpx.AsyncClient, off: FakeOff) -> None:
+    off.serve("general-tunisian-biscuits-serving-allergens")
+
+    body = (await api.get("/v1/products/6194002510064")).json()
+
+    assert body["serving"] == {"quantity": 21.7, "unit": "g", "size": "21.7g"}
+    assert body["allergens"] == ["gluten", "soybeans", "milk"]
+    assert body["traces"] == ["nuts"]
+
+
+async def test_stored_before_the_import_of_allergens_says_not_known(
+    api: httpx.AsyncClient, sessions: async_sessionmaker[AsyncSession]
+) -> None:
+    async with sessions() as session:
+        await ProductFactory.create(session, ean=NUTELLA, name="Nutella")
+        await session.commit()
+
+    body = (await api.get(f"/v1/products/{NUTELLA}")).json()
+
+    assert (body["serving"], body["allergens"], body["traces"]) == (None, None, None)
+
+
 async def test_off_photo_is_stored_but_never_served(
     api: httpx.AsyncClient, off: FakeOff, sessions: async_sessionmaker[AsyncSession]
 ) -> None:

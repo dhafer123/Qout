@@ -14,6 +14,9 @@ Pure functions, no I/O. Decisions (TASKS.md, T13):
   `nutrition.aggregated_set` instead of `nutriments`; it is read the way OFF's API turns it
   back into `nutriments`: as-sold values only, ingredient-based estimates only for
   fruits/vegetables/legumes (as the "estimate" value), other estimates dropped.
+- Serving and allergens (T40, docs/specs/README.md "Allergens and servings"): a serving
+  is kept when its unit is g or ml and its amount is above 0 and at most 1000; allergen
+  and trace tags are mapped to the 14 Annex II keys, anything else dropped.
 """
 
 import math
@@ -27,7 +30,14 @@ from urllib.parse import urlsplit
 
 from pydantic import BaseModel
 
-from app.modules.products.models import DataSource, NutritionBasis, QualityFlag
+from app.modules.products.models import (
+    MAX_SERVING,
+    Allergen,
+    DataSource,
+    NutritionBasis,
+    QualityFlag,
+    ServingUnit,
+)
 from app.modules.products.schemas import NutritionFactsCreate, ProductCreate
 from app.modules.scoring import (
     REQUIRED_FIELDS,
@@ -78,6 +88,25 @@ OFF_IMAGES_URL = "https://images.openfoodfacts.org/images/products"
 _OFF_IMAGE_HOST = re.compile(r"^([a-z0-9-]+\.)*openfoodfacts\.org$")
 _IMAGE_LANG = re.compile(r"^[a-z]{2}$")
 _IMAGE_REV = re.compile(r"^[0-9]{1,9}$")
+_ALLERGEN_TAGS = {  # OFF allergens taxonomy (pinned in docs/specs) -> Annex II key
+    "en:gluten": Allergen.GLUTEN,
+    "en:crustaceans": Allergen.CRUSTACEANS,
+    "en:eggs": Allergen.EGGS,
+    "en:fish": Allergen.FISH,
+    "en:peanuts": Allergen.PEANUTS,
+    "en:soybeans": Allergen.SOYBEANS,
+    "en:milk": Allergen.MILK,
+    "en:nuts": Allergen.NUTS,
+    "en:celery": Allergen.CELERY,
+    "en:mustard": Allergen.MUSTARD,
+    "en:sesame-seeds": Allergen.SESAME,
+    "en:sulphur-dioxide-and-sulphites": Allergen.SULPHITES,
+    "en:lupin": Allergen.LUPIN,
+    "en:molluscs": Allergen.MOLLUSCS,
+}
+_SERVING_UNITS = {"g": ServingUnit.G, "ml": ServingUnit.ML}
+_SERVING_PLACES = Decimal("0.01")  # products.serving_quantity is NUMERIC(7, 2)
+_MAX_SERVING_SIZE_LENGTH = 100
 _FIRST_OFF_YEAR = 2012  # Open Food Facts started in 2012: earlier times are garbage
 
 # Data-quality heuristics (not scoring constants). EU energy factors (Regulation (EU)
@@ -140,6 +169,9 @@ def normalize(ean: str, off: Mapping[str, Any]) -> NormalizedProduct:
         food_categories=_food_categories(off),
         quality_flag=report.flag(),
         source_modified_at=_modified_at(off),
+        **_serving(off),
+        allergens=allergens_from_off(off.get("allergens_tags")),
+        traces=allergens_from_off(off.get("traces_tags")),
     )
     return NormalizedProduct(
         product=product,
@@ -446,6 +478,34 @@ def _food_categories(off: Mapping[str, Any]) -> list[str]:
         ):
             tags.append(value)
     return tags[:_MAX_CATEGORY_TAGS]
+
+
+def _serving(off: Mapping[str, Any]) -> dict[str, Any]:
+    """`serving_quantity`, `serving_unit` and `serving_size`: the amount only when its unit
+    is g or ml and it is above 0 and at most MAX_SERVING; the label's words when given."""
+    size = _text(off.get("serving_size"))
+    serving: dict[str, Any] = {
+        "serving_quantity": None,
+        "serving_unit": None,
+        "serving_size": size[:_MAX_SERVING_SIZE_LENGTH] if size else None,
+    }
+    unit = _SERVING_UNITS.get(str(off.get("serving_quantity_unit") or "").strip().lower())
+    amount = _decimal(off.get("serving_quantity"))
+    if unit is not None and amount is not None:
+        amount = amount.quantize(_SERVING_PLACES)
+        if 0 < amount <= MAX_SERVING:
+            serving["serving_quantity"] = amount
+            serving["serving_unit"] = unit
+    return serving
+
+
+def allergens_from_off(tags: object) -> list[Allergen]:
+    """OFF allergen (or trace) tags as Annex II keys, in Annex II order, without
+    duplicates; other allergens and untranslated tags are dropped. Not a list: none."""
+    found = {
+        _ALLERGEN_TAGS[tag] for tag in _list(tags) if isinstance(tag, str) and tag in _ALLERGEN_TAGS
+    }
+    return [allergen for allergen in Allergen if allergen in found]
 
 
 def front_image_url(off: Mapping[str, Any], ean: str) -> str | None:

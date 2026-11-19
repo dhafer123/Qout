@@ -1,0 +1,105 @@
+{
+  "ean": "6194002510064",
+  "name": "FourrÃ©",
+  "brand": "Kif",
+  "image_url": null,
+  "category": "general",
+  "source": "open_food_facts",
+  "status": "unverified",
+  "quality_flag": "complete",
+  "nova_group": 4,
+  "additives": [
+    {
+      "code": "E322",
+      "name": "Lecithins",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E322(i)",
+      "name": "Lecithin",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E330",
+      "name": "Citric acid",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E476",
+      "name": "Polyglycerol polyricinoleate",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E500",
+      "name": "Sodium carbonates",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E500(ii)",
+      "name": "Sodium hydrogen carbonate",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E503",
+      "name": "Ammonium carbonates",
+      "overexposure_risk": "unknown"
+    },
+    {
+      "code": "E503(ii)",
+      "name": "Ammonium hydrogen carbonate",
+      "overexposure_risk": "unknown"
+    }
+  ],
+  "nutrition": {
+    "version": 1,
+    "basis": "per_100g",
+    "source": "open_food_facts",
+    "energy_kj": 1980.0,
+    "sugars_g": 23.0,
+    "saturated_fat_g": 10.9,
+    "total_fat_g": 23.0,
+    "salt_g": 0.30775,
+    "fibre_g": 4.0,
+    "protein_g": 6.4,
+    "fvl_percent": 0.0,
+    "non_nutritive_sweeteners": null
+  },
+  "score": {
+    "engine_version": "nutriscore-2023.2",
+    "grade": "E",
+    "total": 21,
+    "breakdown": {
+      "grade": "E",
+      "score": 21,
+      "negative": {
+        "salt": 1,
+        "energy": 5,
+        "sugars": 6,
+        "saturated_fat": 10
+      },
+      "positive": {
+        "fvl": 0,
+        "fibre": 1,
+        "protein": 2
+      },
+      "negative_total": 22,
+      "positive_total": 3,
+      "protein_counted": false
+    },
+    "computed_at": "2026-11-19T15:41:16.284062Z"
+  },
+  "serving": {
+    "quantity": 21.7,
+    "unit": "g",
+    "size": "21.7g"
+  },
+  "allergens": [
+    "gluten",
+    "soybeans",
+    "milk"
+  ],
+  "traces": [
+    "nuts"
+  ],
+  "updated_at": "2026-11-19T15:41:16.284062Z"
+}

@@ -6,7 +6,8 @@ from decimal import Decimal
 from typing import Any
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.ingestion.off_normaliser import NormalizedProduct, normalize
@@ -16,6 +17,7 @@ from app.modules.products.models import (
     Product,
     ProductStatus,
     Score,
+    ServingUnit,
 )
 from app.modules.products.repository import ScoreRepository
 from app.modules.products.upsert import ProductUpserter, UpsertOutcome
@@ -307,6 +309,56 @@ async def test_food_categories_filled_by_reimporting_the_same_record(
     assert (await stored(db_session)).food_categories == tags
     assert len(await versions(db_session)) == 1
     assert len(await scores(db_session)) == 1
+
+
+async def test_serving_and_allergens_filled_by_reimporting_the_same_record(
+    db_session: AsyncSession,
+) -> None:
+    # Products stored before T40 have nulls (not imported yet); the same OFF record
+    # imported again (backfill) fills them in, then importing it once more changes nothing.
+    await upsert(db_session, off_record())
+    product = await stored(db_session)
+    await db_session.execute(
+        update(Product).where(Product.id == product.id).values(allergens=None, traces=None)
+    )
+    await db_session.refresh(product)
+    assert (product.allergens, product.traces) == (None, None)
+
+    record = off_record(
+        serving_quantity=13.333,
+        serving_quantity_unit="g",
+        serving_size="1 biscuit (13.3 g)",
+        allergens_tags=["en:milk", "en:gluten"],
+        traces_tags=["en:nuts"],
+    )
+    assert await upsert(db_session, record) == UpsertOutcome.UPDATED
+    product = await stored(db_session)
+    assert (product.serving_quantity, product.serving_unit, product.serving_size) == (
+        Decimal("13.33"),
+        ServingUnit.G,
+        "1 biscuit (13.3 g)",
+    )
+    assert (product.allergens, product.traces) == (["gluten", "milk"], ["nuts"])
+    assert await upsert(db_session, record) == UpsertOutcome.UNCHANGED
+    assert len(await versions(db_session)) == 1
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        {"serving_quantity": Decimal(0), "serving_unit": ServingUnit.G},
+        {"serving_quantity": Decimal("1000.01"), "serving_unit": ServingUnit.G},
+        {"serving_quantity": Decimal(30), "serving_unit": None},
+        {"serving_quantity": None, "serving_unit": ServingUnit.ML},
+    ],
+)
+async def test_database_refuses_an_unusable_serving(
+    db_session: AsyncSession, values: dict[str, Any]
+) -> None:
+    await upsert(db_session, off_record())
+    product = await stored(db_session)
+    with pytest.raises(IntegrityError):
+        await db_session.execute(update(Product).where(Product.id == product.id).values(**values))
 
 
 @pytest.mark.parametrize("source", [DataSource.CONTRIBUTION, DataSource.MANUAL])

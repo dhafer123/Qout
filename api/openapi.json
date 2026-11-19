@@ -1724,6 +1724,27 @@
         ],
         "title": "AdditiveDetail"
       },
+      "Allergen": {
+        "type": "string",
+        "enum": [
+          "gluten",
+          "crustaceans",
+          "eggs",
+          "fish",
+          "peanuts",
+          "soybeans",
+          "milk",
+          "nuts",
+          "celery",
+          "mustard",
+          "sesame",
+          "sulphites",
+          "lupin",
+          "molluscs"
+        ],
+        "title": "Allergen",
+        "description": "The 14 allergens of Regulation (EU) 1169/2011 Annex II, in its order\n(docs/specs/README.md, \"Allergens and servings\"). Keys shared with the app."
+      },
       "AlternativeProduct": {
         "properties": {
           "ean": {
@@ -3530,6 +3551,44 @@
               }
             ]
           },
+          "serving": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ServingDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "allergens": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Allergen"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allergens"
+          },
+          "traces": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Allergen"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Traces"
+          },
           "updated_at": {
             "type": "string",
             "format": "date-time",
@@ -3841,6 +3900,45 @@
           "nutrition"
         ],
         "title": "ScorePreviewRequest"
+      },
+      "ServingDetail": {
+        "properties": {
+          "quantity": {
+            "type": "number",
+            "title": "Quantity"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/ServingUnit"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quantity",
+          "unit",
+          "size"
+        ],
+        "title": "ServingDetail",
+        "description": "One serving as the source declares it (T40)."
+      },
+      "ServingUnit": {
+        "type": "string",
+        "enum": [
+          "g",
+          "ml"
+        ],
+        "title": "ServingUnit",
+        "description": "Unit of a serving, as Open Food Facts gives it (`serving_quantity_unit`)."
       },
       "TokenPair": {
         "properties": {

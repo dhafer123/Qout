@@ -1265,6 +1265,9 @@ class ProductDetail {
     this.novaGroup,
     this.nutrition,
     this.score,
+    this.serving,
+    this.allergens,
+    this.traces,
   });
 
   factory ProductDetail.fromJson(Map<String, Object?> json) => ProductDetail(
@@ -1292,6 +1295,19 @@ class ProductDetail {
     score: json['score'] == null
         ? null
         : ScoreDetail.fromJson(json['score']! as Map<String, Object?>),
+    serving: json['serving'] == null
+        ? null
+        : ServingDetail.fromJson(json['serving']! as Map<String, Object?>),
+    allergens: json['allergens'] == null
+        ? null
+        : List<Allergen>.unmodifiable(
+            (json['allergens']! as List<Object?>).map(Allergen.fromJson),
+          ),
+    traces: json['traces'] == null
+        ? null
+        : List<Allergen>.unmodifiable(
+            (json['traces']! as List<Object?>).map(Allergen.fromJson),
+          ),
     updatedAt: DateTime.parse(json['updated_at']! as String),
   );
 
@@ -1319,6 +1335,12 @@ class ProductDetail {
 
   final ScoreDetail? score;
 
+  final ServingDetail? serving;
+
+  final List<Allergen>? allergens;
+
+  final List<Allergen>? traces;
+
   final DateTime updatedAt;
 
   Map<String, Object?> toJson() => <String, Object?>{
@@ -1334,6 +1356,9 @@ class ProductDetail {
     'additives': additives.map((item) => item.toJson()).toList(),
     'nutrition': nutrition?.toJson(),
     'score': score?.toJson(),
+    'serving': serving?.toJson(),
+    'allergens': allergens?.map((item) => item.toJson()).toList(),
+    'traces': traces?.map((item) => item.toJson()).toList(),
     'updated_at': updatedAt.toIso8601String(),
   };
 
@@ -1353,6 +1378,9 @@ class ProductDetail {
           _deepEquals(additives, other.additives) &&
           _deepEquals(nutrition, other.nutrition) &&
           _deepEquals(score, other.score) &&
+          _deepEquals(serving, other.serving) &&
+          _deepEquals(allergens, other.allergens) &&
+          _deepEquals(traces, other.traces) &&
           _deepEquals(updatedAt, other.updatedAt);
 
   @override
@@ -1369,6 +1397,9 @@ class ProductDetail {
     _deepHash(additives),
     _deepHash(nutrition),
     _deepHash(score),
+    _deepHash(serving),
+    _deepHash(allergens),
+    _deepHash(traces),
     _deepHash(updatedAt),
   ]);
 
@@ -1419,6 +1450,47 @@ class AdditiveDetail {
 
   @override
   String toString() => 'AdditiveDetail(${toJson()})';
+}
+
+/// The 14 allergens of Regulation (EU) 1169/2011 Annex II, in its order
+/// (docs/specs/README.md, "Allergens and servings"). Keys shared with the app.
+enum Allergen {
+  gluten('gluten'),
+  crustaceans('crustaceans'),
+  eggs('eggs'),
+  fish('fish'),
+  peanuts('peanuts'),
+  soybeans('soybeans'),
+  milk('milk'),
+  nuts('nuts'),
+  celery('celery'),
+  mustard('mustard'),
+  sesame('sesame'),
+  sulphites('sulphites'),
+  lupin('lupin'),
+  molluscs('molluscs'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const Allergen(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory Allergen.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('Allergen: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
 }
 
 enum DataSource {
@@ -1978,6 +2050,77 @@ class ScorePreviewRequest {
 
   @override
   String toString() => 'ScorePreviewRequest(${toJson()})';
+}
+
+/// One serving as the source declares it (T40).
+@immutable
+class ServingDetail {
+  const ServingDetail({
+    required this.quantity,
+    required this.unit,
+    this.size,
+  });
+
+  factory ServingDetail.fromJson(Map<String, Object?> json) => ServingDetail(
+    quantity: (json['quantity']! as num).toDouble(),
+    unit: ServingUnit.fromJson(json['unit']),
+    size: json['size'] == null ? null : json['size']! as String,
+  );
+
+  final double quantity;
+
+  final ServingUnit unit;
+
+  final String? size;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'quantity': quantity,
+    'unit': unit.toJson(),
+    'size': size,
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ServingDetail &&
+          _deepEquals(quantity, other.quantity) &&
+          _deepEquals(unit, other.unit) &&
+          _deepEquals(size, other.size);
+
+  @override
+  int get hashCode =>
+      Object.hashAll([_deepHash(quantity), _deepHash(unit), _deepHash(size)]);
+
+  @override
+  String toString() => 'ServingDetail(${toJson()})';
+}
+
+/// Unit of a serving, as Open Food Facts gives it (`serving_quantity_unit`).
+enum ServingUnit {
+  g('g'),
+  ml('ml'),
+
+  /// A value this app version does not know (from a newer backend).
+  unrecognized('')
+  ;
+
+  const ServingUnit(this.value);
+
+  /// Values this app does not know become [unrecognized] instead of failing.
+  factory ServingUnit.fromJson(Object? json) {
+    if (json is! String) {
+      throw FormatException('ServingUnit: expected a string, got $json');
+    }
+    for (final member in values) {
+      if (member != unrecognized && member.value == json) return member;
+    }
+    return unrecognized;
+  }
+
+  /// The value sent by the API.
+  final String value;
+
+  String toJson() => value;
 }
 
 /// Send `access_token` as `Authorization: Bearer ...`; when it expires,

@@ -41,6 +41,11 @@ PRODUCT_FIELDS = (
     "nutriscore_grade",
     "nutriscore_version",
     "last_modified_t",
+    "serving_size",
+    "serving_quantity",
+    "serving_quantity_unit",
+    "allergens_tags",
+    "traces_tags",
 )
 
 _RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})

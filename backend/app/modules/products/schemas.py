@@ -14,11 +14,14 @@ from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, StringConstr
 
 from app.modules.products.models import (
     EAN_PATTERN,
+    MAX_SERVING,
+    Allergen,
     DataSource,
     NutritionBasis,
     ProductStatus,
     QualityFlag,
     ScanOutcome,
+    ServingUnit,
 )
 from app.modules.scoring.additives import OverexposureRisk
 from app.modules.scoring.models import Category, Grade
@@ -56,6 +59,15 @@ class ProductFields(_Schema):
     """Open Food Facts category tags, general to specific (`en:sauces`)."""
     source_modified_at: datetime | None = None
     """When the source last changed the product (OFF `last_modified_t`)."""
+    serving_quantity: (
+        Annotated[Decimal, Field(gt=0, le=MAX_SERVING, allow_inf_nan=False), _as_json_number] | None
+    ) = None
+    serving_unit: ServingUnit | None = None
+    serving_size: str | None = None
+    allergens: list[Allergen] | None = None
+    """Annex II keys, in Annex II order; empty: none listed; null: not known."""
+    traces: list[Allergen] | None = None
+    """Annex II keys the product may contain traces of; same conventions."""
 
 
 class ProductCreate(ProductFields):
@@ -186,6 +198,15 @@ class ScoreDetail(BaseModel):
     computed_at: datetime
 
 
+class ServingDetail(BaseModel):
+    """One serving as the source declares it (T40)."""
+
+    quantity: Annotated[Decimal, _as_json_number]
+    unit: ServingUnit
+    size: str | None
+    """The label's words ("1 portion (13.8 g)"), when given."""
+
+
 class ProductDetail(BaseModel):
     """`GET /v1/products/{ean}`: everything the app shows for a scanned product."""
 
@@ -204,6 +225,13 @@ class ProductDetail(BaseModel):
     nutrition: NutritionDetail | None
     score: ScoreDetail | None
     """None when the product's Nutri-Score category is unknown (nothing to score with)."""
+    serving: ServingDetail | None = None
+    """None when no usable serving is known (amount above 0 and at most 1000, in g or mL)."""
+    allergens: list[Allergen] | None = None
+    """Regulation 1169/2011 Annex II allergens the product contains, in Annex II order.
+    Empty: none listed (perhaps never entered: check the label); null: not known yet."""
+    traces: list[Allergen] | None = None
+    """Annex II allergens the product may contain traces of; same conventions."""
     updated_at: datetime
     """Latest change to the product, its nutrition or its score."""
 

@@ -103,12 +103,33 @@ void main() {
       expect((product.category, product.score), (null, null));
     });
 
+    test('serving, allergens and traces (T40)', () {
+      final product = ProductDetail.fromJson(
+        fixture('product-serving-allergens'),
+      );
+      expect(product.serving?.quantity, 21.7);
+      expect(product.serving?.unit, ServingUnit.g);
+      expect(product.serving?.size, '21.7g');
+      expect(product.allergens, [
+        Allergen.gluten,
+        Allergen.soybeans,
+        Allergen.milk,
+      ]);
+      expect(product.traces, [Allergen.nuts]);
+      final stored = ProductDetail.fromJson(fixture('product-water'));
+      expect(
+        (stored.serving, stored.allergens, stored.traces),
+        (null, null, null),
+      );
+    });
+
     for (final name in [
       'product-general-graded',
       'product-beverage-graded',
       'product-water',
       'product-insufficient-data',
       'product-unknown-category',
+      'product-serving-allergens',
     ]) {
       test('$name: toJson gives back the recorded JSON', () {
         final json = fixture(name);

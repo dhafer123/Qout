@@ -2,7 +2,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
-import 'package:qout/core/api/qout_api.dart';
+import 'package:qout/core/api/qout_api.dart' hide Allergen;
 import 'package:qout/core/database/database.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';

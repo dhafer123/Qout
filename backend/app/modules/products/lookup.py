@@ -18,6 +18,7 @@ from app.modules.ingestion.off_normaliser import normalize
 from app.modules.products.cache import NOT_FOUND, ProductCache
 from app.modules.products.ean import normalize_ean
 from app.modules.products.models import (
+    Allergen,
     NutritionFacts,
     Product,
     ProductStatus,
@@ -33,6 +34,7 @@ from app.modules.products.schemas import (
     NutritionDetail,
     ProductDetail,
     ScoreDetail,
+    ServingDetail,
 )
 from app.modules.products.upsert import ProductUpserter
 from app.modules.scoring import OverexposureRisk, additive
@@ -158,7 +160,26 @@ def product_detail(
         additives=[_additive_detail(code) for code in product.additives],
         nutrition=None if facts is None else _nutrition_detail(facts),
         score=None if stored is None else _score_detail(stored),
+        serving=_serving_detail(product),
+        allergens=_allergens(product.allergens),
+        traces=_allergens(product.traces),
         updated_at=max(changes),
+    )
+
+
+def _allergens(keys: list[str] | None) -> list[Allergen] | None:
+    """Stored keys as `Allergen`; a key this version doesn't know is left out."""
+    if keys is None:
+        return None
+    known = {allergen.value for allergen in Allergen}
+    return [Allergen(key) for key in keys if key in known]
+
+
+def _serving_detail(product: Product) -> ServingDetail | None:
+    if product.serving_quantity is None or product.serving_unit is None:
+        return None
+    return ServingDetail(
+        quantity=product.serving_quantity, unit=product.serving_unit, size=product.serving_size
     )
 
 

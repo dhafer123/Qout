@@ -61,5 +61,8 @@
     },
     "computed_at": "2026-11-12T17:18:43.332419Z"
   },
+  "serving": null,
+  "allergens": null,
+  "traces": null,
   "updated_at": "2026-11-12T17:18:43.332419Z"
 }
