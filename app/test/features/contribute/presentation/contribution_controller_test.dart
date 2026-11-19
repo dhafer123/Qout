@@ -10,7 +10,9 @@ import 'package:qout/core/database/database_provider.dart';
 import 'package:qout/core/photos/label_photo_picker.dart';
 import 'package:qout/features/contribute/data/contribution_repository.dart';
 import 'package:qout/features/contribute/domain/contribution_draft.dart';
+import 'package:qout/features/contribute/domain/existing_product.dart';
 import 'package:qout/features/contribute/presentation/contribution_controller.dart';
+import 'package:qout/features/contribute/presentation/existing_product_provider.dart';
 import 'package:qout/features/outbox/data/outbox_files.dart';
 import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
 import 'package:qout/scoring/scoring.dart' as scoring;
@@ -31,6 +33,19 @@ void main() {
   ContributionController controller() => container.read(provider.notifier);
   ContributionState state() => container.read(provider);
 
+  /// The flow for [_ean], listened to: keeps the auto-dispose provider alive.
+  ProviderContainer newContainer([List<Override> overrides = const []]) =>
+      ProviderContainer(
+        overrides: [
+          ...fake.overrides,
+          appDatabaseProvider.overrideWithValue(database),
+          qoutApiProvider.overrideWithValue(fake.api),
+          outboxFilesProvider.overrideWithValue(files),
+          outboxTriggerProvider.overrideWithValue(trigger),
+          ...overrides,
+        ],
+      )..listen(provider, (_, _) {});
+
   setUp(() {
     fake = FakeContribution(
       texts: {
@@ -43,16 +58,7 @@ void main() {
     database = AppDatabase(NativeDatabase.memory());
     files = FakeOutboxFiles();
     trigger = FakeOutboxTrigger();
-    // Listened to: keeps the auto-dispose provider alive.
-    container = ProviderContainer(
-      overrides: [
-        ...fake.overrides,
-        appDatabaseProvider.overrideWithValue(database),
-        qoutApiProvider.overrideWithValue(fake.api),
-        outboxFilesProvider.overrideWithValue(files),
-        outboxTriggerProvider.overrideWithValue(trigger),
-      ],
-    )..listen(provider, (_, _) {});
+    container = newContainer();
   });
 
   tearDown(() async {
@@ -88,6 +94,60 @@ void main() {
     expect(state().draft.clientId, hasLength(36));
     expect(state().reading, LabelReadingStatus.none);
     expect(state().hasRequiredPhotos, isFalse);
+    expect(state().existing, isNull);
+    expect(state().draft.name, '');
+    expect(state().draft.brand, '');
+    expect(state().draft.category, scoring.Category.general);
+  });
+
+  group('completing a known product', () {
+    const existing = ExistingProduct(
+      name: 'Chamia aux pistaches',
+      brand: 'Le Moulin',
+      category: scoring.Category.fatsOilsNutsSeeds,
+    );
+
+    ProviderContainer known(ExistingProduct product) => newContainer([
+      existingProductProvider.overrideWith((ref, ean) => product),
+    ]);
+
+    test('starts with its name, brand and category', () {
+      container.dispose();
+      container = known(existing);
+
+      expect(state().existing, existing);
+      expect(state().draft.name, 'Chamia aux pistaches');
+      expect(state().draft.brand, 'Le Moulin');
+      expect(state().draft.category, scoring.Category.fatsOilsNutsSeeds);
+      expect(state().draft.edited, isFalse);
+    });
+
+    test('unknown name, brand or category: the usual defaults', () {
+      container.dispose();
+      container = known(const ExistingProduct());
+
+      expect(state().existing, const ExistingProduct());
+      expect(state().draft.name, '');
+      expect(state().draft.brand, '');
+      expect(state().draft.category, scoring.Category.general);
+    });
+
+    test('sends them unless changed', () async {
+      container.dispose();
+      container = known(existing);
+      await threePhotos();
+      controller()
+        ..toReview()
+        ..setBrand('Le Moulin Tunisie')
+        ..noFruitOrVegetables();
+
+      expect(await controller().send(), isTrue);
+      final body = fake.api.submitted.single;
+      expect(body.ean, _ean);
+      expect(body.name, 'Chamia aux pistaches');
+      expect(body.brand, 'Le Moulin Tunisie');
+      expect(body.category, Category.fatsOilsNutsSeeds);
+    });
   });
 
   group('photos', () {

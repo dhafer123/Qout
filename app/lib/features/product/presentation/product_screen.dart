@@ -124,6 +124,7 @@ class _ProductView extends StatelessWidget {
         ProductHeader(product: product),
         GradeCard(explanation: explanation),
         ScoreSection(explanation: explanation, nutrition: product.nutrition),
+        if (canCompleteValues(explanation)) _CompleteValues(ean: product.ean),
         AlternativesSection(
           ean: product.ean,
           grade: explanation.displayGrade,
@@ -191,24 +192,72 @@ class _StaleBanner extends StatelessWidget {
   }
 }
 
+/// A known product without a grade because values or its category are
+/// missing: a contribution can complete it (T31c).
+bool canCompleteValues(ScoreExplanation explanation) => switch (explanation) {
+  InsufficientDataExplanation() || NotScoredExplanation() => true,
+  _ => false,
+};
+
+/// Opens the contribution flow for [ean]. Contributing needs an account:
+/// sign in first if needed, explaining why with [signInReason].
+Future<void> _contribute(
+  BuildContext context,
+  WidgetRef ref, {
+  required String ean,
+  required String signInReason,
+}) async {
+  final state = await ref.read(authRepositoryProvider).current();
+  if (state is! SignedIn) {
+    if (!context.mounted) return;
+    final signedIn = await context.push<bool>(
+      AppRoutes.signIn,
+      extra: '$signInReason Scanning works without an account.',
+    );
+    if (signedIn != true) return;
+  }
+  if (context.mounted) unawaited(context.push(AppRoutes.contribute(ean)));
+}
+
+/// Offers to add the values a product lacks, from photos of its label.
+class _CompleteValues extends ConsumerWidget {
+  const _CompleteValues({required this.ean});
+
+  final String ean;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Have it at hand? You can help by adding the values from a '
+            'photo of its nutrition table.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 10),
+          FilledButton.icon(
+            onPressed: () => _contribute(
+              context,
+              ref,
+              ean: ean,
+              signInReason: 'Sign in to add nutrition values.',
+            ),
+            icon: const Icon(PhosphorIconsRegular.cameraPlus, size: 20),
+            label: const Text('Add the nutrition values'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _NotFound extends ConsumerWidget {
   const _NotFound({required this.ean});
 
   final String ean;
-
-  /// Adding a product needs an account: sign in first if needed.
-  Future<void> _add(BuildContext context, WidgetRef ref) async {
-    final state = await ref.read(authRepositoryProvider).current();
-    if (state is! SignedIn) {
-      if (!context.mounted) return;
-      final signedIn = await context.push<bool>(
-        AppRoutes.signIn,
-        extra: 'Sign in to add products. Scanning works without an account.',
-      );
-      if (signedIn != true) return;
-    }
-    if (context.mounted) unawaited(context.push(AppRoutes.contribute(ean)));
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -220,7 +269,12 @@ class _NotFound extends ConsumerWidget {
           'label.',
       actions: [
         FilledButton.icon(
-          onPressed: () => _add(context, ref),
+          onPressed: () => _contribute(
+            context,
+            ref,
+            ean: ean,
+            signInReason: 'Sign in to add products.',
+          ),
           icon: const Icon(PhosphorIconsRegular.cameraPlus, size: 20),
           label: const Text('Add this product'),
         ),

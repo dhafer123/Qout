@@ -10,6 +10,8 @@ import 'package:qout/core/photos/label_photo_picker.dart';
 import 'package:qout/features/contribute/data/contribution_repository.dart';
 import 'package:qout/features/contribute/domain/contribution_draft.dart';
 import 'package:qout/features/contribute/domain/draft_values.dart';
+import 'package:qout/features/contribute/domain/existing_product.dart';
+import 'package:qout/features/contribute/presentation/existing_product_provider.dart';
 import 'package:qout/features/outbox/data/outbox.dart';
 import 'package:qout/features/outbox/domain/send_outcome.dart';
 import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
@@ -102,6 +104,10 @@ abstract class ContributionState with _$ContributionState {
 
     /// The contributor tried to send: missing values are shown as errors.
     @Default(false) bool showRequired,
+
+    /// Set when the product is already known and this contribution completes
+    /// its missing values.
+    ExistingProduct? existing,
   }) = _ContributionState;
 }
 
@@ -112,11 +118,11 @@ extension ContributionStateX on ContributionState {
       draft.photos.containsKey(PhotoKind.nutrition);
 }
 
-/// One product being added, by barcode. Photos are read on the phone (ML
-/// Kit); the nutrition table's text goes to the server's label parser and
-/// fills the form; the contributor reviews; sending queues the product in the
-/// outbox, which uploads the photos and submits it at once or, offline,
-/// later (moderated before it is published).
+/// One product being added, or a known one being completed, by barcode.
+/// Photos are read on the phone (ML Kit); the nutrition table's text goes to
+/// the server's label parser and fills the form; the contributor reviews;
+/// sending queues the product in the outbox, which uploads the photos and
+/// submits it at once or, offline, later (moderated before it is published).
 class ContributionController
     extends AutoDisposeFamilyNotifier<ContributionState, String> {
   /// Bumped when a new nutrition photo replaces the one being read, so a late
@@ -130,8 +136,17 @@ class ContributionController
   @override
   ContributionState build(String ean) {
     ref.onDispose(() => _disposed = true);
+    // Read once: a refreshed lookup must not reset the form.
+    final existing = ref.read(existingProductProvider(ean));
     return ContributionState(
-      draft: ContributionDraft(ean: ean, clientId: newContributionId()),
+      existing: existing,
+      draft: ContributionDraft(
+        ean: ean,
+        clientId: newContributionId(),
+        name: existing?.name ?? '',
+        brand: existing?.brand ?? '',
+        category: existing?.category ?? scoring.Category.general,
+      ),
     );
   }
 

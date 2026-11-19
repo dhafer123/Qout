@@ -332,6 +332,106 @@ void main() {
     });
   });
 
+  group('missing values', () {
+    const ean = '6194017503778';
+    const addValues = 'Add the nutrition values';
+
+    /// A known product without a grade, with a name and brand.
+    ProductResult incomplete() => ProductResult.found(
+      product: ProductDetail.fromJson({
+        ...recordedProductJson('product-insufficient-data'),
+        'ean': ean,
+        'name': 'Chamia aux pistaches',
+        'brand': 'Le Moulin',
+      }),
+      fetchedAt: _fetchedAt,
+      freshness: ProductFreshness.fresh,
+    );
+
+    void signIn() => tokens.session = AuthSession(
+      email: 'a@example.tn',
+      accessToken: 'access',
+      accessExpiresAt: DateTime.now().add(const Duration(minutes: 15)),
+      refreshToken: 'refresh',
+      refreshExpiresAt: DateTime.now().add(const Duration(days: 30)),
+    );
+
+    for (final fixture in [
+      'product-insufficient-data',
+      'product-unknown-category',
+    ]) {
+      testWidgets('offered when there is no grade: $fixture', (tester) async {
+        repository.results = [_found(fixture)];
+        await openProduct(tester);
+
+        expect(find.text(addValues), findsOneWidget);
+        expect(
+          find.textContaining('adding the values from a photo'),
+          findsOneWidget,
+        );
+      });
+    }
+
+    for (final fixture in [
+      'product-general-graded',
+      'product-beverage-graded',
+      'product-water',
+    ]) {
+      testWidgets('not offered for a graded product: $fixture', (
+        tester,
+      ) async {
+        repository.results = [_found(fixture)];
+        await openProduct(tester);
+
+        expect(find.text(addValues), findsNothing);
+      });
+    }
+
+    testWidgets('needs an account', (tester) async {
+      repository.results = [incomplete()];
+      await openProduct(tester, ean);
+
+      await tester.tap(find.text(addValues));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SignInScreen), findsOneWidget);
+      expect(
+        find.textContaining('Sign in to add nutrition values'),
+        findsOneWidget,
+      );
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.byType(ContributeScreen), findsNothing);
+      expect(find.text(addValues), findsOneWidget);
+    });
+
+    testWidgets('signed in: completes the known product', (tester) async {
+      signIn();
+      repository.results = [incomplete()];
+      await openProduct(tester, ean);
+
+      await tester.tap(find.text(addValues));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SignInScreen), findsNothing);
+      expect(find.byType(ContributeScreen), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AppBar),
+          matching: find.text(addValues),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Chamia aux pistaches cannot be graded yet'),
+        findsOneWidget,
+      );
+      // The lookup was not made again.
+      expect(repository.requested, [ean]);
+    });
+  });
+
   group('no product', () {
     testWidgets('unknown product: adding it needs an account', (
       tester,
@@ -406,6 +506,14 @@ void main() {
 
       expect(find.byType(SignInScreen), findsNothing);
       expect(find.byType(ContributeScreen), findsOneWidget);
+      // A new product, not a known one being completed.
+      expect(
+        find.descendant(
+          of: find.byType(AppBar),
+          matching: find.text('Add a product'),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('unknown product: scan another opens the scanner', (

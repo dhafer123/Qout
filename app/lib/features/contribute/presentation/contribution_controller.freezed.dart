@@ -20,7 +20,9 @@ mixin _$ContributionState {
  bool get sending;/// Why the last send failed (shown with "Try again").
  String? get sendError;/// Why a saved contribution isn't sent yet (no connection, ...).
  String? get savedReason;/// The contributor tried to send: missing values are shown as errors.
- bool get showRequired;
+ bool get showRequired;/// Set when the product is already known and this contribution completes
+/// its missing values.
+ ExistingProduct? get existing;
 /// Create a copy of ContributionState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,16 +33,16 @@ $ContributionStateCopyWith<ContributionState> get copyWith => _$ContributionStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContributionState&&(identical(other.draft, draft) || other.draft == draft)&&(identical(other.step, step) || other.step == step)&&(identical(other.reading, reading) || other.reading == reading)&&const DeepCollectionEquality().equals(other.readingPhotos, readingPhotos)&&(identical(other.aiOffer, aiOffer) || other.aiOffer == aiOffer)&&(identical(other.sending, sending) || other.sending == sending)&&(identical(other.sendError, sendError) || other.sendError == sendError)&&(identical(other.savedReason, savedReason) || other.savedReason == savedReason)&&(identical(other.showRequired, showRequired) || other.showRequired == showRequired));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContributionState&&(identical(other.draft, draft) || other.draft == draft)&&(identical(other.step, step) || other.step == step)&&(identical(other.reading, reading) || other.reading == reading)&&const DeepCollectionEquality().equals(other.readingPhotos, readingPhotos)&&(identical(other.aiOffer, aiOffer) || other.aiOffer == aiOffer)&&(identical(other.sending, sending) || other.sending == sending)&&(identical(other.sendError, sendError) || other.sendError == sendError)&&(identical(other.savedReason, savedReason) || other.savedReason == savedReason)&&(identical(other.showRequired, showRequired) || other.showRequired == showRequired)&&(identical(other.existing, existing) || other.existing == existing));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,draft,step,reading,const DeepCollectionEquality().hash(readingPhotos),aiOffer,sending,sendError,savedReason,showRequired);
+int get hashCode => Object.hash(runtimeType,draft,step,reading,const DeepCollectionEquality().hash(readingPhotos),aiOffer,sending,sendError,savedReason,showRequired,existing);
 
 @override
 String toString() {
-  return 'ContributionState(draft: $draft, step: $step, reading: $reading, readingPhotos: $readingPhotos, aiOffer: $aiOffer, sending: $sending, sendError: $sendError, savedReason: $savedReason, showRequired: $showRequired)';
+  return 'ContributionState(draft: $draft, step: $step, reading: $reading, readingPhotos: $readingPhotos, aiOffer: $aiOffer, sending: $sending, sendError: $sendError, savedReason: $savedReason, showRequired: $showRequired, existing: $existing)';
 }
 
 
@@ -51,11 +53,11 @@ abstract mixin class $ContributionStateCopyWith<$Res>  {
   factory $ContributionStateCopyWith(ContributionState value, $Res Function(ContributionState) _then) = _$ContributionStateCopyWithImpl;
 @useResult
 $Res call({
- ContributionDraft draft, ContributionStep step, LabelReadingStatus reading, Set<PhotoKind> readingPhotos, LabelReading? aiOffer, bool sending, String? sendError, String? savedReason, bool showRequired
+ ContributionDraft draft, ContributionStep step, LabelReadingStatus reading, Set<PhotoKind> readingPhotos, LabelReading? aiOffer, bool sending, String? sendError, String? savedReason, bool showRequired, ExistingProduct? existing
 });
 
 
-$ContributionDraftCopyWith<$Res> get draft;
+$ContributionDraftCopyWith<$Res> get draft;$ExistingProductCopyWith<$Res>? get existing;
 
 }
 /// @nodoc
@@ -68,7 +70,7 @@ class _$ContributionStateCopyWithImpl<$Res>
 
 /// Create a copy of ContributionState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? draft = null,Object? step = null,Object? reading = null,Object? readingPhotos = null,Object? aiOffer = freezed,Object? sending = null,Object? sendError = freezed,Object? savedReason = freezed,Object? showRequired = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? draft = null,Object? step = null,Object? reading = null,Object? readingPhotos = null,Object? aiOffer = freezed,Object? sending = null,Object? sendError = freezed,Object? savedReason = freezed,Object? showRequired = null,Object? existing = freezed,}) {
   return _then(_self.copyWith(
 draft: null == draft ? _self.draft : draft // ignore: cast_nullable_to_non_nullable
 as ContributionDraft,step: null == step ? _self.step : step // ignore: cast_nullable_to_non_nullable
@@ -79,7 +81,8 @@ as LabelReading?,sending: null == sending ? _self.sending : sending // ignore: c
 as bool,sendError: freezed == sendError ? _self.sendError : sendError // ignore: cast_nullable_to_non_nullable
 as String?,savedReason: freezed == savedReason ? _self.savedReason : savedReason // ignore: cast_nullable_to_non_nullable
 as String?,showRequired: null == showRequired ? _self.showRequired : showRequired // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,existing: freezed == existing ? _self.existing : existing // ignore: cast_nullable_to_non_nullable
+as ExistingProduct?,
   ));
 }
 /// Create a copy of ContributionState
@@ -90,6 +93,18 @@ $ContributionDraftCopyWith<$Res> get draft {
   
   return $ContributionDraftCopyWith<$Res>(_self.draft, (value) {
     return _then(_self.copyWith(draft: value));
+  });
+}/// Create a copy of ContributionState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ExistingProductCopyWith<$Res>? get existing {
+    if (_self.existing == null) {
+    return null;
+  }
+
+  return $ExistingProductCopyWith<$Res>(_self.existing!, (value) {
+    return _then(_self.copyWith(existing: value));
   });
 }
 }
@@ -173,10 +188,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ContributionDraft draft,  ContributionStep step,  LabelReadingStatus reading,  Set<PhotoKind> readingPhotos,  LabelReading? aiOffer,  bool sending,  String? sendError,  String? savedReason,  bool showRequired)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ContributionDraft draft,  ContributionStep step,  LabelReadingStatus reading,  Set<PhotoKind> readingPhotos,  LabelReading? aiOffer,  bool sending,  String? sendError,  String? savedReason,  bool showRequired,  ExistingProduct? existing)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ContributionState() when $default != null:
-return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.aiOffer,_that.sending,_that.sendError,_that.savedReason,_that.showRequired);case _:
+return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.aiOffer,_that.sending,_that.sendError,_that.savedReason,_that.showRequired,_that.existing);case _:
   return orElse();
 
 }
@@ -194,10 +209,10 @@ return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.a
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ContributionDraft draft,  ContributionStep step,  LabelReadingStatus reading,  Set<PhotoKind> readingPhotos,  LabelReading? aiOffer,  bool sending,  String? sendError,  String? savedReason,  bool showRequired)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ContributionDraft draft,  ContributionStep step,  LabelReadingStatus reading,  Set<PhotoKind> readingPhotos,  LabelReading? aiOffer,  bool sending,  String? sendError,  String? savedReason,  bool showRequired,  ExistingProduct? existing)  $default,) {final _that = this;
 switch (_that) {
 case _ContributionState():
-return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.aiOffer,_that.sending,_that.sendError,_that.savedReason,_that.showRequired);case _:
+return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.aiOffer,_that.sending,_that.sendError,_that.savedReason,_that.showRequired,_that.existing);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -214,10 +229,10 @@ return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.a
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ContributionDraft draft,  ContributionStep step,  LabelReadingStatus reading,  Set<PhotoKind> readingPhotos,  LabelReading? aiOffer,  bool sending,  String? sendError,  String? savedReason,  bool showRequired)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ContributionDraft draft,  ContributionStep step,  LabelReadingStatus reading,  Set<PhotoKind> readingPhotos,  LabelReading? aiOffer,  bool sending,  String? sendError,  String? savedReason,  bool showRequired,  ExistingProduct? existing)?  $default,) {final _that = this;
 switch (_that) {
 case _ContributionState() when $default != null:
-return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.aiOffer,_that.sending,_that.sendError,_that.savedReason,_that.showRequired);case _:
+return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.aiOffer,_that.sending,_that.sendError,_that.savedReason,_that.showRequired,_that.existing);case _:
   return null;
 
 }
@@ -229,7 +244,7 @@ return $default(_that.draft,_that.step,_that.reading,_that.readingPhotos,_that.a
 
 
 class _ContributionState implements ContributionState {
-  const _ContributionState({required this.draft, this.step = ContributionStep.photos, this.reading = LabelReadingStatus.none, final  Set<PhotoKind> readingPhotos = const <PhotoKind>{}, this.aiOffer, this.sending = false, this.sendError, this.savedReason, this.showRequired = false}): _readingPhotos = readingPhotos;
+  const _ContributionState({required this.draft, this.step = ContributionStep.photos, this.reading = LabelReadingStatus.none, final  Set<PhotoKind> readingPhotos = const <PhotoKind>{}, this.aiOffer, this.sending = false, this.sendError, this.savedReason, this.showRequired = false, this.existing}): _readingPhotos = readingPhotos;
   
 
 @override final  ContributionDraft draft;
@@ -254,6 +269,9 @@ class _ContributionState implements ContributionState {
 @override final  String? savedReason;
 /// The contributor tried to send: missing values are shown as errors.
 @override@JsonKey() final  bool showRequired;
+/// Set when the product is already known and this contribution completes
+/// its missing values.
+@override final  ExistingProduct? existing;
 
 /// Create a copy of ContributionState
 /// with the given fields replaced by the non-null parameter values.
@@ -265,16 +283,16 @@ _$ContributionStateCopyWith<_ContributionState> get copyWith => __$ContributionS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ContributionState&&(identical(other.draft, draft) || other.draft == draft)&&(identical(other.step, step) || other.step == step)&&(identical(other.reading, reading) || other.reading == reading)&&const DeepCollectionEquality().equals(other._readingPhotos, _readingPhotos)&&(identical(other.aiOffer, aiOffer) || other.aiOffer == aiOffer)&&(identical(other.sending, sending) || other.sending == sending)&&(identical(other.sendError, sendError) || other.sendError == sendError)&&(identical(other.savedReason, savedReason) || other.savedReason == savedReason)&&(identical(other.showRequired, showRequired) || other.showRequired == showRequired));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ContributionState&&(identical(other.draft, draft) || other.draft == draft)&&(identical(other.step, step) || other.step == step)&&(identical(other.reading, reading) || other.reading == reading)&&const DeepCollectionEquality().equals(other._readingPhotos, _readingPhotos)&&(identical(other.aiOffer, aiOffer) || other.aiOffer == aiOffer)&&(identical(other.sending, sending) || other.sending == sending)&&(identical(other.sendError, sendError) || other.sendError == sendError)&&(identical(other.savedReason, savedReason) || other.savedReason == savedReason)&&(identical(other.showRequired, showRequired) || other.showRequired == showRequired)&&(identical(other.existing, existing) || other.existing == existing));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,draft,step,reading,const DeepCollectionEquality().hash(_readingPhotos),aiOffer,sending,sendError,savedReason,showRequired);
+int get hashCode => Object.hash(runtimeType,draft,step,reading,const DeepCollectionEquality().hash(_readingPhotos),aiOffer,sending,sendError,savedReason,showRequired,existing);
 
 @override
 String toString() {
-  return 'ContributionState(draft: $draft, step: $step, reading: $reading, readingPhotos: $readingPhotos, aiOffer: $aiOffer, sending: $sending, sendError: $sendError, savedReason: $savedReason, showRequired: $showRequired)';
+  return 'ContributionState(draft: $draft, step: $step, reading: $reading, readingPhotos: $readingPhotos, aiOffer: $aiOffer, sending: $sending, sendError: $sendError, savedReason: $savedReason, showRequired: $showRequired, existing: $existing)';
 }
 
 
@@ -285,11 +303,11 @@ abstract mixin class _$ContributionStateCopyWith<$Res> implements $ContributionS
   factory _$ContributionStateCopyWith(_ContributionState value, $Res Function(_ContributionState) _then) = __$ContributionStateCopyWithImpl;
 @override @useResult
 $Res call({
- ContributionDraft draft, ContributionStep step, LabelReadingStatus reading, Set<PhotoKind> readingPhotos, LabelReading? aiOffer, bool sending, String? sendError, String? savedReason, bool showRequired
+ ContributionDraft draft, ContributionStep step, LabelReadingStatus reading, Set<PhotoKind> readingPhotos, LabelReading? aiOffer, bool sending, String? sendError, String? savedReason, bool showRequired, ExistingProduct? existing
 });
 
 
-@override $ContributionDraftCopyWith<$Res> get draft;
+@override $ContributionDraftCopyWith<$Res> get draft;@override $ExistingProductCopyWith<$Res>? get existing;
 
 }
 /// @nodoc
@@ -302,7 +320,7 @@ class __$ContributionStateCopyWithImpl<$Res>
 
 /// Create a copy of ContributionState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? draft = null,Object? step = null,Object? reading = null,Object? readingPhotos = null,Object? aiOffer = freezed,Object? sending = null,Object? sendError = freezed,Object? savedReason = freezed,Object? showRequired = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? draft = null,Object? step = null,Object? reading = null,Object? readingPhotos = null,Object? aiOffer = freezed,Object? sending = null,Object? sendError = freezed,Object? savedReason = freezed,Object? showRequired = null,Object? existing = freezed,}) {
   return _then(_ContributionState(
 draft: null == draft ? _self.draft : draft // ignore: cast_nullable_to_non_nullable
 as ContributionDraft,step: null == step ? _self.step : step // ignore: cast_nullable_to_non_nullable
@@ -313,7 +331,8 @@ as LabelReading?,sending: null == sending ? _self.sending : sending // ignore: c
 as bool,sendError: freezed == sendError ? _self.sendError : sendError // ignore: cast_nullable_to_non_nullable
 as String?,savedReason: freezed == savedReason ? _self.savedReason : savedReason // ignore: cast_nullable_to_non_nullable
 as String?,showRequired: null == showRequired ? _self.showRequired : showRequired // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,existing: freezed == existing ? _self.existing : existing // ignore: cast_nullable_to_non_nullable
+as ExistingProduct?,
   ));
 }
 
@@ -325,6 +344,18 @@ $ContributionDraftCopyWith<$Res> get draft {
   
   return $ContributionDraftCopyWith<$Res>(_self.draft, (value) {
     return _then(_self.copyWith(draft: value));
+  });
+}/// Create a copy of ContributionState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ExistingProductCopyWith<$Res>? get existing {
+    if (_self.existing == null) {
+    return null;
+  }
+
+  return $ExistingProductCopyWith<$Res>(_self.existing!, (value) {
+    return _then(_self.copyWith(existing: value));
   });
 }
 }

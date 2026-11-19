@@ -19,6 +19,7 @@ import 'package:qout/features/product/domain/product_result.dart';
 import '../helpers/fake_auth_api.dart';
 import '../helpers/fake_contribution.dart';
 import '../helpers/fake_product_repository.dart';
+import '../helpers/fixtures.dart';
 import '../helpers/in_memory_token_store.dart';
 import '../helpers/pump_app.dart';
 
@@ -163,6 +164,86 @@ void main() {
     await tester.tap(find.text('Done'));
     await tester.pumpAndSettle();
     expect(find.byType(HomeScreen), findsOneWidget);
+  });
+
+  testWidgets('known product without a grade: its values are completed', (
+    tester,
+  ) async {
+    tester.view
+      ..physicalSize = const Size(800, 3200)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final fake = FakeContribution(
+      photos: ['front.jpg', 'nutrition.jpg'],
+      texts: {'front.jpg': 'Chamia', 'nutrition.jpg': cleanLabelText},
+    );
+    fake.api.parseResults.add(recordedLabelParse('label-parse-ok'));
+    final known = ProductDetail.fromJson({
+      ...recordedProductJson('product-insufficient-data'),
+      'ean': _ean,
+      'name': 'Chamia aux pistaches',
+      'brand': 'Le Moulin',
+    });
+
+    await tester.pumpQoutApp(
+      tokens: InMemoryTokenStore(
+        AuthSession(
+          email: 'a@example.tn',
+          accessToken: 'access',
+          accessExpiresAt: DateTime.now().add(const Duration(minutes: 15)),
+          refreshToken: 'refresh',
+          refreshExpiresAt: DateTime.now().add(const Duration(days: 30)),
+        ),
+      ),
+      overrides: [
+        ...fake.overrides,
+        productRepositoryProvider.overrideWithValue(
+          FakeProductRepository(
+            results: [
+              ProductResult.found(
+                product: known,
+                fetchedAt: DateTime.utc(2026, 11, 19),
+                freshness: ProductFreshness.fresh,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+    await tester.pushRoute(AppRoutes.product(_ean));
+    await tester.pumpAndSettle();
+    expect(find.text('No grade'), findsOneWidget);
+
+    await tester.tap(find.text('Add the nutrition values'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ContributeScreen), findsOneWidget);
+    await _takePhotos(tester, ['Front of the package', 'Nutrition table']);
+    await tester.tap(find.text('Continue'));
+    await tester.pump();
+
+    // Name and brand come from the product.
+    String value(String label) => tester
+        .widget<TextField>(find.widgetWithText(TextField, label))
+        .controller!
+        .text;
+    expect(value('Product name (optional)'), 'Chamia aux pistaches');
+    expect(value('Brand (optional)'), 'Le Moulin');
+
+    await tester.tap(find.text('None (0 %)'));
+    await tester.pump();
+    await tester.tap(find.text('Send for review'));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Thank you!'), findsOneWidget);
+    expect(find.textContaining('Your values are waiting'), findsOneWidget);
+
+    final body = fake.api.submitted.single;
+    expect(body.ean, _ean);
+    expect(body.name, 'Chamia aux pistaches');
+    expect(body.brand, 'Le Moulin');
+    expect(body.category, Category.general);
+    expect(body.nutrition.saltG, 0.85);
   });
 
   testWidgets('offline: saved, shown on the home screen, sent later', (

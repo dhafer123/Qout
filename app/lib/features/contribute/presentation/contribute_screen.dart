@@ -13,7 +13,8 @@ import 'package:qout/features/contribute/presentation/contribute_labels.dart';
 import 'package:qout/features/contribute/presentation/contribution_controller.dart';
 import 'package:qout/features/contribute/presentation/review_form.dart';
 
-/// Adding an unknown product (`/contribute/:ean`): photos, review, sent.
+/// Adding an unknown product, or the missing values of a known one
+/// (`/contribute/:ean`): photos, review, sent.
 class ContributeScreen extends ConsumerWidget {
   const ContributeScreen({required this.ean, super.key});
 
@@ -23,6 +24,7 @@ class ContributeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = contributionControllerProvider(ean);
     final step = ref.watch(provider.select((s) => s.step));
+    final completing = ref.watch(provider.select((s) => s.existing != null));
     final controller = ref.read(provider.notifier);
     return PopScope(
       // Back from the review goes to the photos, not out of the flow.
@@ -33,7 +35,8 @@ class ContributeScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(switch (step) {
-            ContributionStep.photos => 'Add a product',
+            ContributionStep.photos =>
+              completing ? 'Add the nutrition values' : 'Add a product',
             ContributionStep.review => 'Check the values',
             ContributionStep.sent => 'Sent',
             ContributionStep.saved => 'Saved',
@@ -54,13 +57,18 @@ class ContributeScreen extends ConsumerWidget {
   Widget _body(WidgetRef ref, ContributionStep step) => switch (step) {
     ContributionStep.photos => _PhotosStep(ean: ean),
     ContributionStep.review => ReviewForm(ean: ean),
-    ContributionStep.sent => const _Done(),
+    ContributionStep.sent => _Done(completing: _completing(ref)),
     ContributionStep.saved => _Done(
+      completing: _completing(ref),
       savedReason: ref.watch(
         contributionControllerProvider(ean).select((s) => s.savedReason),
       ),
     ),
   };
+
+  bool _completing(WidgetRef ref) => ref.watch(
+    contributionControllerProvider(ean).select((s) => s.existing != null),
+  );
 }
 
 class _PhotosStep extends ConsumerWidget {
@@ -80,8 +88,16 @@ class _PhotosStep extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             children: [
               Text(
-                'Barcode $ean. Take three photos; the values are read from '
-                'the nutrition table and you check them next.',
+                switch (state.existing) {
+                  null =>
+                    'Barcode $ean. Take three photos; the values are read '
+                        'from the nutrition table and you check them next.',
+                  final existing =>
+                    '${existing.name ?? 'Barcode $ean'} cannot be graded '
+                        'yet: values are missing. Take three photos; the '
+                        'values are read from the nutrition table and you '
+                        'check them next.',
+                },
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: QoutPalette.of(context).muted,
                 ),
@@ -232,8 +248,10 @@ class _Thumbnail extends StatelessWidget {
 /// After sending: received by the server, or kept on the phone
 /// ([savedReason]) for the outbox to send later.
 class _Done extends StatelessWidget {
-  const _Done({this.savedReason});
+  const _Done({required this.completing, this.savedReason});
 
+  /// The values of a known product, not a new product.
+  final bool completing;
   final String? savedReason;
 
   @override
@@ -244,8 +262,12 @@ class _Done extends StatelessWidget {
           : PhosphorIconsRegular.cloudArrowUp,
       title: 'Thank you!',
       message: savedReason == null
-          ? 'Your product is waiting for review. It appears in the app '
-                'once a moderator has checked it against your photos.'
+          ? completing
+                ? 'Your values are waiting for review. The grade appears '
+                      'once a moderator has checked them against your photos.'
+                : 'Your product is waiting for review. It appears in the '
+                      'app once a moderator has checked it against your '
+                      'photos.'
           : '$savedReason It is saved on this phone and will be sent '
                 'automatically. You can follow it from the home screen.',
       actions: [
