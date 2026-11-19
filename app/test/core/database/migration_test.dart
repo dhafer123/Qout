@@ -5,18 +5,29 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/core/database/database.dart';
 
-/// An app database at schema version 1 (T18), with rows: [sql] is run after
-/// creating the tables.
-QueryExecutor _version1(String sql) => NativeDatabase.memory(
+/// An app database at schema [version] (fixture
+/// `test/fixtures/database/schema_v<version>.sql`), with rows: [sql] is run
+/// after creating the tables.
+QueryExecutor _atVersion(int version, String sql) => NativeDatabase.memory(
   setup: (raw) {
     raw
       ..execute(
-        File('test/fixtures/database/schema_v1.sql').readAsStringSync(),
+        File(
+          'test/fixtures/database/schema_v$version.sql',
+        ).readAsStringSync(),
       )
       ..execute(sql)
-      ..execute('PRAGMA user_version = 1');
+      ..execute('PRAGMA user_version = $version');
   },
 );
+
+QueryExecutor _version1(String sql) => _atVersion(1, sql);
+
+/// The schema version `user_version` says.
+Future<int> _userVersion(AppDatabase database) => database
+    .customSelect('PRAGMA user_version')
+    .map((row) => row.read<int>('user_version'))
+    .getSingle();
 
 /// Every table and index as SQLite stores it.
 Future<List<String>> _schema(AppDatabase database) async {
@@ -86,17 +97,11 @@ void main() {
       2,
     );
 
-    // Same schema as a database created at version 2.
+    // Same schema as a database created at the current version.
     final fresh = AppDatabase(NativeDatabase.memory());
     addTearDown(fresh.close);
     expect(await _schema(migrated), await _schema(fresh));
-    expect(
-      await migrated
-          .customSelect('PRAGMA user_version')
-          .map((row) => row.read<int>('user_version'))
-          .getSingle(),
-      2,
-    );
+    expect(await _userVersion(migrated), 3);
   });
 
   test('1 -> 2: client ids stay unique', () async {
@@ -122,4 +127,32 @@ void main() {
       isFalse,
     );
   });
+
+  test(
+    '2 -> 3: the profile table, empty: the welcome screens show once',
+    () async {
+      final migrated = AppDatabase(
+        _atVersion(2, '''
+        INSERT INTO scan_history (ean, scanned_at)
+          VALUES ('619', '2026-11-12T09:31:00.000Z');
+        INSERT INTO contribution_outbox (kind, client_id, payload, created_at)
+          VALUES ('error_report', 'r1', '{}', '2026-11-13T10:00:00.000Z');
+      '''),
+      );
+      addTearDown(migrated.close);
+
+      expect(await migrated.profileDao.get(), isNull);
+      // The other tables are untouched.
+      expect(
+        (await migrated.scanHistoryDao.watchRecent().first).single.ean,
+        '619',
+      );
+      expect((await migrated.outboxDao.all()).single.clientId, 'r1');
+
+      final fresh = AppDatabase(NativeDatabase.memory());
+      addTearDown(fresh.close);
+      expect(await _schema(migrated), await _schema(fresh));
+      expect(await _userVersion(migrated), 3);
+    },
+  );
 }

@@ -3,6 +3,18 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
+mixin _$ProfileDaoMixin on DatabaseAccessor<AppDatabase> {
+  $LocalProfileTable get localProfile => attachedDatabase.localProfile;
+  ProfileDaoManager get managers => ProfileDaoManager(this);
+}
+
+class ProfileDaoManager {
+  final _$ProfileDaoMixin _db;
+  ProfileDaoManager(this._db);
+  $$LocalProfileTableTableManager get localProfile =>
+      $$LocalProfileTableTableManager(_db.attachedDatabase, _db.localProfile);
+}
+
 mixin _$ProductCacheDaoMixin on DatabaseAccessor<AppDatabase> {
   $CachedProductsTable get cachedProducts => attachedDatabase.cachedProducts;
   ProductCacheDaoManager get managers => ProductCacheDaoManager(this);
@@ -1140,6 +1152,624 @@ class ContributionOutboxCompanion extends UpdateCompanion<OutboxRow> {
   }
 }
 
+class $LocalProfileTable extends LocalProfile
+    with TableInfo<$LocalProfileTable, LocalProfileRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalProfileTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _onboardingCompletedAtMeta =
+      const VerificationMeta('onboardingCompletedAt');
+  @override
+  late final GeneratedColumn<DateTime> onboardingCompletedAt =
+      GeneratedColumn<DateTime>(
+        'onboarding_completed_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _sexMeta = const VerificationMeta('sex');
+  @override
+  late final GeneratedColumn<String> sex = GeneratedColumn<String>(
+    'sex',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ageMeta = const VerificationMeta('age');
+  @override
+  late final GeneratedColumn<int> age = GeneratedColumn<int>(
+    'age',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ageEnteredAtMeta = const VerificationMeta(
+    'ageEnteredAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> ageEnteredAt = GeneratedColumn<DateTime>(
+    'age_entered_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _heightCmMeta = const VerificationMeta(
+    'heightCm',
+  );
+  @override
+  late final GeneratedColumn<double> heightCm = GeneratedColumn<double>(
+    'height_cm',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _weightKgMeta = const VerificationMeta(
+    'weightKg',
+  );
+  @override
+  late final GeneratedColumn<double> weightKg = GeneratedColumn<double>(
+    'weight_kg',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _palMeta = const VerificationMeta('pal');
+  @override
+  late final GeneratedColumn<String> pal = GeneratedColumn<String>(
+    'pal',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _allergensMeta = const VerificationMeta(
+    'allergens',
+  );
+  @override
+  late final GeneratedColumn<String> allergens = GeneratedColumn<String>(
+    'allergens',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _avoidedAdditivesMeta = const VerificationMeta(
+    'avoidedAdditives',
+  );
+  @override
+  late final GeneratedColumn<String> avoidedAdditives = GeneratedColumn<String>(
+    'avoided_additives',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    onboardingCompletedAt,
+    sex,
+    age,
+    ageEnteredAt,
+    heightCm,
+    weightKg,
+    pal,
+    allergens,
+    avoidedAdditives,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_profile';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalProfileRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('onboarding_completed_at')) {
+      context.handle(
+        _onboardingCompletedAtMeta,
+        onboardingCompletedAt.isAcceptableOrUnknown(
+          data['onboarding_completed_at']!,
+          _onboardingCompletedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_onboardingCompletedAtMeta);
+    }
+    if (data.containsKey('sex')) {
+      context.handle(
+        _sexMeta,
+        sex.isAcceptableOrUnknown(data['sex']!, _sexMeta),
+      );
+    }
+    if (data.containsKey('age')) {
+      context.handle(
+        _ageMeta,
+        age.isAcceptableOrUnknown(data['age']!, _ageMeta),
+      );
+    }
+    if (data.containsKey('age_entered_at')) {
+      context.handle(
+        _ageEnteredAtMeta,
+        ageEnteredAt.isAcceptableOrUnknown(
+          data['age_entered_at']!,
+          _ageEnteredAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('height_cm')) {
+      context.handle(
+        _heightCmMeta,
+        heightCm.isAcceptableOrUnknown(data['height_cm']!, _heightCmMeta),
+      );
+    }
+    if (data.containsKey('weight_kg')) {
+      context.handle(
+        _weightKgMeta,
+        weightKg.isAcceptableOrUnknown(data['weight_kg']!, _weightKgMeta),
+      );
+    }
+    if (data.containsKey('pal')) {
+      context.handle(
+        _palMeta,
+        pal.isAcceptableOrUnknown(data['pal']!, _palMeta),
+      );
+    }
+    if (data.containsKey('allergens')) {
+      context.handle(
+        _allergensMeta,
+        allergens.isAcceptableOrUnknown(data['allergens']!, _allergensMeta),
+      );
+    }
+    if (data.containsKey('avoided_additives')) {
+      context.handle(
+        _avoidedAdditivesMeta,
+        avoidedAdditives.isAcceptableOrUnknown(
+          data['avoided_additives']!,
+          _avoidedAdditivesMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalProfileRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalProfileRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      onboardingCompletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}onboarding_completed_at'],
+      )!,
+      sex: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sex'],
+      ),
+      age: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}age'],
+      ),
+      ageEnteredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}age_entered_at'],
+      ),
+      heightCm: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}height_cm'],
+      ),
+      weightKg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}weight_kg'],
+      ),
+      pal: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pal'],
+      ),
+      allergens: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}allergens'],
+      )!,
+      avoidedAdditives: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}avoided_additives'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalProfileTable createAlias(String alias) {
+    return $LocalProfileTable(attachedDatabase, alias);
+  }
+}
+
+class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
+  final int id;
+  final DateTime onboardingCompletedAt;
+
+  /// `male` or `female`; null: not given, or no profile.
+  final String? sex;
+
+  /// The age when entered, in whole years, and when: the age now is
+  /// computed from both (`ageNow`).
+  final int? age;
+  final DateTime? ageEnteredAt;
+  final double? heightCm;
+  final double? weightKg;
+
+  /// Physical activity level as written: `1.4`, `1.6`, `1.8`, `2.0`.
+  final String? pal;
+
+  /// Allergen keys (Annex II), as a JSON list.
+  final String allergens;
+
+  /// Additive codes to avoid (T40), as a JSON list.
+  final String avoidedAdditives;
+  const LocalProfileRow({
+    required this.id,
+    required this.onboardingCompletedAt,
+    this.sex,
+    this.age,
+    this.ageEnteredAt,
+    this.heightCm,
+    this.weightKg,
+    this.pal,
+    required this.allergens,
+    required this.avoidedAdditives,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['onboarding_completed_at'] = Variable<DateTime>(onboardingCompletedAt);
+    if (!nullToAbsent || sex != null) {
+      map['sex'] = Variable<String>(sex);
+    }
+    if (!nullToAbsent || age != null) {
+      map['age'] = Variable<int>(age);
+    }
+    if (!nullToAbsent || ageEnteredAt != null) {
+      map['age_entered_at'] = Variable<DateTime>(ageEnteredAt);
+    }
+    if (!nullToAbsent || heightCm != null) {
+      map['height_cm'] = Variable<double>(heightCm);
+    }
+    if (!nullToAbsent || weightKg != null) {
+      map['weight_kg'] = Variable<double>(weightKg);
+    }
+    if (!nullToAbsent || pal != null) {
+      map['pal'] = Variable<String>(pal);
+    }
+    map['allergens'] = Variable<String>(allergens);
+    map['avoided_additives'] = Variable<String>(avoidedAdditives);
+    return map;
+  }
+
+  LocalProfileCompanion toCompanion(bool nullToAbsent) {
+    return LocalProfileCompanion(
+      id: Value(id),
+      onboardingCompletedAt: Value(onboardingCompletedAt),
+      sex: sex == null && nullToAbsent ? const Value.absent() : Value(sex),
+      age: age == null && nullToAbsent ? const Value.absent() : Value(age),
+      ageEnteredAt: ageEnteredAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ageEnteredAt),
+      heightCm: heightCm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(heightCm),
+      weightKg: weightKg == null && nullToAbsent
+          ? const Value.absent()
+          : Value(weightKg),
+      pal: pal == null && nullToAbsent ? const Value.absent() : Value(pal),
+      allergens: Value(allergens),
+      avoidedAdditives: Value(avoidedAdditives),
+    );
+  }
+
+  factory LocalProfileRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalProfileRow(
+      id: serializer.fromJson<int>(json['id']),
+      onboardingCompletedAt: serializer.fromJson<DateTime>(
+        json['onboardingCompletedAt'],
+      ),
+      sex: serializer.fromJson<String?>(json['sex']),
+      age: serializer.fromJson<int?>(json['age']),
+      ageEnteredAt: serializer.fromJson<DateTime?>(json['ageEnteredAt']),
+      heightCm: serializer.fromJson<double?>(json['heightCm']),
+      weightKg: serializer.fromJson<double?>(json['weightKg']),
+      pal: serializer.fromJson<String?>(json['pal']),
+      allergens: serializer.fromJson<String>(json['allergens']),
+      avoidedAdditives: serializer.fromJson<String>(json['avoidedAdditives']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'onboardingCompletedAt': serializer.toJson<DateTime>(
+        onboardingCompletedAt,
+      ),
+      'sex': serializer.toJson<String?>(sex),
+      'age': serializer.toJson<int?>(age),
+      'ageEnteredAt': serializer.toJson<DateTime?>(ageEnteredAt),
+      'heightCm': serializer.toJson<double?>(heightCm),
+      'weightKg': serializer.toJson<double?>(weightKg),
+      'pal': serializer.toJson<String?>(pal),
+      'allergens': serializer.toJson<String>(allergens),
+      'avoidedAdditives': serializer.toJson<String>(avoidedAdditives),
+    };
+  }
+
+  LocalProfileRow copyWith({
+    int? id,
+    DateTime? onboardingCompletedAt,
+    Value<String?> sex = const Value.absent(),
+    Value<int?> age = const Value.absent(),
+    Value<DateTime?> ageEnteredAt = const Value.absent(),
+    Value<double?> heightCm = const Value.absent(),
+    Value<double?> weightKg = const Value.absent(),
+    Value<String?> pal = const Value.absent(),
+    String? allergens,
+    String? avoidedAdditives,
+  }) => LocalProfileRow(
+    id: id ?? this.id,
+    onboardingCompletedAt: onboardingCompletedAt ?? this.onboardingCompletedAt,
+    sex: sex.present ? sex.value : this.sex,
+    age: age.present ? age.value : this.age,
+    ageEnteredAt: ageEnteredAt.present ? ageEnteredAt.value : this.ageEnteredAt,
+    heightCm: heightCm.present ? heightCm.value : this.heightCm,
+    weightKg: weightKg.present ? weightKg.value : this.weightKg,
+    pal: pal.present ? pal.value : this.pal,
+    allergens: allergens ?? this.allergens,
+    avoidedAdditives: avoidedAdditives ?? this.avoidedAdditives,
+  );
+  LocalProfileRow copyWithCompanion(LocalProfileCompanion data) {
+    return LocalProfileRow(
+      id: data.id.present ? data.id.value : this.id,
+      onboardingCompletedAt: data.onboardingCompletedAt.present
+          ? data.onboardingCompletedAt.value
+          : this.onboardingCompletedAt,
+      sex: data.sex.present ? data.sex.value : this.sex,
+      age: data.age.present ? data.age.value : this.age,
+      ageEnteredAt: data.ageEnteredAt.present
+          ? data.ageEnteredAt.value
+          : this.ageEnteredAt,
+      heightCm: data.heightCm.present ? data.heightCm.value : this.heightCm,
+      weightKg: data.weightKg.present ? data.weightKg.value : this.weightKg,
+      pal: data.pal.present ? data.pal.value : this.pal,
+      allergens: data.allergens.present ? data.allergens.value : this.allergens,
+      avoidedAdditives: data.avoidedAdditives.present
+          ? data.avoidedAdditives.value
+          : this.avoidedAdditives,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalProfileRow(')
+          ..write('id: $id, ')
+          ..write('onboardingCompletedAt: $onboardingCompletedAt, ')
+          ..write('sex: $sex, ')
+          ..write('age: $age, ')
+          ..write('ageEnteredAt: $ageEnteredAt, ')
+          ..write('heightCm: $heightCm, ')
+          ..write('weightKg: $weightKg, ')
+          ..write('pal: $pal, ')
+          ..write('allergens: $allergens, ')
+          ..write('avoidedAdditives: $avoidedAdditives')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    onboardingCompletedAt,
+    sex,
+    age,
+    ageEnteredAt,
+    heightCm,
+    weightKg,
+    pal,
+    allergens,
+    avoidedAdditives,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalProfileRow &&
+          other.id == this.id &&
+          other.onboardingCompletedAt == this.onboardingCompletedAt &&
+          other.sex == this.sex &&
+          other.age == this.age &&
+          other.ageEnteredAt == this.ageEnteredAt &&
+          other.heightCm == this.heightCm &&
+          other.weightKg == this.weightKg &&
+          other.pal == this.pal &&
+          other.allergens == this.allergens &&
+          other.avoidedAdditives == this.avoidedAdditives);
+}
+
+class LocalProfileCompanion extends UpdateCompanion<LocalProfileRow> {
+  final Value<int> id;
+  final Value<DateTime> onboardingCompletedAt;
+  final Value<String?> sex;
+  final Value<int?> age;
+  final Value<DateTime?> ageEnteredAt;
+  final Value<double?> heightCm;
+  final Value<double?> weightKg;
+  final Value<String?> pal;
+  final Value<String> allergens;
+  final Value<String> avoidedAdditives;
+  const LocalProfileCompanion({
+    this.id = const Value.absent(),
+    this.onboardingCompletedAt = const Value.absent(),
+    this.sex = const Value.absent(),
+    this.age = const Value.absent(),
+    this.ageEnteredAt = const Value.absent(),
+    this.heightCm = const Value.absent(),
+    this.weightKg = const Value.absent(),
+    this.pal = const Value.absent(),
+    this.allergens = const Value.absent(),
+    this.avoidedAdditives = const Value.absent(),
+  });
+  LocalProfileCompanion.insert({
+    this.id = const Value.absent(),
+    required DateTime onboardingCompletedAt,
+    this.sex = const Value.absent(),
+    this.age = const Value.absent(),
+    this.ageEnteredAt = const Value.absent(),
+    this.heightCm = const Value.absent(),
+    this.weightKg = const Value.absent(),
+    this.pal = const Value.absent(),
+    this.allergens = const Value.absent(),
+    this.avoidedAdditives = const Value.absent(),
+  }) : onboardingCompletedAt = Value(onboardingCompletedAt);
+  static Insertable<LocalProfileRow> custom({
+    Expression<int>? id,
+    Expression<DateTime>? onboardingCompletedAt,
+    Expression<String>? sex,
+    Expression<int>? age,
+    Expression<DateTime>? ageEnteredAt,
+    Expression<double>? heightCm,
+    Expression<double>? weightKg,
+    Expression<String>? pal,
+    Expression<String>? allergens,
+    Expression<String>? avoidedAdditives,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (onboardingCompletedAt != null)
+        'onboarding_completed_at': onboardingCompletedAt,
+      if (sex != null) 'sex': sex,
+      if (age != null) 'age': age,
+      if (ageEnteredAt != null) 'age_entered_at': ageEnteredAt,
+      if (heightCm != null) 'height_cm': heightCm,
+      if (weightKg != null) 'weight_kg': weightKg,
+      if (pal != null) 'pal': pal,
+      if (allergens != null) 'allergens': allergens,
+      if (avoidedAdditives != null) 'avoided_additives': avoidedAdditives,
+    });
+  }
+
+  LocalProfileCompanion copyWith({
+    Value<int>? id,
+    Value<DateTime>? onboardingCompletedAt,
+    Value<String?>? sex,
+    Value<int?>? age,
+    Value<DateTime?>? ageEnteredAt,
+    Value<double?>? heightCm,
+    Value<double?>? weightKg,
+    Value<String?>? pal,
+    Value<String>? allergens,
+    Value<String>? avoidedAdditives,
+  }) {
+    return LocalProfileCompanion(
+      id: id ?? this.id,
+      onboardingCompletedAt:
+          onboardingCompletedAt ?? this.onboardingCompletedAt,
+      sex: sex ?? this.sex,
+      age: age ?? this.age,
+      ageEnteredAt: ageEnteredAt ?? this.ageEnteredAt,
+      heightCm: heightCm ?? this.heightCm,
+      weightKg: weightKg ?? this.weightKg,
+      pal: pal ?? this.pal,
+      allergens: allergens ?? this.allergens,
+      avoidedAdditives: avoidedAdditives ?? this.avoidedAdditives,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (onboardingCompletedAt.present) {
+      map['onboarding_completed_at'] = Variable<DateTime>(
+        onboardingCompletedAt.value,
+      );
+    }
+    if (sex.present) {
+      map['sex'] = Variable<String>(sex.value);
+    }
+    if (age.present) {
+      map['age'] = Variable<int>(age.value);
+    }
+    if (ageEnteredAt.present) {
+      map['age_entered_at'] = Variable<DateTime>(ageEnteredAt.value);
+    }
+    if (heightCm.present) {
+      map['height_cm'] = Variable<double>(heightCm.value);
+    }
+    if (weightKg.present) {
+      map['weight_kg'] = Variable<double>(weightKg.value);
+    }
+    if (pal.present) {
+      map['pal'] = Variable<String>(pal.value);
+    }
+    if (allergens.present) {
+      map['allergens'] = Variable<String>(allergens.value);
+    }
+    if (avoidedAdditives.present) {
+      map['avoided_additives'] = Variable<String>(avoidedAdditives.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalProfileCompanion(')
+          ..write('id: $id, ')
+          ..write('onboardingCompletedAt: $onboardingCompletedAt, ')
+          ..write('sex: $sex, ')
+          ..write('age: $age, ')
+          ..write('ageEnteredAt: $ageEnteredAt, ')
+          ..write('heightCm: $heightCm, ')
+          ..write('weightKg: $weightKg, ')
+          ..write('pal: $pal, ')
+          ..write('allergens: $allergens, ')
+          ..write('avoidedAdditives: $avoidedAdditives')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1147,6 +1777,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ScanHistoryTable scanHistory = $ScanHistoryTable(this);
   late final $ContributionOutboxTable contributionOutbox =
       $ContributionOutboxTable(this);
+  late final $LocalProfileTable localProfile = $LocalProfileTable(this);
   late final ProductCacheDao productCacheDao = ProductCacheDao(
     this as AppDatabase,
   );
@@ -1154,6 +1785,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this as AppDatabase,
   );
   late final OutboxDao outboxDao = OutboxDao(this as AppDatabase);
+  late final ProfileDao profileDao = ProfileDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1162,6 +1794,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     cachedProducts,
     scanHistory,
     contributionOutbox,
+    localProfile,
   ];
   @override
   DriftDatabaseOptions get options =>
@@ -1767,6 +2400,301 @@ typedef $$ContributionOutboxTableProcessedTableManager =
       OutboxRow,
       PrefetchHooks Function()
     >;
+typedef $$LocalProfileTableCreateCompanionBuilder =
+    LocalProfileCompanion Function({
+      Value<int> id,
+      required DateTime onboardingCompletedAt,
+      Value<String?> sex,
+      Value<int?> age,
+      Value<DateTime?> ageEnteredAt,
+      Value<double?> heightCm,
+      Value<double?> weightKg,
+      Value<String?> pal,
+      Value<String> allergens,
+      Value<String> avoidedAdditives,
+    });
+typedef $$LocalProfileTableUpdateCompanionBuilder =
+    LocalProfileCompanion Function({
+      Value<int> id,
+      Value<DateTime> onboardingCompletedAt,
+      Value<String?> sex,
+      Value<int?> age,
+      Value<DateTime?> ageEnteredAt,
+      Value<double?> heightCm,
+      Value<double?> weightKg,
+      Value<String?> pal,
+      Value<String> allergens,
+      Value<String> avoidedAdditives,
+    });
+
+class $$LocalProfileTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalProfileTable> {
+  $$LocalProfileTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get onboardingCompletedAt => $composableBuilder(
+    column: $table.onboardingCompletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sex => $composableBuilder(
+    column: $table.sex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get age => $composableBuilder(
+    column: $table.age,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get ageEnteredAt => $composableBuilder(
+    column: $table.ageEnteredAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get heightCm => $composableBuilder(
+    column: $table.heightCm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get weightKg => $composableBuilder(
+    column: $table.weightKg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pal => $composableBuilder(
+    column: $table.pal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get allergens => $composableBuilder(
+    column: $table.allergens,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get avoidedAdditives => $composableBuilder(
+    column: $table.avoidedAdditives,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalProfileTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalProfileTable> {
+  $$LocalProfileTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get onboardingCompletedAt => $composableBuilder(
+    column: $table.onboardingCompletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sex => $composableBuilder(
+    column: $table.sex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get age => $composableBuilder(
+    column: $table.age,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get ageEnteredAt => $composableBuilder(
+    column: $table.ageEnteredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get heightCm => $composableBuilder(
+    column: $table.heightCm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get weightKg => $composableBuilder(
+    column: $table.weightKg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pal => $composableBuilder(
+    column: $table.pal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get allergens => $composableBuilder(
+    column: $table.allergens,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get avoidedAdditives => $composableBuilder(
+    column: $table.avoidedAdditives,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalProfileTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalProfileTable> {
+  $$LocalProfileTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get onboardingCompletedAt => $composableBuilder(
+    column: $table.onboardingCompletedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sex =>
+      $composableBuilder(column: $table.sex, builder: (column) => column);
+
+  GeneratedColumn<int> get age =>
+      $composableBuilder(column: $table.age, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get ageEnteredAt => $composableBuilder(
+    column: $table.ageEnteredAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get heightCm =>
+      $composableBuilder(column: $table.heightCm, builder: (column) => column);
+
+  GeneratedColumn<double> get weightKg =>
+      $composableBuilder(column: $table.weightKg, builder: (column) => column);
+
+  GeneratedColumn<String> get pal =>
+      $composableBuilder(column: $table.pal, builder: (column) => column);
+
+  GeneratedColumn<String> get allergens =>
+      $composableBuilder(column: $table.allergens, builder: (column) => column);
+
+  GeneratedColumn<String> get avoidedAdditives => $composableBuilder(
+    column: $table.avoidedAdditives,
+    builder: (column) => column,
+  );
+}
+
+class $$LocalProfileTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalProfileTable,
+          LocalProfileRow,
+          $$LocalProfileTableFilterComposer,
+          $$LocalProfileTableOrderingComposer,
+          $$LocalProfileTableAnnotationComposer,
+          $$LocalProfileTableCreateCompanionBuilder,
+          $$LocalProfileTableUpdateCompanionBuilder,
+          (
+            LocalProfileRow,
+            BaseReferences<_$AppDatabase, $LocalProfileTable, LocalProfileRow>,
+          ),
+          LocalProfileRow,
+          PrefetchHooks Function()
+        > {
+  $$LocalProfileTableTableManager(_$AppDatabase db, $LocalProfileTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalProfileTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalProfileTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalProfileTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<DateTime> onboardingCompletedAt = const Value.absent(),
+                Value<String?> sex = const Value.absent(),
+                Value<int?> age = const Value.absent(),
+                Value<DateTime?> ageEnteredAt = const Value.absent(),
+                Value<double?> heightCm = const Value.absent(),
+                Value<double?> weightKg = const Value.absent(),
+                Value<String?> pal = const Value.absent(),
+                Value<String> allergens = const Value.absent(),
+                Value<String> avoidedAdditives = const Value.absent(),
+              }) => LocalProfileCompanion(
+                id: id,
+                onboardingCompletedAt: onboardingCompletedAt,
+                sex: sex,
+                age: age,
+                ageEnteredAt: ageEnteredAt,
+                heightCm: heightCm,
+                weightKg: weightKg,
+                pal: pal,
+                allergens: allergens,
+                avoidedAdditives: avoidedAdditives,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required DateTime onboardingCompletedAt,
+                Value<String?> sex = const Value.absent(),
+                Value<int?> age = const Value.absent(),
+                Value<DateTime?> ageEnteredAt = const Value.absent(),
+                Value<double?> heightCm = const Value.absent(),
+                Value<double?> weightKg = const Value.absent(),
+                Value<String?> pal = const Value.absent(),
+                Value<String> allergens = const Value.absent(),
+                Value<String> avoidedAdditives = const Value.absent(),
+              }) => LocalProfileCompanion.insert(
+                id: id,
+                onboardingCompletedAt: onboardingCompletedAt,
+                sex: sex,
+                age: age,
+                ageEnteredAt: ageEnteredAt,
+                heightCm: heightCm,
+                weightKg: weightKg,
+                pal: pal,
+                allergens: allergens,
+                avoidedAdditives: avoidedAdditives,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalProfileTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalProfileTable,
+      LocalProfileRow,
+      $$LocalProfileTableFilterComposer,
+      $$LocalProfileTableOrderingComposer,
+      $$LocalProfileTableAnnotationComposer,
+      $$LocalProfileTableCreateCompanionBuilder,
+      $$LocalProfileTableUpdateCompanionBuilder,
+      (
+        LocalProfileRow,
+        BaseReferences<_$AppDatabase, $LocalProfileTable, LocalProfileRow>,
+      ),
+      LocalProfileRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1777,4 +2705,6 @@ class $AppDatabaseManager {
       $$ScanHistoryTableTableManager(_db, _db.scanHistory);
   $$ContributionOutboxTableTableManager get contributionOutbox =>
       $$ContributionOutboxTableTableManager(_db, _db.contributionOutbox);
+  $$LocalProfileTableTableManager get localProfile =>
+      $$LocalProfileTableTableManager(_db, _db.localProfile);
 }

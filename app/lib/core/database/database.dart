@@ -75,6 +75,104 @@ class ContributionOutbox extends Table {
   TextColumn get lastError => text().nullable()();
 }
 
+/// The user's profile (T39): one row, id 1, created when onboarding is
+/// finished (skipped or not). Stays on the phone, never sent anywhere.
+/// Profile fields are all set (age, height, weight, PAL) or all null; sex
+/// may be null within a set profile ("not given").
+@DataClassName('LocalProfileRow')
+class LocalProfile extends Table {
+  IntColumn get id => integer()();
+
+  DateTimeColumn get onboardingCompletedAt => dateTime()();
+
+  /// `male` or `female`; null: not given, or no profile.
+  TextColumn get sex => text().nullable()();
+
+  /// The age when entered, in whole years, and when: the age now is
+  /// computed from both (`ageNow`).
+  IntColumn get age => integer().nullable()();
+  DateTimeColumn get ageEnteredAt => dateTime().nullable()();
+
+  RealColumn get heightCm => real().nullable()();
+  RealColumn get weightKg => real().nullable()();
+
+  /// Physical activity level as written: `1.4`, `1.6`, `1.8`, `2.0`.
+  TextColumn get pal => text().nullable()();
+
+  /// Allergen keys (Annex II), as a JSON list.
+  TextColumn get allergens => text().withDefault(const Constant('[]'))();
+
+  /// Additive codes to avoid (T40), as a JSON list.
+  TextColumn get avoidedAdditives => text().withDefault(const Constant('[]'))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DriftAccessor(tables: [LocalProfile])
+class ProfileDao extends DatabaseAccessor<AppDatabase> with _$ProfileDaoMixin {
+  ProfileDao(super.attachedDatabase);
+
+  static const _id = 1;
+
+  Future<LocalProfileRow?> get() => (select(
+    localProfile,
+  )..where((t) => t.id.equals(_id))).getSingleOrNull();
+
+  Stream<LocalProfileRow?> watch() => (select(
+    localProfile,
+  )..where((t) => t.id.equals(_id))).watchSingleOrNull();
+
+  /// Marks onboarding as finished; keeps an existing row as it is.
+  Future<void> completeOnboarding(DateTime at) => into(localProfile).insert(
+    LocalProfileCompanion.insert(
+      id: const Value(_id),
+      onboardingCompletedAt: at,
+    ),
+    mode: InsertMode.insertOrIgnore,
+  );
+
+  /// Saves the profile (also finishing onboarding, at [now], if needed).
+  Future<void> saveProfile({
+    required String? sex,
+    required int age,
+    required DateTime ageEnteredAt,
+    required double heightCm,
+    required double weightKg,
+    required String pal,
+    required String allergens,
+    required DateTime now,
+  }) => transaction(() async {
+    await completeOnboarding(now);
+    await (update(localProfile)..where((t) => t.id.equals(_id))).write(
+      LocalProfileCompanion(
+        sex: Value(sex),
+        age: Value(age),
+        ageEnteredAt: Value(ageEnteredAt),
+        heightCm: Value(heightCm),
+        weightKg: Value(weightKg),
+        pal: Value(pal),
+        allergens: Value(allergens),
+      ),
+    );
+  });
+
+  /// Deletes everything personal; onboarding stays finished.
+  Future<void> clearProfile() =>
+      (update(localProfile)..where((t) => t.id.equals(_id))).write(
+        const LocalProfileCompanion(
+          sex: Value(null),
+          age: Value(null),
+          ageEnteredAt: Value(null),
+          heightCm: Value(null),
+          weightKg: Value(null),
+          pal: Value(null),
+          allergens: Value('[]'),
+          avoidedAdditives: Value('[]'),
+        ),
+      );
+}
+
 @DriftAccessor(tables: [CachedProducts])
 class ProductCacheDao extends DatabaseAccessor<AppDatabase>
     with _$ProductCacheDaoMixin {
@@ -294,8 +392,8 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
 }
 
 @DriftDatabase(
-  tables: [CachedProducts, ScanHistory, ContributionOutbox],
-  daos: [ProductCacheDao, ScanHistoryDao, OutboxDao],
+  tables: [CachedProducts, ScanHistory, ContributionOutbox, LocalProfile],
+  daos: [ProductCacheDao, ScanHistoryDao, OutboxDao, ProfileDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
@@ -307,7 +405,7 @@ class AppDatabase extends _$AppDatabase {
   /// old schema in `test/fixtures/database/schema_v<n>.sql` for its test
   /// (`make-migrations` needs a newer drift_dev than this SDK resolves).
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -331,6 +429,11 @@ class AppDatabase extends _$AppDatabase {
             ],
           ),
         );
+      }
+      if (from < 3) {
+        // T39: the profile. No row yet, so people updating the app see the
+        // welcome screens once too.
+        await m.createTable(localProfile);
       }
     },
   );
