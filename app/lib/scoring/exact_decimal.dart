@@ -104,6 +104,36 @@ final class ExactDecimal implements Comparable<ExactDecimal> {
     return (_unscaled.isNegative ? -whole : whole).toInt();
   }
 
+  /// This value divided by [divisor], rounded to an integer, halves away from
+  /// zero. Exact: no intermediate rounding.
+  int divideRoundHalfAwayFromZero(ExactDecimal divisor) {
+    final (n, d) = _quotientParts(divisor);
+    var whole = n.abs() ~/ d.abs();
+    if ((n.abs() % d.abs()) * BigInt.two >= d.abs()) whole += BigInt.one;
+    return (n.isNegative != d.isNegative ? -whole : whole).toInt();
+  }
+
+  /// This value divided by [divisor], rounded down (towards negative
+  /// infinity). Exact: no intermediate rounding.
+  int divideFloor(ExactDecimal divisor) {
+    final (n, d) = _quotientParts(divisor);
+    final truncated = n ~/ d; // towards zero
+    final inexact = n.remainder(d) != BigInt.zero;
+    return (inexact && n.isNegative != d.isNegative
+            ? truncated - BigInt.one
+            : truncated)
+        .toInt();
+  }
+
+  /// Numerator and denominator of `this / divisor` as integers.
+  (BigInt, BigInt) _quotientParts(ExactDecimal divisor) {
+    if (divisor.isZero) {
+      throw ArgumentError.value(divisor, 'divisor', 'must not be zero');
+    }
+    final (n, d, _) = _aligned(divisor);
+    return (n, d);
+  }
+
   /// The nearest double (correctly rounded by `double.parse`).
   double toDouble() => double.parse(toString());
 

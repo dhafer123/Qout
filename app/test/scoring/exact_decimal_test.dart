@@ -114,6 +114,49 @@ void main() {
     }
   });
 
+  group('divideRoundHalfAwayFromZero', () {
+    final cases = {
+      ('3592.05', '37'): 97, // 97.08
+      ('1026.3', '37'): 28, // 27.74
+      ('18.5', '37'): 1, // exactly 0.5: away from zero
+      ('18.4', '37'): 0,
+      ('-18.5', '37'): -1,
+      ('7', '-2'): -4, // -3.5
+      ('10', '0.4'): 25, // exact
+      ('1', '3'): 0,
+    };
+    for (final MapEntry(key: (a, b), value: expected) in cases.entries) {
+      test('$a / $b -> $expected', () {
+        expect(d(a).divideRoundHalfAwayFromZero(d(b)), expected);
+      });
+    }
+  });
+
+  group('divideFloor', () {
+    final cases = {
+      ('739', '3.24'): 228, // 228.09: 22.8 after scaling by 10
+      ('740', '40'): 18, // 18.5 rounds down
+      ('750', '40'): 18, // 18.75
+      ('760', '40'): 19, // exact
+      ('-7', '2'): -4, // -3.5 towards negative infinity
+      ('7', '-2'): -4,
+      ('-8', '2'): -4, // exact
+    };
+    for (final MapEntry(key: (a, b), value: expected) in cases.entries) {
+      test('$a / $b -> $expected', () {
+        expect(d(a).divideFloor(d(b)), expected);
+      });
+    }
+  });
+
+  test('dividing by zero fails', () {
+    expect(() => d('1').divideFloor(d('0')), throwsArgumentError);
+    expect(
+      () => d('1').divideRoundHalfAwayFromZero(d('0.0')),
+      throwsArgumentError,
+    );
+  });
+
   test('toDouble and toString', () {
     expect(d('0.3').toDouble(), 0.3);
     expect(d('-0.05').toString(), '-0.05');
