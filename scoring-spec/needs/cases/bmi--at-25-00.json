@@ -1,0 +1,22 @@
+{
+  "id": "bmi--at-25-00",
+  "description": "BMI exactly 25.00: pre-obese.",
+  "source": "WHO TRS 894 Table 2.1; EFSA 2013 Appendix 2 (Henry)",
+  "input": {
+    "sex": "male",
+    "age": 40,
+    "height_cm": 200,
+    "weight_kg": 100.0,
+    "pal": 1.4
+  },
+  "expected": {
+    "basis": "personal",
+    "energy_kj": 12188,
+    "fat_g": 115,
+    "saturates_g": 33,
+    "sugars_g": 90,
+    "salt_g": 5,
+    "bmi": 25.0,
+    "bmi_category": "preobese"
+  }
+}

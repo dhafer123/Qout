@@ -1,0 +1,22 @@
+{
+  "id": "bmi--just-below-18-50",
+  "description": "BMI 18.475: underweight, shown as 18.4 (WHO TRS 894 Table 2.1).",
+  "source": "WHO TRS 894 Table 2.1; EFSA 2013 Appendix 2 (Henry)",
+  "input": {
+    "sex": "female",
+    "age": 40,
+    "height_cm": 200,
+    "weight_kg": 73.9,
+    "pal": 1.4
+  },
+  "expected": {
+    "basis": "personal",
+    "energy_kj": 9350,
+    "fat_g": 88,
+    "saturates_g": 25,
+    "sugars_g": 90,
+    "salt_g": 5,
+    "bmi": 18.4,
+    "bmi_category": "underweight"
+  }
+}

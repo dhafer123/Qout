@@ -1,0 +1,536 @@
+{
+  "description": "EFSA's own Average Requirements for energy: the needs calculation, given each age band's reference body (median measured height, body mass for a BMI of 22), must reproduce the published value within the tolerance.",
+  "source": "EFSA 2013 (efsa-drv-energy-2013.pdf): Table 4 (p. 32) for height and body mass at BMI 22, Table 12 (p. 46) for the AR; same values in efsa-drv-summary-2017.pdf Table 1",
+  "tolerance_kj": 100,
+  "tolerance_note": "Table 12 gives the median of each individual's AR in the survey data, rounded to 0.1 MJ, not the AR of the median person; recomputing from the medians differs by at most 62 kJ.",
+  "cases": [
+    {
+      "age_band": "18-29",
+      "input": {
+        "sex": "male",
+        "age": 18,
+        "height_cm": 178,
+        "weight_kg": 69.7,
+        "pal": 1.4
+      },
+      "energy_mj": 9.8
+    },
+    {
+      "age_band": "18-29",
+      "input": {
+        "sex": "male",
+        "age": 18,
+        "height_cm": 178,
+        "weight_kg": 69.7,
+        "pal": 1.6
+      },
+      "energy_mj": 11.2
+    },
+    {
+      "age_band": "18-29",
+      "input": {
+        "sex": "male",
+        "age": 18,
+        "height_cm": 178,
+        "weight_kg": 69.7,
+        "pal": 1.8
+      },
+      "energy_mj": 12.6
+    },
+    {
+      "age_band": "18-29",
+      "input": {
+        "sex": "male",
+        "age": 18,
+        "height_cm": 178,
+        "weight_kg": 69.7,
+        "pal": 2.0
+      },
+      "energy_mj": 14.0
+    },
+    {
+      "age_band": "30-39",
+      "input": {
+        "sex": "male",
+        "age": 30,
+        "height_cm": 178,
+        "weight_kg": 69.7,
+        "pal": 1.4
+      },
+      "energy_mj": 9.5
+    },
+    {
+      "age_band": "30-39",
+      "input": {
+        "sex": "male",
+        "age": 30,
+        "height_cm": 178,
+        "weight_kg": 69.7,
+        "pal": 1.6
+      },
+      "energy_mj": 10.8
+    },
+    {
+      "age_band": "30-39",
+      "input": {
+        "sex": "male",
+        "age": 30,
+        "height_cm": 178,
+        "weight_kg": 69.7,
+        "pal": 1.8
+      },
+      "energy_mj": 12.2
+    },
+    {
+      "age_band": "30-39",
+      "input": {
+        "sex": "male",
+        "age": 30,
+        "height_cm": 178,
+        "weight_kg": 69.7,
+        "pal": 2.0
+      },
+      "energy_mj": 13.5
+    },
+    {
+      "age_band": "40-49",
+      "input": {
+        "sex": "male",
+        "age": 40,
+        "height_cm": 177,
+        "weight_kg": 68.5,
+        "pal": 1.4
+      },
+      "energy_mj": 9.3
+    },
+    {
+      "age_band": "40-49",
+      "input": {
+        "sex": "male",
+        "age": 40,
+        "height_cm": 177,
+        "weight_kg": 68.5,
+        "pal": 1.6
+      },
+      "energy_mj": 10.7
+    },
+    {
+      "age_band": "40-49",
+      "input": {
+        "sex": "male",
+        "age": 40,
+        "height_cm": 177,
+        "weight_kg": 68.5,
+        "pal": 1.8
+      },
+      "energy_mj": 12.0
+    },
+    {
+      "age_band": "40-49",
+      "input": {
+        "sex": "male",
+        "age": 40,
+        "height_cm": 177,
+        "weight_kg": 68.5,
+        "pal": 2.0
+      },
+      "energy_mj": 13.4
+    },
+    {
+      "age_band": "50-59",
+      "input": {
+        "sex": "male",
+        "age": 50,
+        "height_cm": 175,
+        "weight_kg": 67.4,
+        "pal": 1.4
+      },
+      "energy_mj": 9.2
+    },
+    {
+      "age_band": "50-59",
+      "input": {
+        "sex": "male",
+        "age": 50,
+        "height_cm": 175,
+        "weight_kg": 67.4,
+        "pal": 1.6
+      },
+      "energy_mj": 10.5
+    },
+    {
+      "age_band": "50-59",
+      "input": {
+        "sex": "male",
+        "age": 50,
+        "height_cm": 175,
+        "weight_kg": 67.4,
+        "pal": 1.8
+      },
+      "energy_mj": 11.9
+    },
+    {
+      "age_band": "50-59",
+      "input": {
+        "sex": "male",
+        "age": 50,
+        "height_cm": 175,
+        "weight_kg": 67.4,
+        "pal": 2.0
+      },
+      "energy_mj": 13.2
+    },
+    {
+      "age_band": "60-69",
+      "input": {
+        "sex": "male",
+        "age": 60,
+        "height_cm": 174,
+        "weight_kg": 66.4,
+        "pal": 1.4
+      },
+      "energy_mj": 8.4
+    },
+    {
+      "age_band": "60-69",
+      "input": {
+        "sex": "male",
+        "age": 60,
+        "height_cm": 174,
+        "weight_kg": 66.4,
+        "pal": 1.6
+      },
+      "energy_mj": 9.6
+    },
+    {
+      "age_band": "60-69",
+      "input": {
+        "sex": "male",
+        "age": 60,
+        "height_cm": 174,
+        "weight_kg": 66.4,
+        "pal": 1.8
+      },
+      "energy_mj": 10.9
+    },
+    {
+      "age_band": "60-69",
+      "input": {
+        "sex": "male",
+        "age": 60,
+        "height_cm": 174,
+        "weight_kg": 66.4,
+        "pal": 2.0
+      },
+      "energy_mj": 12.1
+    },
+    {
+      "age_band": "70-79",
+      "input": {
+        "sex": "male",
+        "age": 70,
+        "height_cm": 172,
+        "weight_kg": 65.1,
+        "pal": 1.4
+      },
+      "energy_mj": 8.3
+    },
+    {
+      "age_band": "70-79",
+      "input": {
+        "sex": "male",
+        "age": 70,
+        "height_cm": 172,
+        "weight_kg": 65.1,
+        "pal": 1.6
+      },
+      "energy_mj": 9.5
+    },
+    {
+      "age_band": "70-79",
+      "input": {
+        "sex": "male",
+        "age": 70,
+        "height_cm": 172,
+        "weight_kg": 65.1,
+        "pal": 1.8
+      },
+      "energy_mj": 10.7
+    },
+    {
+      "age_band": "70-79",
+      "input": {
+        "sex": "male",
+        "age": 70,
+        "height_cm": 172,
+        "weight_kg": 65.1,
+        "pal": 2.0
+      },
+      "energy_mj": 11.9
+    },
+    {
+      "age_band": "18-29",
+      "input": {
+        "sex": "female",
+        "age": 18,
+        "height_cm": 164,
+        "weight_kg": 59.4,
+        "pal": 1.4
+      },
+      "energy_mj": 7.9
+    },
+    {
+      "age_band": "18-29",
+      "input": {
+        "sex": "female",
+        "age": 18,
+        "height_cm": 164,
+        "weight_kg": 59.4,
+        "pal": 1.6
+      },
+      "energy_mj": 9.0
+    },
+    {
+      "age_band": "18-29",
+      "input": {
+        "sex": "female",
+        "age": 18,
+        "height_cm": 164,
+        "weight_kg": 59.4,
+        "pal": 1.8
+      },
+      "energy_mj": 10.1
+    },
+    {
+      "age_band": "18-29",
+      "input": {
+        "sex": "female",
+        "age": 18,
+        "height_cm": 164,
+        "weight_kg": 59.4,
+        "pal": 2.0
+      },
+      "energy_mj": 11.2
+    },
+    {
+      "age_band": "30-39",
+      "input": {
+        "sex": "female",
+        "age": 30,
+        "height_cm": 164,
+        "weight_kg": 59.2,
+        "pal": 1.4
+      },
+      "energy_mj": 7.6
+    },
+    {
+      "age_band": "30-39",
+      "input": {
+        "sex": "female",
+        "age": 30,
+        "height_cm": 164,
+        "weight_kg": 59.2,
+        "pal": 1.6
+      },
+      "energy_mj": 8.7
+    },
+    {
+      "age_band": "30-39",
+      "input": {
+        "sex": "female",
+        "age": 30,
+        "height_cm": 164,
+        "weight_kg": 59.2,
+        "pal": 1.8
+      },
+      "energy_mj": 9.8
+    },
+    {
+      "age_band": "30-39",
+      "input": {
+        "sex": "female",
+        "age": 30,
+        "height_cm": 164,
+        "weight_kg": 59.2,
+        "pal": 2.0
+      },
+      "energy_mj": 10.8
+    },
+    {
+      "age_band": "40-49",
+      "input": {
+        "sex": "female",
+        "age": 40,
+        "height_cm": 163,
+        "weight_kg": 58.5,
+        "pal": 1.4
+      },
+      "energy_mj": 7.5
+    },
+    {
+      "age_band": "40-49",
+      "input": {
+        "sex": "female",
+        "age": 40,
+        "height_cm": 163,
+        "weight_kg": 58.5,
+        "pal": 1.6
+      },
+      "energy_mj": 8.6
+    },
+    {
+      "age_band": "40-49",
+      "input": {
+        "sex": "female",
+        "age": 40,
+        "height_cm": 163,
+        "weight_kg": 58.5,
+        "pal": 1.8
+      },
+      "energy_mj": 9.7
+    },
+    {
+      "age_band": "40-49",
+      "input": {
+        "sex": "female",
+        "age": 40,
+        "height_cm": 163,
+        "weight_kg": 58.5,
+        "pal": 2.0
+      },
+      "energy_mj": 10.7
+    },
+    {
+      "age_band": "50-59",
+      "input": {
+        "sex": "female",
+        "age": 50,
+        "height_cm": 162,
+        "weight_kg": 57.7,
+        "pal": 1.4
+      },
+      "energy_mj": 7.5
+    },
+    {
+      "age_band": "50-59",
+      "input": {
+        "sex": "female",
+        "age": 50,
+        "height_cm": 162,
+        "weight_kg": 57.7,
+        "pal": 1.6
+      },
+      "energy_mj": 8.5
+    },
+    {
+      "age_band": "50-59",
+      "input": {
+        "sex": "female",
+        "age": 50,
+        "height_cm": 162,
+        "weight_kg": 57.7,
+        "pal": 1.8
+      },
+      "energy_mj": 9.6
+    },
+    {
+      "age_band": "50-59",
+      "input": {
+        "sex": "female",
+        "age": 50,
+        "height_cm": 162,
+        "weight_kg": 57.7,
+        "pal": 2.0
+      },
+      "energy_mj": 10.7
+    },
+    {
+      "age_band": "60-69",
+      "input": {
+        "sex": "female",
+        "age": 60,
+        "height_cm": 160,
+        "weight_kg": 56.3,
+        "pal": 1.4
+      },
+      "energy_mj": 6.8
+    },
+    {
+      "age_band": "60-69",
+      "input": {
+        "sex": "female",
+        "age": 60,
+        "height_cm": 160,
+        "weight_kg": 56.3,
+        "pal": 1.6
+      },
+      "energy_mj": 7.8
+    },
+    {
+      "age_band": "60-69",
+      "input": {
+        "sex": "female",
+        "age": 60,
+        "height_cm": 160,
+        "weight_kg": 56.3,
+        "pal": 1.8
+      },
+      "energy_mj": 8.8
+    },
+    {
+      "age_band": "60-69",
+      "input": {
+        "sex": "female",
+        "age": 60,
+        "height_cm": 160,
+        "weight_kg": 56.3,
+        "pal": 2.0
+      },
+      "energy_mj": 9.7
+    },
+    {
+      "age_band": "70-79",
+      "input": {
+        "sex": "female",
+        "age": 70,
+        "height_cm": 159,
+        "weight_kg": 55.6,
+        "pal": 1.4
+      },
+      "energy_mj": 6.8
+    },
+    {
+      "age_band": "70-79",
+      "input": {
+        "sex": "female",
+        "age": 70,
+        "height_cm": 159,
+        "weight_kg": 55.6,
+        "pal": 1.6
+      },
+      "energy_mj": 7.7
+    },
+    {
+      "age_band": "70-79",
+      "input": {
+        "sex": "female",
+        "age": 70,
+        "height_cm": 159,
+        "weight_kg": 55.6,
+        "pal": 1.8
+      },
+      "energy_mj": 8.7
+    },
+    {
+      "age_band": "70-79",
+      "input": {
+        "sex": "female",
+        "age": 70,
+        "height_cm": 159,
+        "weight_kg": 55.6,
+        "pal": 2.0
+      },
+      "energy_mj": 9.6
+    }
+  ]
+}

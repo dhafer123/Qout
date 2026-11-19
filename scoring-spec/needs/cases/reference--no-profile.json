@@ -1,0 +1,16 @@
+{
+  "id": "reference--no-profile",
+  "description": "Profile skipped: EU reference intakes, no BMI.",
+  "source": "EU 1169/2011 Annex XIII Part B",
+  "input": null,
+  "expected": {
+    "basis": "reference",
+    "energy_kj": 8400,
+    "fat_g": 70,
+    "saturates_g": 20,
+    "sugars_g": 90,
+    "salt_g": 6,
+    "bmi": null,
+    "bmi_category": null
+  }
+}

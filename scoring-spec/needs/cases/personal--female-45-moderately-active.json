@@ -1,0 +1,22 @@
+{
+  "id": "personal--female-45-moderately-active",
+  "description": "Woman, 45, moderately active, above the WHO normal BMI range.",
+  "source": "EFSA 2013 Appendix 2 (Henry, body mass and height); WHO SFA 2023 rec. 1; EFSA DRV summary Table 3; WHO sodium 2012",
+  "input": {
+    "sex": "female",
+    "age": 45,
+    "height_cm": 160,
+    "weight_kg": 72.4,
+    "pal": 1.6
+  },
+  "expected": {
+    "basis": "personal",
+    "energy_kj": 9260,
+    "fat_g": 88,
+    "saturates_g": 25,
+    "sugars_g": 90,
+    "salt_g": 5,
+    "bmi": 28.2,
+    "bmi_category": "preobese"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "bmi--just-below-25-00",
+  "description": "BMI 24.975: normal range, shown as 24.9.",
+  "source": "WHO TRS 894 Table 2.1; EFSA 2013 Appendix 2 (Henry)",
+  "input": {
+    "sex": "male",
+    "age": 40,
+    "height_cm": 200,
+    "weight_kg": 99.9,
+    "pal": 1.4
+  },
+  "expected": {
+    "basis": "personal",
+    "energy_kj": 12182,
+    "fat_g": 115,
+    "saturates_g": 33,
+    "sugars_g": 90,
+    "salt_g": 5,
+    "bmi": 24.9,
+    "bmi_category": "normal"
+  }
+}

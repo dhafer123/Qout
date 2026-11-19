@@ -1,0 +1,22 @@
+{
+  "id": "reference--sex-not-given",
+  "description": "Sex not given: the equations are sex-specific, so EU reference intakes (decision H2).",
+  "source": "EU 1169/2011 Annex XIII Part B",
+  "input": {
+    "sex": null,
+    "age": 35,
+    "height_cm": 170,
+    "weight_kg": 65.0,
+    "pal": 1.6
+  },
+  "expected": {
+    "basis": "reference",
+    "energy_kj": 8400,
+    "fat_g": 70,
+    "saturates_g": 20,
+    "sugars_g": 90,
+    "salt_g": 6,
+    "bmi": 22.4,
+    "bmi_category": "normal"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "personal--male-59-last-year-of-second-band",
+  "description": "Age 59 uses the 30-60 equation.",
+  "source": "EFSA 2013 Appendix 2 (Henry, body mass and height); WHO SFA 2023 rec. 1; EFSA DRV summary Table 3; WHO sodium 2012",
+  "input": {
+    "sex": "male",
+    "age": 59,
+    "height_cm": 172,
+    "weight_kg": 80.0,
+    "pal": 1.8
+  },
+  "expected": {
+    "basis": "personal",
+    "energy_kj": 12818,
+    "fat_g": 121,
+    "saturates_g": 35,
+    "sugars_g": 90,
+    "salt_g": 5,
+    "bmi": 27.0,
+    "bmi_category": "preobese"
+  }
+}

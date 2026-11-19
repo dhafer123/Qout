@@ -1,0 +1,22 @@
+{
+  "id": "personal--female-22-active",
+  "description": "Woman, 22, active: Henry 18-30 equation.",
+  "source": "EFSA 2013 Appendix 2 (Henry, body mass and height); WHO SFA 2023 rec. 1; EFSA DRV summary Table 3; WHO sodium 2012",
+  "input": {
+    "sex": "female",
+    "age": 22,
+    "height_cm": 165,
+    "weight_kg": 58.0,
+    "pal": 1.8
+  },
+  "expected": {
+    "basis": "personal",
+    "energy_kj": 10029,
+    "fat_g": 95,
+    "saturates_g": 27,
+    "sugars_g": 90,
+    "salt_g": 5,
+    "bmi": 21.3,
+    "bmi_category": "normal"
+  }
+}

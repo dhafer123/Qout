@@ -1,0 +1,22 @@
+{
+  "id": "reference--age-80",
+  "description": "No EFSA value from 80 years: EU reference intakes (decision H1); BMI still shown.",
+  "source": "EU 1169/2011 Annex XIII Part B",
+  "input": {
+    "sex": "male",
+    "age": 80,
+    "height_cm": 170,
+    "weight_kg": 70.0,
+    "pal": 1.4
+  },
+  "expected": {
+    "basis": "reference",
+    "energy_kj": 8400,
+    "fat_g": 70,
+    "saturates_g": 20,
+    "sugars_g": 90,
+    "salt_g": 6,
+    "bmi": 24.2,
+    "bmi_category": "normal"
+  }
+}

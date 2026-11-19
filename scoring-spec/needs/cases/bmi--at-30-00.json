@@ -1,0 +1,22 @@
+{
+  "id": "bmi--at-30-00",
+  "description": "BMI exactly 30.00: obese class I.",
+  "source": "WHO TRS 894 Table 2.1; EFSA 2013 Appendix 2 (Henry)",
+  "input": {
+    "sex": "male",
+    "age": 40,
+    "height_cm": 200,
+    "weight_kg": 120.0,
+    "pal": 1.4
+  },
+  "expected": {
+    "basis": "personal",
+    "energy_kj": 13521,
+    "fat_g": 128,
+    "saturates_g": 37,
+    "sugars_g": 90,
+    "salt_g": 5,
+    "bmi": 30.0,
+    "bmi_category": "obese_class_1"
+  }
+}

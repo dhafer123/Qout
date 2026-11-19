@@ -1,0 +1,22 @@
+{
+  "id": "personal--male-79-very-active",
+  "description": "Oldest age with an EFSA value (79), very active.",
+  "source": "EFSA 2013 Appendix 2 (Henry, body mass and height); WHO SFA 2023 rec. 1; EFSA DRV summary Table 3; WHO sodium 2012",
+  "input": {
+    "sex": "male",
+    "age": 79,
+    "height_cm": 168,
+    "weight_kg": 68.5,
+    "pal": 2.0
+  },
+  "expected": {
+    "basis": "personal",
+    "energy_kj": 12002,
+    "fat_g": 114,
+    "saturates_g": 32,
+    "sugars_g": 90,
+    "salt_g": 5,
+    "bmi": 24.2,
+    "bmi_category": "normal"
+  }
+}

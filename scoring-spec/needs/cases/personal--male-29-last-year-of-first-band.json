@@ -1,0 +1,22 @@
+{
+  "id": "personal--male-29-last-year-of-first-band",
+  "description": "Age 29 uses the 18-30 equation (EFSA Table 12, footnote a).",
+  "source": "EFSA 2013 Appendix 2 (Henry, body mass and height); WHO SFA 2023 rec. 1; EFSA DRV summary Table 3; WHO sodium 2012",
+  "input": {
+    "sex": "male",
+    "age": 29,
+    "height_cm": 175,
+    "weight_kg": 70.0,
+    "pal": 1.6
+  },
+  "expected": {
+    "basis": "personal",
+    "energy_kj": 11145,
+    "fat_g": 105,
+    "saturates_g": 30,
+    "sugars_g": 90,
+    "salt_g": 5,
+    "bmi": 22.8,
+    "bmi_category": "normal"
+  }
+}

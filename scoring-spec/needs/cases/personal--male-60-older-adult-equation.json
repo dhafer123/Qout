@@ -1,0 +1,22 @@
+{
+  "id": "personal--male-60-older-adult-equation",
+  "description": "Age 60 switches to the 60+ equation; same body as the age-59 case.",
+  "source": "EFSA 2013 Appendix 2 (Henry, body mass and height); WHO SFA 2023 rec. 1; EFSA DRV summary Table 3; WHO sodium 2012",
+  "input": {
+    "sex": "male",
+    "age": 60,
+    "height_cm": 172,
+    "weight_kg": 80.0,
+    "pal": 1.8
+  },
+  "expected": {
+    "basis": "personal",
+    "energy_kj": 11954,
+    "fat_g": 113,
+    "saturates_g": 32,
+    "sugars_g": 90,
+    "salt_g": 5,
+    "bmi": 27.0,
+    "bmi_category": "preobese"
+  }
+}

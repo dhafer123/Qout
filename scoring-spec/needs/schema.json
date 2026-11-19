@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dhafer123/Qout/scoring-spec/needs/schema.json",
+  "title": "Daily needs case",
+  "description": "One test case for the daily needs calculation (T38): a profile in, the daily energy, the daily amounts used for advice and the BMI out. Rules: docs/specs/README.md, 'Health advice'. efsa-table-12.json uses $defs/efsa_table instead.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "description", "source", "input", "expected"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^(personal|reference|bmi)--[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Equals the file name without .json."
+    },
+    "description": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1 },
+    "input": {
+      "description": "The profile; null when it was skipped.",
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/profile" }]
+    },
+    "expected": { "$ref": "#/$defs/needs" }
+  },
+  "$defs": {
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sex", "age", "height_cm", "weight_kg", "pal"],
+      "properties": {
+        "sex": {
+          "description": "null: not given (decision H2).",
+          "enum": ["male", "female", null]
+        },
+        "age": { "type": "integer", "minimum": 18, "maximum": 120 },
+        "height_cm": { "type": "number", "minimum": 100, "maximum": 250 },
+        "weight_kg": { "type": "number", "minimum": 30, "maximum": 300 },
+        "pal": { "enum": [1.4, 1.6, 1.8, 2.0] }
+      }
+    },
+    "needs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["basis", "energy_kj", "fat_g", "saturates_g", "sugars_g", "salt_g", "bmi", "bmi_category"],
+      "properties": {
+        "basis": {
+          "description": "personal: computed from the profile; reference: EU reference intakes (no profile, sex not given, or 80 years and over).",
+          "enum": ["personal", "reference"]
+        },
+        "energy_kj": { "type": "integer", "minimum": 0 },
+        "fat_g": { "type": "integer", "minimum": 0 },
+        "saturates_g": { "type": "integer", "minimum": 0 },
+        "sugars_g": { "type": "integer", "minimum": 0 },
+        "salt_g": { "type": "integer", "minimum": 0 },
+        "bmi": {
+          "description": "kg/m², rounded down to 0.1 for display (decision H6); null without a profile.",
+          "type": ["number", "null"]
+        },
+        "bmi_category": {
+          "enum": ["underweight", "normal", "preobese", "obese_class_1", "obese_class_2", "obese_class_3", null]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "basis": { "const": "reference" } } },
+          "then": {
+            "properties": {
+              "energy_kj": { "const": 8400 },
+              "fat_g": { "const": 70 },
+              "saturates_g": { "const": 20 },
+              "sugars_g": { "const": 90 },
+              "salt_g": { "const": 6 }
+            }
+          },
+          "else": {
+            "properties": { "sugars_g": { "const": 90 }, "salt_g": { "const": 5 } }
+          }
+        }
+      ]
+    },
+    "efsa_table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "source", "tolerance_kj", "tolerance_note", "cases"],
+      "properties": {
+        "description": { "type": "string" },
+        "source": { "type": "string" },
+        "tolerance_kj": { "type": "integer", "minimum": 0 },
+        "tolerance_note": { "type": "string" },
+        "cases": {
+          "type": "array",
+          "minItems": 48,
+          "maxItems": 48,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["age_band", "input", "energy_mj"],
+            "properties": {
+              "age_band": { "enum": ["18-29", "30-39", "40-49", "50-59", "60-69", "70-79"] },
+              "input": { "$ref": "#/$defs/profile" },
+              "energy_mj": { "type": "number", "exclusiveMinimum": 0 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

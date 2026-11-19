@@ -1,0 +1,22 @@
+{
+  "id": "personal--male-30-first-year-of-second-band",
+  "description": "Age 30 switches to the 30-60 equation; same body as the age-29 case.",
+  "source": "EFSA 2013 Appendix 2 (Henry, body mass and height); WHO SFA 2023 rec. 1; EFSA DRV summary Table 3; WHO sodium 2012",
+  "input": {
+    "sex": "male",
+    "age": 30,
+    "height_cm": 175,
+    "weight_kg": 70.0,
+    "pal": 1.6
+  },
+  "expected": {
+    "basis": "personal",
+    "energy_kj": 10741,
+    "fat_g": 102,
+    "saturates_g": 29,
+    "sugars_g": 90,
+    "salt_g": 5,
+    "bmi": 22.8,
+    "bmi_category": "normal"
+  }
+}

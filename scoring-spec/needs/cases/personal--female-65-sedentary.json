@@ -1,0 +1,22 @@
+{
+  "id": "personal--female-65-sedentary",
+  "description": "Woman, 65, low active: 60+ equation.",
+  "source": "EFSA 2013 Appendix 2 (Henry, body mass and height); WHO SFA 2023 rec. 1; EFSA DRV summary Table 3; WHO sodium 2012",
+  "input": {
+    "sex": "female",
+    "age": 65,
+    "height_cm": 158,
+    "weight_kg": 61.0,
+    "pal": 1.4
+  },
+  "expected": {
+    "basis": "personal",
+    "energy_kj": 6996,
+    "fat_g": 66,
+    "saturates_g": 19,
+    "sugars_g": 90,
+    "salt_g": 5,
+    "bmi": 24.4,
+    "bmi_category": "normal"
+  }
+}

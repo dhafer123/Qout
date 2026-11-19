@@ -4,6 +4,8 @@ Shared test cases for the Nutri-Score engines. The Python engine (`backend/app/m
 and the Dart engine (`app/`) must both produce exactly the `expected` block of every file in
 `golden/`.
 
+The daily needs cases used by personal advice (T38) are separate: see [`needs/`](needs/README.md).
+
 The rules behind every number are in [`docs/specs/`](../docs/specs/README.md): the official
 Q&A (V11), the Scientific Committee reports and the official calculator. Interpretation
 decisions (exact-threshold values, the beverage salt typo, total fat = 0, missing data) are
