@@ -4,6 +4,7 @@ are fetched again from OFF once (real Postgres and Redis; OFF faked or mocked)."
 import json
 import re
 from collections.abc import AsyncIterator, Callable
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -160,3 +161,25 @@ async def test_a_record_that_cannot_be_stored_is_counted(
 
     assert (stats.checked, stats.failed, stats.updated) == (1, 1, 0)
     assert (await stored(sessions, BISCUITS)).allergens is None
+
+
+async def test_a_record_older_than_ours_changes_nothing(
+    ctx: jobs.Context, sessions: Sessions
+) -> None:
+    # The upsert never replaces newer data with an older record.
+    await make(sessions, BISCUITS, source_modified_at=datetime(2100, 1, 1, tzinfo=UTC))
+    ctx["off_source"] = FakeOff()
+
+    stats = await jobs.run_refresh_off(ctx)
+
+    assert (stats.checked, stats.unchanged, stats.updated) == (1, 1, 0)
+    assert (await stored(sessions, BISCUITS)).allergens is None
+
+
+async def test_queued_job_returns_its_counts(ctx: jobs.Context, sessions: Sessions) -> None:
+    await make(sessions, BISCUITS)
+    ctx["off_source"] = FakeOff()
+
+    result = await jobs.refresh_off_products(ctx)
+
+    assert result == {"checked": 1, "updated": 1, "unchanged": 0, "missing": 0, "failed": 0}
