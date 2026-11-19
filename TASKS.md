@@ -277,6 +277,13 @@ Design: the "Nocturne" direction (option 1a) from the Claude Design handoff of 2
 - Follow-ups: **vector logo** (the launcher and splash icons are cut from the 310 px PNG in the handoff; replace with SVG or 1024 px exports for a sharper icon); **animation licence**: record where "QR Scan Successful" came from and its licence before the public release (T37); iOS icon and splash with the iOS task. The localization decision and onboarding below are still open.
 - Placed after T31 (every screen exists) and before the release pipeline, the download site (T33b, reuses the screenshots) and T37's screenshots.
 
+### T31c · Complete products with missing nutrition
+Many Tunisian products are on Open Food Facts without nutrition values (39 of 77 in the T15 import), so they show "No grade" and the app only offers "Report an error". Contributions already update an existing product on approval (T25); the app just never offers them for a known barcode.
+- [ ] Product screen: when there is no grade because values or the category are missing, offer "Add the nutrition values" (sign in first, like "Add this product"), opening the contribution flow
+- [ ] Contribution flow for a known product: name, brand and category prefilled from the product, wording says it completes an existing product
+- [ ] Moderation page: show when a contribution would update an existing product (its source, name, current grade)
+- Tests: **W** product screen offers the action for insufficient data / not scored, not for graded products; contribution flow prefilled; **I** moderation review shows the existing product; **E2E** known product without a grade → contribution sent (fake API).
+
 ---
 
 ## Phase 5 — Delivery
