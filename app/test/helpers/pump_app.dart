@@ -17,6 +17,7 @@ import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
 import 'package:qout/features/product/data/alternatives_repository.dart';
 import 'package:qout/features/profile/data/profile_repository.dart';
+import 'package:qout/health/profile.dart';
 
 import 'fake_alternatives_repository.dart';
 import 'fake_outbox.dart';
@@ -31,9 +32,11 @@ extension PumpQoutApp on WidgetTester {
   /// count ([outboxTrigger]: tests send with `Outbox` itself), the queue as
   /// [outboxEntries] (empty by default; pass `database.outboxDao.watchAll()`
   /// for the real one, then call [unmountQoutApp]), whether onboarding was
-  /// finished at start ([onboarded]: the welcome screens when false), and any
-  /// extra provider [overrides] (fake repositories). Screens watching the
-  /// profile use the real database stream: call [unmountQoutApp] at the end.
+  /// finished at start ([onboarded]: the welcome screens when false), the
+  /// [profile] and [avoidedAdditives] (fixed values by default; with
+  /// [liveProfile], read from the database and followed as it changes: call
+  /// [unmountQoutApp] at the end), and any extra provider [overrides] (fake
+  /// repositories).
   Future<void> pumpQoutApp({
     AppFlavor flavor = AppFlavor.dev,
     AppDatabase? database,
@@ -44,6 +47,9 @@ extension PumpQoutApp on WidgetTester {
     OutboxTrigger? outboxTrigger,
     Stream<List<OutboxRow>>? outboxEntries,
     bool onboarded = true,
+    Profile? profile,
+    Set<String> avoidedAdditives = const {},
+    bool liveProfile = false,
     List<Override> overrides = const [],
   }) async {
     final db = database ?? _memoryDatabase();
@@ -55,6 +61,13 @@ extension PumpQoutApp on WidgetTester {
           ),
           appDatabaseProvider.overrideWithValue(db),
           onboardingCompletedAtStartProvider.overrideWithValue(onboarded),
+          // Not the drift streams by default (see [unmountQoutApp]).
+          if (!liveProfile) ...[
+            profileProvider.overrideWith((ref) => Stream.value(profile)),
+            avoidedAdditivesProvider.overrideWith(
+              (ref) => Stream.value(avoidedAdditives),
+            ),
+          ],
           scanHistoryRepositoryProvider.overrideWithValue(
             history ?? FakeScanHistoryRepository(),
           ),

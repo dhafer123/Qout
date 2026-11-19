@@ -106,6 +106,42 @@ void main() {
     },
   );
 
+  group('additives to avoid', () {
+    test('added and removed, kept sorted, even without a profile', () async {
+      await repository.setAvoided('E450', avoid: true);
+      await repository.setAvoided('E330', avoid: true);
+      await repository.setAvoided('E330', avoid: true); // once
+      expect(
+        (await database.profileDao.get())!.avoidedAdditives,
+        '["E330","E450"]',
+      );
+      expect(await repository.onboardingCompleted(), isTrue);
+      expect(await repository.get(), isNull);
+
+      await repository.setAvoided('E450', avoid: false);
+      expect(await repository.watchAvoidedAdditives().first, {'E330'});
+    });
+
+    test('saving the profile keeps them; deleting it clears them', () async {
+      await repository.setAvoided('E250', avoid: true);
+      await repository.save(profile);
+      expect(await repository.watchAvoidedAdditives().first, {'E250'});
+      await repository.delete();
+      expect(await repository.watchAvoidedAdditives().first, isEmpty);
+    });
+
+    test('none before onboarding; a damaged list reads as none', () async {
+      expect(await repository.watchAvoidedAdditives().first, isEmpty);
+      await repository.completeOnboarding();
+      await database
+          .update(database.localProfile)
+          .write(const LocalProfileCompanion(avoidedAdditives: Value('E330')));
+      expect(await repository.watchAvoidedAdditives().first, isEmpty);
+      await repository.setAvoided('E330', avoid: true); // starts over
+      expect(await repository.watchAvoidedAdditives().first, {'E330'});
+    });
+  });
+
   group('a damaged row reads as no profile', () {
     Future<void> damage(LocalProfileCompanion change) async {
       await repository.save(profile);

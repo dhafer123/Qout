@@ -38,6 +38,7 @@ class ProfileScreen extends ConsumerWidget {
           children: [
             if (profile == null) const _NoProfile() else _About(profile),
             _Needs(computeNeeds(profile)),
+            const _AvoidedAdditives(),
             if (profile != null) const _Actions(),
           ],
         ),
@@ -154,6 +155,35 @@ class _Needs extends StatelessWidget {
   }
 }
 
+/// The additives the user marked to avoid on product screens (T40).
+class _AvoidedAdditives extends ConsumerWidget {
+  const _AvoidedAdditives();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final codes =
+        (ref.watch(avoidedAdditivesProvider).valueOrNull ?? const {}).toList()
+          ..sort();
+    if (codes.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SectionLabel('Additives you avoid'),
+        for (final code in codes)
+          ListTile(
+            title: Text(code),
+            trailing: TextButton(
+              onPressed: () => ref
+                  .read(profileRepositoryProvider)
+                  .setAvoided(code, avoid: false),
+              child: Text('Remove', semanticsLabel: 'Stop avoiding $code'),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class _Actions extends ConsumerWidget {
   const _Actions();
 
@@ -184,8 +214,9 @@ class _Actions extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: const Text('Delete your profile?'),
         content: const Text(
-          'Your age, height, weight, activity and allergies are removed from '
-          'this phone. Advice then uses the EU reference intakes.',
+          'Your age, height, weight, activity, allergies and the additives you '
+          'avoid are removed from this phone. Advice then uses the EU '
+          'reference intakes.',
         ),
         actions: [
           TextButton(

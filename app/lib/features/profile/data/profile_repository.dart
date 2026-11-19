@@ -48,6 +48,36 @@ class ProfileRepository {
   /// Deletes everything personal; the welcome screens don't come back.
   Future<void> delete() => _dao.clearProfile();
 
+  /// The additive codes the user chose to avoid (T40), live.
+  Stream<Set<String>> watchAvoidedAdditives() =>
+      _dao.watch().map((row) => _codes(row?.avoidedAdditives));
+
+  /// Adds [code] to the additives to avoid, or removes it.
+  Future<void> setAvoided(String code, {required bool avoid}) async {
+    final codes = _codes((await _dao.get())?.avoidedAdditives);
+    if (avoid) {
+      codes.add(code);
+    } else {
+      codes.remove(code);
+    }
+    await _dao.saveAvoidedAdditives(
+      jsonEncode(codes.toList()..sort()),
+      now: _clock(),
+    );
+  }
+
+  static Set<String> _codes(String? json) {
+    if (json == null) return {};
+    try {
+      return {
+        for (final code in jsonDecode(json) as List<Object?>)
+          if (code is String) code,
+      };
+    } on Object {
+      return {}; // damaged: as if none
+    }
+  }
+
   Profile? _profile(LocalProfileRow? row) {
     if (row == null) return null;
     final (age, enteredAt, height, weight, pal) = (
@@ -96,6 +126,11 @@ final onboardingCompletedAtStartProvider = Provider<bool>(
 /// The profile, live.
 final profileProvider = StreamProvider<Profile?>(
   (ref) => ref.watch(profileRepositoryProvider).watch(),
+);
+
+/// The additive codes to avoid, live.
+final avoidedAdditivesProvider = StreamProvider<Set<String>>(
+  (ref) => ref.watch(profileRepositoryProvider).watchAvoidedAdditives(),
 );
 
 /// The daily needs for the profile (the EU reference intakes without one).

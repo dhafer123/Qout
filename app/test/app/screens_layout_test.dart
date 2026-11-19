@@ -72,12 +72,23 @@ void main() {
           'product-beverage-graded',
           'product-insufficient-data',
           'product-water',
+          'product-serving-allergens',
         ]) {
           testWidgets('product: $fixture', (tester) async {
             await configure(tester);
             final json = recordedProductJson(fixture)
               ..['image_url'] = 'https://media.example/p.jpg';
             await tester.pumpQoutApp(
+              // "For you" with every kind of note and the personal shares.
+              profile: Profile(
+                sex: Sex.female,
+                age: 22,
+                heightCm: 165,
+                weightKg: 58,
+                activity: ActivityLevel.active,
+                allergens: const {Allergen.milk, Allergen.nuts},
+              ),
+              avoidedAdditives: const {'E330', 'E476'},
               overrides: [
                 memoryProductImages(),
                 productRepositoryProvider.overrideWithValue(
@@ -210,7 +221,7 @@ void main() {
               allergens: const {Allergen.gluten, Allergen.sulphites},
             ),
           );
-          await tester.pumpQoutApp(database: database);
+          await tester.pumpQoutApp(database: database, liveProfile: true);
           await tester.pushRoute(AppRoutes.profile);
           await tester.pumpAndSettle();
           await tester.scrollUntilVisible(

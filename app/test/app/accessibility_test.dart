@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
-import 'package:qout/core/api/qout_api.dart';
+import 'package:qout/core/api/qout_api.dart' hide Allergen;
 import 'package:qout/core/env/app_env.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
+import 'package:qout/health/profile.dart';
 
 import '../helpers/fake_product_repository.dart';
 import '../helpers/fake_scan_history_repository.dart';
@@ -77,6 +78,44 @@ void main() {
         );
         await tester.pushRoute(AppRoutes.product('123'));
         await tester.pumpAndSettle();
+
+        await checkGuidelines(tester);
+        handle.dispose();
+      });
+
+      testWidgets('product result with "For you"', (tester) async {
+        await configure(tester);
+        final handle = tester.ensureSemantics();
+        await tester.pumpQoutApp(
+          flavor: AppFlavor.prod,
+          profile: Profile(
+            sex: Sex.male,
+            age: 40,
+            heightCm: 180,
+            weightKg: 80,
+            activity: ActivityLevel.moderatelyActive,
+            allergens: const {Allergen.milk, Allergen.nuts},
+          ),
+          avoidedAdditives: const {'E330'},
+          overrides: [
+            productRepositoryProvider.overrideWithValue(
+              FakeProductRepository(
+                results: [
+                  ProductResult.found(
+                    product: ProductDetail.fromJson(
+                      recordedProductJson('product-serving-allergens'),
+                    ),
+                    fetchedAt: DateTime.utc(2026, 11, 19),
+                    freshness: ProductFreshness.fresh,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+        await tester.pushRoute(AppRoutes.product('6194002510064'));
+        await tester.pumpAndSettle();
+        expect(find.text('For you'), findsOneWidget);
 
         await checkGuidelines(tester);
         handle.dispose();

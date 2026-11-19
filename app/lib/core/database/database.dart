@@ -157,6 +157,16 @@ class ProfileDao extends DatabaseAccessor<AppDatabase> with _$ProfileDaoMixin {
     );
   });
 
+  /// Replaces the additives to avoid ([codes]: a JSON list), finishing
+  /// onboarding at [now] if needed (the row must exist).
+  Future<void> saveAvoidedAdditives(String codes, {required DateTime now}) =>
+      transaction(() async {
+        await completeOnboarding(now);
+        await (update(localProfile)..where((t) => t.id.equals(_id))).write(
+          LocalProfileCompanion(avoidedAdditives: Value(codes)),
+        );
+      });
+
   /// Deletes everything personal; onboarding stays finished.
   Future<void> clearProfile() =>
       (update(localProfile)..where((t) => t.id.equals(_id))).write(

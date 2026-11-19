@@ -11,6 +11,7 @@ import 'package:qout/features/product/data/alternatives_repository.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
 import 'package:qout/features/product/presentation/product_labels.dart';
+import 'package:qout/features/profile/data/profile_repository.dart';
 
 const _tabular = [FontFeature.tabularFigures()];
 
@@ -217,7 +218,6 @@ class ScoreSection extends StatelessWidget {
     );
     return ProductSection(
       title: 'Why this score',
-      first: true,
       child: switch (explanation) {
         final GradedExplanation graded => _GradedBreakdown(graded, nutrition),
         WaterExplanation() => text('Plain water is always graded A.'),
@@ -594,16 +594,18 @@ class ProcessingSection extends StatelessWidget {
   }
 }
 
-/// Additives with their EFSA overexposure risk.
-class AdditivesSection extends StatelessWidget {
+/// Additives with their EFSA overexposure risk; each can be marked to avoid
+/// (T40: "For you" then points it out on every product that has it).
+class AdditivesSection extends ConsumerWidget {
   const AdditivesSection({required this.additives, super.key});
 
   final List<AdditiveDetail> additives;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final palette = QoutPalette.of(context);
+    final avoided = ref.watch(avoidedAdditivesProvider).valueOrNull ?? const {};
     if (additives.isEmpty) {
       return const ProductSection(
         title: 'Additives',
@@ -657,6 +659,10 @@ class AdditivesSection extends StatelessWidget {
                       ],
                     ),
                   ),
+                  _AvoidButton(
+                    code: additive.code,
+                    avoided: avoided.contains(additive.code),
+                  ),
                 ],
               ),
             ),
@@ -670,6 +676,42 @@ class AdditivesSection extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Marks an additive to avoid, or stops avoiding it.
+class _AvoidButton extends ConsumerWidget {
+  const _AvoidButton({required this.code, required this.avoided});
+
+  final String code;
+  final bool avoided;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scheme = Theme.of(context).colorScheme;
+    return IconButton(
+      tooltip: avoided ? 'Stop avoiding $code' : 'Avoid $code',
+      isSelected: avoided,
+      icon: const Icon(PhosphorIconsRegular.prohibit),
+      selectedIcon: Icon(PhosphorIconsFill.prohibit, color: scheme.error),
+      onPressed: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        await ref
+            .read(profileRepositoryProvider)
+            .setAvoided(code, avoid: !avoided);
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(
+                avoided
+                    ? 'You no longer avoid $code.'
+                    : 'You avoid $code: products with it are pointed out.',
+              ),
+            ),
+          );
+      },
     );
   }
 }

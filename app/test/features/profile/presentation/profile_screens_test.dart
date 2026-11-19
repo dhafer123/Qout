@@ -36,7 +36,7 @@ void main() {
       ..physicalSize = const Size(500, 2400)
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpQoutApp(database: database);
+    await tester.pumpQoutApp(database: database, liveProfile: true);
     await tester.pushRoute(route);
     await tester.pumpAndSettle();
   }

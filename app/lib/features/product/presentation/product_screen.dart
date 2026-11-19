@@ -13,6 +13,7 @@ import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
+import 'package:qout/features/product/presentation/for_you_section.dart';
 import 'package:qout/features/product/presentation/product_labels.dart';
 import 'package:qout/features/product/presentation/product_photo.dart';
 import 'package:qout/features/product/presentation/product_providers.dart';
@@ -123,6 +124,7 @@ class _ProductView extends StatelessWidget {
         ProductPhoto(imageUrl: product.imageUrl, name: product.name),
         ProductHeader(product: product),
         GradeCard(explanation: explanation),
+        ForYouSection(product: product),
         ScoreSection(explanation: explanation, nutrition: product.nutrition),
         if (canCompleteValues(explanation)) _CompleteValues(ean: product.ean),
         AlternativesSection(
