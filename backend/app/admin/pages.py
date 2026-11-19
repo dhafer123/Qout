@@ -197,12 +197,16 @@ class ModerationView(BaseView):
         status_code: int = status.HTTP_200_OK,
         **extra: Any,
     ) -> Response:
-        """The review page; `extra`: values (as typed), errors, preview, error."""
+        """The review page; `extra`: values (as typed), errors, preview, error.
+
+        While pending, it says whether approving updates an existing product (e.g. one
+        from Open Food Facts without nutrition values) or creates one."""
         settings = settings_of(request)
         context = {
             "title": f"Contribution {contribution.ean}",
             "contribution": contribution,
             "pending": contribution.status == ContributionStatus.PENDING,
+            "existing": await service.existing_product(contribution),
             "photo_urls": await service.photo_urls(
                 contribution, expires_in=settings.admin_photo_url_ttl_seconds
             ),

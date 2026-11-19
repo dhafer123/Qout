@@ -20,6 +20,7 @@ Error reports are resolved (fixed) or dismissed (nothing wrong) once.
 import logging
 import uuid
 from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import PurePosixPath
 from typing import Any
@@ -45,8 +46,13 @@ from app.modules.products.models import (
     Product,
     ProductStatus,
 )
-from app.modules.products.repository import NutritionFactsRepository, ProductRepository
+from app.modules.products.repository import (
+    NutritionFactsRepository,
+    ProductRepository,
+    ScoreRepository,
+)
 from app.modules.products.rescoring import ensure_current_score
+from app.modules.scoring import Grade
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +72,20 @@ class ReportNotFoundError(Exception):
 class ReportNotOpenError(Exception):
     def __init__(self, report: ErrorReport) -> None:
         super().__init__(f"error report {report.id} is already {report.status}")
+
+
+@dataclass(frozen=True, slots=True)
+class ExistingProduct:
+    """The product a contribution's barcode already has, as it is now: approving the
+    contribution updates it instead of creating one."""
+
+    id: uuid.UUID
+    name: str | None
+    brand: str | None
+    source: DataSource
+    status: ProductStatus
+    grade: Grade | None
+    """Its current grade; None when it has none (e.g. values missing)."""
 
 
 def submitted_snapshot(contribution: Contribution) -> dict[str, Any]:
@@ -124,6 +144,22 @@ class ModerationService:
         if contribution is None:
             raise ContributionNotFoundError(contribution_id)
         return contribution
+
+    async def existing_product(self, contribution: Contribution) -> ExistingProduct | None:
+        """The product with the contribution's barcode, if there is one; None for a new
+        product."""
+        product = await self._products.get_by_ean(contribution.ean)
+        if product is None:
+            return None
+        score = await ScoreRepository(self._session).latest(product.id)
+        return ExistingProduct(
+            id=product.id,
+            name=product.name,
+            brand=product.brand,
+            source=product.source,
+            status=product.status,
+            grade=score.grade if score is not None else None,
+        )
 
     async def photo_urls(self, contribution: Contribution, *, expires_in: int) -> dict[str, str]:
         """Photo kind -> a link to the private photo that works for `expires_in` seconds;

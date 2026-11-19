@@ -20,7 +20,8 @@ from app.modules.contributions.models import (
     ReportStatus,
 )
 from app.modules.products.models import NutritionFacts, Product, ProductStatus
-from tests.factories import ProductFactory
+from app.modules.scoring import Grade
+from tests.factories import ProductFactory, ScoreFactory
 from tests.integration.admin.conftest import (
     JPEG,
     Sessions,
@@ -106,6 +107,72 @@ async def test_review_page_shows_the_photos_next_to_the_fields(
     async with httpx.AsyncClient() as browser:  # the moderator's browser, straight to storage
         photo = await browser.get(urls[0].replace("&amp;", "&"))
     assert (photo.status_code, photo.content) == (200, JPEG)
+
+
+def existing_product_note(page: str) -> str:
+    """The note on whether approving creates or updates a product, as plain text."""
+    match = re.search(
+        r'<div class="card-body border-bottom" id="existing-product">(.*?)</div>\s*<form',
+        page,
+        re.S,
+    )
+    assert match is not None
+    return " ".join(re.sub(r"<[^>]+>", " ", match.group(1)).split())
+
+
+async def test_review_page_names_the_product_it_would_update(
+    panel: httpx.AsyncClient, sessions: Sessions, storage: Storage, contributor: User
+) -> None:
+    async with sessions() as session:
+        product = await ProductFactory.create(
+            session, name="Chamia aux pistaches", brand="Le Moulin"
+        )
+        await session.commit()
+    contribution = await contribution_with_photos(
+        sessions, storage, contributor.id, ean=product.ean
+    )
+
+    page = (await panel.get(review_url(contribution))).text
+
+    assert existing_product_note(page).startswith(
+        "Updates an existing product: Chamia aux pistaches · Le Moulin"
+        " · from open food facts, unverified · no grade."
+    )
+    assert f"/admin/product/details/{product.id}" in page
+
+
+async def test_review_page_shows_the_current_grade_of_the_product(
+    panel: httpx.AsyncClient, sessions: Sessions, storage: Storage, contributor: User
+) -> None:
+    async with sessions() as session:
+        product = await ProductFactory.create(session, name=None)
+        await ScoreFactory.create(session, product_id=product.id, grade=Grade.C)
+        await session.commit()
+    contribution = await contribution_with_photos(
+        sessions, storage, contributor.id, ean=product.ean
+    )
+
+    note = existing_product_note((await panel.get(review_url(contribution))).text)
+
+    assert note.startswith("Updates an existing product: unnamed · from open food facts")
+    assert "grade C." in note
+
+
+async def test_review_page_of_a_new_product(
+    panel: httpx.AsyncClient, pending: Contribution
+) -> None:
+    page = (await panel.get(review_url(pending))).text
+    assert existing_product_note(page) == "New product: approving creates it."
+
+
+async def test_review_page_of_a_decided_contribution_has_no_note(
+    panel: httpx.AsyncClient, sessions: Sessions, storage: Storage, contributor: User
+) -> None:
+    rejected = await contribution_with_photos(
+        sessions, storage, contributor.id, status=ContributionStatus.REJECTED
+    )
+    page = (await panel.get(review_url(rejected))).text
+    assert 'id="existing-product"' not in page
 
 
 @pytest.mark.parametrize("path", [f"/admin/moderation/{uuid.uuid4()}", "/admin/moderation/x"])

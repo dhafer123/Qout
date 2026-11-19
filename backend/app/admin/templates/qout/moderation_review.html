@@ -48,6 +48,19 @@
       <h3 class="card-title">Barcode {{ contribution.ean }}</h3>
       <div class="card-actions text-muted">Values read by {{ contribution.parser_used.value }}</div>
     </div>
+    {% if pending %}
+    <div class="card-body border-bottom" id="existing-product">
+      {% if existing %}
+      <strong>Updates an existing product:</strong>
+      <a href="{{ url_for('admin:details', identity='product', pk=existing.id | string) }}">{{ existing.name or "unnamed" }}</a>{% if existing.brand %} · {{ existing.brand }}{% endif %}
+      · from {{ existing.source.value | replace("_", " ") }}, {{ existing.status.value }}
+      · {% if existing.grade %}grade {{ existing.grade.value }}{% else %}no grade{% endif %}.
+      <div class="text-muted small">Approving replaces its nutrition values and its photo; Open Food Facts imports no longer change it.</div>
+      {% else %}
+      <strong>New product:</strong> approving creates it.
+      {% endif %}
+    </div>
+    {% endif %}
     <form method="post" class="card-body" id="review-form">
       <fieldset {% if not pending %}disabled{% endif %}>
         <div class="row g-2">
