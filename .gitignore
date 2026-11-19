@@ -27,6 +27,14 @@ htmlcov/
 # Bulk import downloads (IMPORT_DOWNLOAD_DIR)
 backend/var/
 
+# ---------- Specification sources without a redistribution licence ----------
+# Kept locally only; links and SHA-256 in docs/specs/README.md ("Health advice").
+docs/specs/efsa-drv-energy-2013.pdf
+docs/specs/efsa-drv-summary-2017.pdf
+docs/specs/who-sugars-guideline-2015.pdf
+docs/specs/who-sodium-guideline-2012.pdf
+docs/specs/who-trs-894.pdf
+
 # ---------- Flutter / Dart ----------
 .dart_tool/
 .flutter-plugins

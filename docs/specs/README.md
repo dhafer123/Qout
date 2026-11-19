@@ -143,3 +143,122 @@ Not computed: the NOVA group (1–4) is taken from the Open Food Facts product f
 `nova_group`. Any other value (missing, out of range, not a number) means unknown.
 Groups: 1 unprocessed or minimally processed foods, 2 processed culinary ingredients,
 3 processed foods, 4 ultra-processed foods (NOVA classification, as used by Open Food Facts).
+
+# Health advice (T38)
+
+Daily needs and the daily amounts that personal advice compares products with (T39, T40).
+Every number below comes from these sources; the shared cases are in
+[`scoring-spec/needs/`](../../scoring-spec/needs/README.md).
+
+## Sources
+
+| File | Document | Publisher / date | Role | In git |
+|---|---|---|---|---|
+| `efsa-drv-energy-2013.pdf` | Scientific Opinion on Dietary Reference Values for energy, EFSA Journal 2013;11(1):3005 | EFSA NDA Panel, 2013 | **Primary for energy.** Henry (2005) equations (Appendix 2, p. 72), reference bodies (Table 4, p. 32), PAL values and lifestyles (§5.3.1.2 and Table 5, pp. 34–35), AR for adults (Table 12, p. 46) | no |
+| `efsa-drv-summary-2017.pdf` | Summary of Dietary Reference Values, version 4 | EFSA, September 2017 | Same ARs (Table 1, p. 2); total fat reference intake range 20–35 % of energy, saturates "as low as possible" (Table 3, p. 4) | no |
+| `eu-1169-2011.pdf` | Regulation (EU) No 1169/2011 on food information to consumers | Official Journal L 304, 22.11.2011 | Reference intakes for an average adult (Annex XIII Part B, p. L 304/61); energy conversion factors (Annex XIV, p. L 304/62) | yes |
+| `who-sugars-guideline-2015.pdf` | Guideline: Sugars intake for adults and children | WHO, 2015 | Free sugars < 10 % of energy, strong recommendation (PDF p. 12, printed p. 4); definition of free sugars | no |
+| `who-sodium-guideline-2012.pdf` | Guideline: Sodium intake for adults and children | WHO, 2012 (reprinted 2014) | Sodium < 2 g/day (5 g/day salt) for adults, strong recommendation (PDF p. 10) | no |
+| `who-sfa-tfa-guideline-2023.pdf` | Saturated fatty acid and trans-fatty acid intake for adults and children: WHO guideline | WHO, 2023 | Saturated fat reduced to 10 % of energy, strong recommendation 1; "less than 10 %" is only conditional, recommendation 2 (PDF p. 11, printed p. ix) | yes |
+| `who-trs-894.pdf` | Obesity: preventing and managing the global epidemic, Technical Report Series 894 | WHO, 2000 | BMI classification of adults (Table 2.1, PDF p. 21) | no |
+
+Downloaded on 2026-11-19 from:
+
+- EFSA opinion: <https://www.efsa.europa.eu/en/efsajournal/pub/3005> (PDF via
+  <https://efsa.onlinelibrary.wiley.com/doi/pdf/10.2903/j.efsa.2013.3005>)
+- EFSA summary: <https://www.efsa.europa.eu/sites/default/files/assets/DRV_Summary_tables_jan_17.pdf>
+- Regulation 1169/2011: <https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32011R1169>
+- WHO sugars: <https://www.who.int/publications/i/item/9789241549028>
+- WHO sodium: <https://www.who.int/publications/i/item/9789241504836>
+- WHO saturated and trans fats: <https://www.who.int/publications/i/item/9789240073630>
+- WHO TRS 894: <https://iris.who.int/handle/10665/42330>
+
+**Not in git.** The WHO sugars and sodium guidelines and TRS 894 say "All rights reserved",
+and the reuse terms of the two EFSA files were not confirmed, so these five stay in this
+folder locally (git-ignored). Download them from the links above and compare:
+
+| File | SHA-256 |
+|---|---|
+| `efsa-drv-energy-2013.pdf` | `afa3a3d08747fde155fb3eb296683730cb7eb6d3139c6d85af2865208cc6e14a` |
+| `efsa-drv-summary-2017.pdf` | `0786be9b090eb97eb87c9f1c4388d3cde4371da528246553b4631e9bee1a59bc` |
+| `who-sugars-guideline-2015.pdf` | `0e81d49cffe12469c184a9d377c9ff80fa26f1f08d66b42fed40f1054b67b209` |
+| `who-sodium-guideline-2012.pdf` | `1f42c807c29ae255b31554afafaed683d5598414a1e5cc2a4b89190c72e2f369` |
+| `who-trs-894.pdf` | `265f1fe7a9607f71d13001d573fc418e58b3309485330b84ae0b397ace78c114` |
+
+The EFSA opinion's copy carries the publisher's download stamp on every page; another
+download has a different stamp and checksum but the same content. In git: Regulation
+1169/2011 (EU legal texts may be reused) and the 2023 WHO guideline (CC BY-NC-SA 3.0 IGO:
+attribution, non-commercial, share-alike).
+
+## Where each rule lives
+
+**Daily energy (personal).** Resting energy expenditure (REE) from the Henry (2005)
+equations with body mass and height, as EFSA used them (Table 12, footnote a), times the
+physical activity level (PAL):
+
+| Sex | Age (years) | Henry equation (EFSA Appendix 2, p. 72) | REE in MJ/day |
+|---|---|---|---|
+| Male | 18–29 | 18–30 y | 0.0600 × BM + 1.31 × HT + 0.473 |
+| Male | 30–59 | 30–60 y | 0.0476 × BM + 2.26 × HT − 0.574 |
+| Male | 60–79 | ≥ 60 y | 0.0478 × BM + 2.26 × HT − 1.07 |
+| Female | 18–29 | 18–30 y | 0.0433 × BM + 2.57 × HT − 1.18 |
+| Female | 30–59 | 30–60 y | 0.0342 × BM + 2.10 × HT − 0.0486 |
+| Female | 60–79 | ≥ 60 y | 0.0356 × BM + 1.76 × HT + 0.0448 |
+
+BM = body mass in kg, HT = height in metres. Henry's age bands overlap at 30 and 60; EFSA
+uses the 18–30 equation for 18–29 years, 30–60 for 30–59, and ≥ 60 for 60–79 (Table 12,
+footnote a). Energy (kJ/day) = REE × PAL × 1000.
+
+PAL values and EFSA's lifestyles (§5.3.1.2, p. 35): **1.4** low active (sedentary),
+**1.6** moderately active, **1.8** active, **2.0** very active. EFSA also names "highly
+active" (> 2.0) without a value; Qout offers the four values only. Table 5 (p. 35) gives
+example lifestyles for the wording in the app (e.g. office work without exercise: 1.5).
+
+Check: with Table 4's reference bodies the equations reproduce all 48 ARs of Table 12
+within 62 kJ (`scoring-spec/needs/efsa-table-12.json`, tolerance 100 kJ).
+
+**Daily amounts for advice.**
+
+| Amount | With a personal energy E (kJ) | Source | Without a personal energy | Source |
+|---|---|---|---|---|
+| Energy | E | EFSA, above | 8400 kJ | Annex XIII Part B |
+| Fat | 0.35 × E / 37 g (upper end of 20–35 % of energy; 37 kJ per g of fat) | EFSA summary Table 3; Annex XIV | 70 g | Annex XIII Part B |
+| Saturates | 0.10 × E / 37 g (10 % of energy) | WHO SFA 2023, rec. 1; Annex XIV | 20 g | Annex XIII Part B |
+| Sugars | 90 g | Annex XIII Part B (decision H5) | 90 g | Annex XIII Part B |
+| Salt | 5 g | WHO sodium 2012 | 6 g | Annex XIII Part B |
+
+**BMI** = body mass (kg) / height (m)², classified with WHO TRS 894 Table 2.1: underweight
+< 18.5; normal range 18.5–24.99; pre-obese 25–29.99; obese class I 30–34.99, class II
+35–39.99, class III ≥ 40. WHO notes that BMI may not reflect the same fatness in every
+population (table footnote a).
+
+## Decisions (H1–H7)
+
+Decided 2026-11-19 with the T38 plan:
+
+- **H1. Adults only; personal energy for 18–79 years.** The profile accepts ages 18 and
+  over. EFSA gives no adult values from 80 years (summary Table 1, footnote b), so from 80 the
+  EU reference intakes are used (basis `reference`), with a note in the app.
+- **H2. Sex.** The equations are sex-specific: male, female, or not given; not given uses
+  the EU reference intakes.
+- **H3. No pregnancy or breastfeeding in v1.** EFSA gives energy additions (Table 15), but
+  advice for pregnancy goes beyond energy; the app says so instead of computing.
+- **H4. Body mass as entered; rounding.** Energy is computed for the body mass the user
+  enters (the energy needed to keep the current weight), not for a BMI of 22 as in EFSA's
+  population tables: no weight-loss or weight-gain targets (no sourced rule for them).
+  Arithmetic in exact decimals; energy rounded to whole kJ, then fat and saturates computed
+  from that rounded energy and rounded to whole grams, halves rounded up. The app shows kcal
+  with Qout's existing display rule (kJ / 4.184); EFSA's footnote uses 1 MJ = 238.83 kcal
+  (the international table calorie), a difference below 0.1 %.
+- **H5. Sugars: the EU reference intake, not the WHO limit.** WHO's < 10 % applies to *free*
+  sugars; labels and Open Food Facts declare *total* sugars (including those naturally in
+  milk and fruit), which cannot be split. Advice compares total sugars with Annex XIII's 90 g
+  and may quote WHO's free-sugar recommendation as explanation only, never as a number
+  applied to a label.
+- **H6. BMI display.** Classified on the exact value (the table's 18.50–24.99 band read as
+  18.5 ≤ BMI < 25, and so on); shown rounded **down** to 0.1 so the number shown always lies in
+  its own category (18.475 is shown 18.4, underweight). Shown on the profile only, in neutral
+  wording, not used for advice in v1. No health conditions (diabetes, blood pressure) in v1:
+  that would be medical advice.
+- **H7. Input checks.** Age 18–120 whole years, height 100–250 cm, body mass 30–300 kg, PAL
+  one of 1.4/1.6/1.8/2.0. These only catch typing errors; they are not nutrition values.
