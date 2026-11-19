@@ -262,3 +262,85 @@ Decided 2026-11-19 with the T38 plan:
   that would be medical advice.
 - **H7. Input checks.** Age 18–120 whole years, height 100–250 cm, body mass 30–300 kg, PAL
   one of 1.4/1.6/1.8/2.0. These only catch typing errors; they are not nutrition values.
+
+# Allergens and servings (T40)
+
+## Sources
+
+| File | Document | Publisher / date | Role |
+|---|---|---|---|
+| `eu-1169-2011.pdf` | Regulation (EU) No 1169/2011 | Official Journal L 304, 22.11.2011 | The 14 substances or products causing allergies or intolerances (Annex II, p. L 304/43) |
+| `off-allergens-taxonomy-7fbee09.txt` | Allergens taxonomy (`taxonomies/allergens.txt`) | Open Food Facts, `openfoodfacts-server` commit `7fbee09` | The canonical tags Open Food Facts uses in `allergens_tags` and `traces_tags` |
+
+Downloaded from
+<https://raw.githubusercontent.com/openfoodfacts/openfoodfacts-server/7fbee094fb9d89e98c49ab4b2102c7b48b1a7a05/taxonomies/allergens.txt>.
+© Open Food Facts contributors (same licence note as the additives taxonomy above).
+
+## Allergen tags
+
+Open Food Facts lists what a product contains (`allergens_tags`) and what it may contain
+(`traces_tags`, "may contain traces of"). Qout keeps only the 14 allergens of Annex II, under
+the keys the app's profile uses:
+
+| Annex II | Open Food Facts tag (taxonomy line) | Key |
+|---|---|---|
+| 1. Cereals containing gluten | `en:gluten` (l. 48) | `gluten` |
+| 2. Crustaceans | `en:crustaceans` (l. 86) | `crustaceans` |
+| 3. Eggs | `en:eggs` (l. 117) | `eggs` |
+| 4. Fish | `en:fish` (l. 154) | `fish` |
+| 5. Peanuts | `en:peanuts` (l. 227) | `peanuts` |
+| 6. Soybeans | `en:soybeans` (l. 263) | `soybeans` |
+| 7. Milk | `en:milk` (l. 299) | `milk` |
+| 8. Nuts | `en:nuts` (l. 335) | `nuts` |
+| 9. Celery | `en:celery` (l. 372) | `celery` |
+| 10. Mustard | `en:mustard` (l. 409) | `mustard` |
+| 11. Sesame seeds | `en:sesame-seeds` (l. 445) | `sesame` |
+| 12. Sulphur dioxide and sulphites | `en:sulphur-dioxide-and-sulphites` (l. 487) | `sulphites` |
+| 13. Lupin | `en:lupin` (l. 520) | `lupin` |
+| 14. Molluscs | `en:molluscs` (l. 553) | `molluscs` |
+
+Decisions (2026-11-19, T40):
+
+1. **Other tags are dropped:** allergens outside Annex II (kiwi, banana, gelatin…) and
+   untranslated tags (`fr:avoine`). The lists are stored in Annex II order, without
+   duplicates.
+2. **Empty is not "none".** An empty list means Open Food Facts lists none, which may only
+   mean nobody entered them: the app says so and asks to check the label. `null` means the
+   fields were not imported yet (products stored before T40, until the backfill).
+
+## Serving
+
+From `serving_quantity` (a number), `serving_quantity_unit` (`g` or `ml`) and `serving_size`
+(the label's words, e.g. "1 portion (13.8 g)"). Decision (2026-11-19, T40): a serving is used
+for shares only when its unit matches the nutrition basis (g with per 100 g, mL with per
+100 mL) and its amount is above 0 and at most 1000; otherwise the app uses 100 g or 100 mL.
+The 1000 limit only catches bad data; it is not a nutrition value. Contributed products have
+no serving.
+
+# Advice texts (T40)
+
+The "For you" section on the product screen shows only these sentences, chosen by the rules
+below; nothing is generated. `{…}` are filled in by the app.
+
+| Id | Shown when | Text | Source |
+|---|---|---|---|
+| `allergen_contains` | one of the user's allergens is in the product's allergens | Contains {allergen}, which you listed as an allergy. | Open Food Facts `allergens_tags`; Annex II |
+| `allergen_may_contain` | one of the user's allergens is in the product's traces (and not in its allergens) | May contain traces of {allergen}, which you listed as an allergy. | Open Food Facts `traces_tags`; Annex II |
+| `allergens_none_listed` | the user listed allergies and the product's allergen list is empty | Open Food Facts lists no allergens for this product. Check the label. | Decision 2 above |
+| `additive_avoided` | the product has an additive the user chose to avoid | Contains {code} {name}, which you chose to avoid. | The user's own list |
+| `additive_high_risk` | an additive's EFSA flag is high | {code} {name}: EFSA found a high risk that some people take in more than the acceptable daily intake. | Additive risk flag (T10) |
+| `additive_moderate_risk` | an additive's EFSA flag is moderate | {code} {name}: EFSA found a moderate risk that some people take in more than the acceptable daily intake. | Additive risk flag (T10) |
+| `shares_personal` | heading of the shares, with a personal energy | {portion} gives this share of your daily needs: | Health advice, daily amounts |
+| `shares_reference` | heading of the shares, without one | {portion} gives this share of the reference intake for an average adult: | Annex XIII Part B |
+| `no_nutrition` | no nutrition values | No nutrition values yet, so shares can't be shown. | — |
+| `set_up_profile` | no profile | Set up your profile to compare with your own needs. | — |
+| `not_medical_advice` | always, last | General information, not medical advice. | — |
+
+**Shares.** For energy, fat, saturates, sugars and salt: the amount per 100 g or 100 mL ×
+portion / 100, divided by the daily amount (section "Health advice"), as a whole percent
+rounded half up; a share above 0 that rounds to 0 is shown "< 1 %". A nutrient that is not
+declared is left out. `{portion}` is "1 serving ({amount} g)" or "1 serving ({amount} mL)"
+when the serving is used, else "100 g" or "100 mL"; the label's own words (`serving_size`)
+are shown under it when present.
+
+No "high in" or "low in" verdicts: they need official thresholds that are not pinned here.
