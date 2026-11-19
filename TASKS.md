@@ -270,7 +270,7 @@ Design: the "Nocturne" direction (option 1a) from the Claude Design handoff of 2
 - [x] **T31b.5 App icon and splash:** adaptive icon (foreground, background, monochrome) and Android 12+ splash from the logo
 - [x] **T31b.6 Accessibility:** screen-reader labels, contrast in both themes, large-text scaling, touch targets of at least 48 dp
 - [ ] Decide localization (French, Arabic with right-to-left): own task or a stated non-goal (`flutter_localizations` / `intl` are new packages: ask first)
-- [ ] Optional: short first-run onboarding (what the grade means; scanning needs no account)
+- Moved to T39 (2026-11-19): short first-run onboarding (what the grade means; scanning needs no account)
 - Tests: **W** widget tests for the reworked screens in light and dark; text scaling doesn't overflow. (No pixel goldens: font rendering differs between Windows and the Linux CI.)
 - Done (T31b.1–6, 2026-11-18): app 975 tests. `app/theme.dart`: hand-built `ColorScheme` per theme plus `QoutPalette` (a `ThemeExtension` for muted text, edges, fading-rule colour, bar track, accent as a line / as text / as a wash, tag, against / in favour, photo stripes, doubt); component themes make primary actions an accent outline with a faint wash (never a fill), cards a surface with a hairline edge, every button at least 48 dp. Inter 400/500/600 bundled (`assets/fonts/inter`, OFL, added to the licence page). Grade fills from the design's equal-lightness ramp (A #72D48A, B #AFCC5F, C #E8C44E, D #F6A14F, E #F47D67) with dark ink on all; no grade is a dashed "?". Shared UI in `core/ui/`: `FadingRule`, `SectionLabel`, `StateMessage` (every empty, offline, error and done state). Home: logo, prompt, full-width Scan, outbox card, "History" rows with the product photo as a thumbnail. Product: photo across the top (stripes while loading, nothing when missing or failing), name, brand, barcode, Verified / Not verified yet tag, grade card with the A–E track, "Why this score" as points against / in its favour with a bar of each component's points out of its maximum and the declared amount under its name, total line, then flat titled sections; report-error flag in the app bar. Scanner: accent corner brackets and a hint pill; contribution flow: Photos / Check / Send step bar, provisional grade card, doubted values in amber. Scan animation: the last 1.1 s of the supplied "QR Scan Successful" Lottie (frame, circles, check; trimmed from 571 KB to 49 KB, `assets/animations/scan_success.json`), recoloured to the accent, timed by its own controller (a plain check if the file can't be read); the product starts loading when the code is accepted, so the result usually opens from the phone's copy; reduced motion skips it. Android: adaptive icon (qaf and arc on the logo's navy, monochrome layer), Android 12+ splash with the mark on a navy circle over the app's ground, older versions the square icon; window background = ground (no white flash). Tests: palette contrast (WCAG AA for text, 3:1 for bars and outlines) in both themes, every screen in dark and light at 1× and 2× text on a 360 × 640 dp phone without overflow, Flutter's tap-target / label / contrast guidelines on Home, Product and sign-in. New packages: lottie, phosphor_flutter.
 - Changed from the design: product photos are shown plainly on a surface, not blended into the page (`.lighten` washes them out in light mode); points are shown as "6 / 10" (the design printed only "6"); nutrition values move under their label at large text sizes; the scanner keeps the camera below a dark app bar (behind it, the torch button rebuilt during a build).
@@ -285,6 +285,30 @@ Many Tunisian products are on Open Food Facts without nutrition values (39 of 77
 - Tests: **W** product screen offers the action for insufficient data / not scored, not for graded products; contribution flow prefilled; **I** moderation review shows the existing product; **E2E** known product without a grade → contribution sent (fake API).
 - Done (2026-11-19): backend 2083 tests (coverage 100 %), app 991 tests. Decisions agreed with the plan: the front photo stays required (the moderator checks it is the same product; approval replaces the product photo, as in T25); graded products missing only some values (e.g. undeclared fibre) are not offered it, "Report an error" covers them; graded products are left alone. App: `canCompleteValues` (insufficient data or not scored) shows "Add the nutrition values" under "Why this score"; the sign-in detour is shared with "Add this product" (`_contribute`, own reason text). `features/contribute/domain/existing_product.dart` (`ExistingProduct`: name, brand, engine category or null when unknown to the app) and `existingProductProvider` (from the product screen's `productResultProvider`, no second lookup); the controller reads it once at start (a refreshed lookup doesn't reset the form) and prefills name, brand and category; the flow's title, intro and thank-you text say it completes a known product. No backend API change: `POST /v1/contributions` already took any barcode and approval already updated an existing product. Panel: `ModerationService.existing_product` (product by EAN + latest score); the review page of a pending contribution says "Updates an existing product: name · brand · source, status · grade" with a link, and that approval replaces its values and photo and stops Open Food Facts imports from changing it, or "New product".
 - Follow-ups: a product completed this way still shows "No grade" (and the button) until a moderator approves; the app doesn't tell the contributor their values are already pending for that barcode (the outbox only shows unsent entries; a "My contributions" screen isn't planned, see T30). If Open Food Facts later gains values for an approved product, they are ignored (source `contribution`).
+
+---
+
+## Phase 4b — Healthy eating: personal advice
+
+Shift agreed 2026-11-19: Qout is for people who want to eat healthily. A short profile (onboarding) makes the product screen give advice for *you*. Every value that judges a food or a person (energy needs, reference amounts, limits) comes from an official source pinned in `docs/specs/` (CLAUDE.md rule 2); advice texts are a fixed table tied to those sources, never generated. Not tied to Tunisian food: sources are EU/WHO references. Meal photos come after the release (Phase 6).
+
+### T38 · Sources for health advice
+- [ ] Pin in `docs/specs/`, with how we read them (like the Nutri-Score sources): EFSA 2013 scientific opinion on dietary reference values for energy (Henry equations for basal metabolic rate × physical activity level, adults); EU Regulation 1169/2011 Annex XIII reference intakes (energy, fat, saturates, carbohydrate, sugars, protein, salt); WHO guideline on free sugars (< 10 % of energy) and WHO salt guidance (< 5 g/day); WHO BMI categories for adults
+- [ ] Interpretation decisions written down: age range covered (adults, 18+), activity levels offered (EFSA PAL values), rounding, what is shown when the profile is skipped (Annex XIII reference intakes)
+- [ ] Shared golden cases for the needs calculation (`scoring-spec/golden/needs/`, profile → daily energy and amounts), checked against the source tables
+- No code. Decided: EFSA/Henry, not Mifflin-St Jeor; needs only, no weight-loss targets (no sourced rule); no health conditions in v1 (medical advice, sensitive data).
+
+### T39 · Onboarding and profile (app)
+- [ ] First-run screens: what the grade means, scanning needs no account, what is sent where (photos, Gemini); can be skipped (covers the T31b onboarding item)
+- [ ] Profile: age (18+), sex, height, weight, activity level; optional additives / foods to avoid and allergies (Open Food Facts allergen list); stored **on the phone only** (drift schema v3), never sent to the backend; editable and deletable from settings
+- [ ] Needs calculation in Dart from T38 (daily energy and reference amounts), run against the T38 golden cases
+- Tests: **U** needs calculation (golden cases), profile validation, migration v2 → v3; **W** onboarding steps, skip, profile form, settings edit and delete.
+
+### T40 · "For you" on the product screen
+- [ ] Backend: import serving size and allergens from Open Food Facts (normaliser, migration, `ProductDetail`), cache format bumped
+- [ ] "For you" section: additives with an EFSA high/moderate overexposure risk explained in plain words; additives on the avoid list; allergen warning; what one serving (or 100 g / 100 mL when no serving size) gives as a share of the user's daily energy, sugars, saturates and salt; without a profile, the Annex XIII reference intakes, said as such
+- [ ] Advice texts from a fixed table with their source (`docs/specs/`), shown with a "not medical advice" note
+- Tests: **U** normaliser (serving size, allergens), shares and advice selection; **I** lookup returns the new fields; **W** section with and without a profile, no nutrition data (additives only), allergen match.
 
 ---
 
@@ -332,6 +356,35 @@ Many Tunisian products are on Open Food Facts without nutrition values (39 of 77
 
 ---
 
+## Phase 6 — Meal photos (version 2, after the release)
+
+Photograph a meal: the items are found and outlined, the user corrects them, and the meal is compared with their daily needs (T39) using the same sourced advice as T40. Weight from a photo is an estimate, so the user always confirms the items and grams. Decided 2026-11-19: Gemini vision first, measured before building on it; our own segmentation model (e.g. trained on FoodSeg103, licence to check, on the phone) only if the evaluation or cost calls for it. Meal analysis needs an account (each analysis is a paid model call); scanning stays anonymous.
+
+### T41 · Meal trial and evaluation set
+- [ ] Evaluation set from a sample of **Nutrition5k** (Google, CC BY 4.0: dish photos with measured weight and calories per ingredient), fetched by a script into a git-ignored folder, ground truth as JSON
+- [ ] `scripts/eval_meals.py`: item recall and precision, gram error per item, energy error per dish; markdown report, model named (like T27/T28)
+- [ ] Run with Gemini vision (structured output: items with name, outline, grams, confidence); the report decides whether T42 builds on it or on our own model
+- Tests: **U** metric computation, ground truth loading.
+
+### T42 · Meal analysis backend
+- [ ] Food composition table: **USDA FoodData Central** (public domain) pinned in `docs/specs/`, imported into our DB; item names matched to its foods
+- [ ] `POST /v1/meals` (signed in; photo uploaded with T24's presigned URLs) → worker job (model call outside any transaction, deadline, grounding checks) → items with outline, grams, matched food and nutrients, meal totals; `GET /v1/meals/{id}`
+- [ ] Behind a feature flag; per-user limit; meal photos deleted after N days (T30b's cleanup); privacy policy updated (T33b's page)
+- [ ] Gemini paid tier before real users (free tier: 20 requests/day and data may be used by Google, see T28)
+- Tests: **U** matching, totals, output validation (mocked model); **I** job flow, limits, cleanup.
+
+### T43 · Meal flow (app)
+- [ ] Consent before the first meal photo is sent (it goes to Google); camera → upload → polling → photo with the outlined items
+- [ ] Correction step: rename, remove or add items (search the composition table), adjust grams; totals update live
+- [ ] Result: energy and nutrients against the user's daily needs, sourced advice from T40; meals kept on the phone
+- Tests: **U** controller; **W** outlines, correction step, result; **E2E** photo → corrected meal with a fake API.
+
+### T44 · Wider product import (optional)
+- [ ] The T15 bulk import keeps only products sold in Tunisia; import a wider set (e.g. by country list or scan popularity) so history and "better choices" (T22) are richer elsewhere. Barcodes from anywhere already work on demand (T14).
+- Tests: **I** import filter.
+
+---
+
 ## Notes / decisions log
 - (add decisions here as tasks are done)
 - 2026-11-17 (planning): no Google Play release (no Play Console account). The app is distributed as a signed APK: GitHub Releases hold the files, a download website on GitHub Pages explains how to install it (T33b), and the app shows a notice when a newer version is published (sideloaded apps don't update themselves). T33, T34 and T37 changed accordingly. The public APK talks to the prod backend, so T32/T34 must host the API publicly before the site is useful to others.
@@ -348,3 +401,4 @@ Many Tunisian products are on Open Food Facts without nutrition values (39 of 77
 - 2026-11-12 (T12): `scores.created_at` uses `clock_timestamp()` instead of the mixin's `now()` so the latest-score query orders correctly when several scores are written in one transaction (T16 rescoring). Decided with the plan: status unverified/verified/hidden, quality flag complete/incomplete/suspect, source open_food_facts/contribution/manual.
 - 2026-11-12 (T13): category from OFF's Nutri-Score 2023 classification only (`category_available` + `is_*` flags; flags are 1 or true); fruit/vegetable % and the beverage sweetener count from OFF's 2023 score components (they apply the olive-oil rule for fats), so the planned taxonomy-based sweetener fallback was dropped: a beverage without that component lacks the input (insufficient data). Basis = unit declared on the pack (`nutrition_data_per`; Q&A p. 12), category default only if undeclared. Quality heuristics (not scoring constants): kJ/kcal ratio 3.9–4.35 ± 20 kJ (EU 1169/2011 Annex XIV factors 4.0–4.25), salt vs sodium ± max(0.01 g, 5 %), sat fat ≤ fat, sugars ≤ carbohydrates. Local `.env` OFF_USER_AGENT placeholder replaced with the repo URL.
 - RESOLVED (T13b, decision 8: undeclared fibre counts as 0 points). Was: fibre is often not declared (it is optional on EU labels): 3 of the recorded products that OFF grades (cheese D, beef B, energy drink E) are incomplete for us only because fibre is missing, so the engine returns insufficient data (decision 5). The Q&A does not cover undeclared fibre; OFF estimates it from ingredients. Options: keep strict; treat undeclared fibre as 0 points; or use OFF's estimate. Decide before the lookup endpoint stores scores.
+- 2026-11-19 (healthy-eating shift): Qout is for people who want to eat healthily. Order: personal advice first (Phase 4b: T38 sources, T39 onboarding and profile, T40 "For you" on the product screen), then the release (Phase 5), then meal photos as version 2 (Phase 6: T41 trial on Nutrition5k, T42 backend, T43 app; T44 wider import optional). Not tied to Tunisian food. Decided: EFSA/Henry energy equations; needs only, no weight-loss targets; no health conditions in v1; profile on the phone only; Gemini vision first for meals, measured before building on it, own segmentation model only if the evaluation or cost calls for it; Gemini paid tier and consent before meal photos are sent; meal analysis needs an account, scanning stays anonymous.
