@@ -37,6 +37,7 @@ JOBS = [
     "import_off_deltas",
     "copy_product_images",
     "clean_up",
+    "refresh_off_products",
     "rescore_products",
     "parse_label_with_llm",
 ]

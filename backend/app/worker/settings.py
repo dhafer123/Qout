@@ -16,6 +16,8 @@ DELTA_TIMEOUT = timedelta(hours=2)
 RESCORE_TIMEOUT = timedelta(hours=2)
 IMAGES_TIMEOUT = timedelta(hours=2)
 CLEANUP_TIMEOUT = timedelta(hours=1)
+REFRESH_TIMEOUT = timedelta(hours=6)
+"""One OFF request per stored product, at OFF's rate limit."""
 KEEP_RESULT = timedelta(days=1)
 LABEL_JOB_MARGIN = timedelta(seconds=30)
 """Beyond the LLM time limit: database reads and writes around the call."""
@@ -76,6 +78,12 @@ def worker_settings(settings: Settings, *, queue_name: str = QUEUE_NAME) -> dict
             ),
             func(jobs.copy_product_images, timeout=IMAGES_TIMEOUT, keep_result=KEEP_RESULT),
             func(jobs.clean_up, timeout=CLEANUP_TIMEOUT, keep_result=KEEP_RESULT),
+            func(
+                jobs.refresh_off_products,
+                timeout=REFRESH_TIMEOUT,
+                keep_result=KEEP_RESULT,
+                max_tries=MAX_TRIES,
+            ),
             func(
                 jobs.rescore_products,
                 timeout=RESCORE_TIMEOUT,

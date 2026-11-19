@@ -33,8 +33,9 @@ from app.modules.contributions.fallbacks import FallbackRunner, FallbackSettings
 from app.modules.contributions.llm_client import GeminiLabelLlm
 from app.modules.ingestion.download import download_client
 from app.modules.ingestion.importer import ImportResult
-from app.modules.ingestion.off_client import RateLimiter, RetryPolicy
+from app.modules.ingestion.off_client import OffClient, RateLimiter, RetryPolicy
 from app.modules.ingestion.off_import import ImportSettings, OffImport
+from app.modules.ingestion.refresh import OffRefresher, ProductSource, RefreshStats
 from app.modules.products.cache import ProductCache
 from app.modules.products.images import ImageCopySettings, ImageCopyStats, ProductImageCopier
 from app.modules.products.rescoring import Rescorer, RescoreStats
@@ -183,6 +184,30 @@ async def run_cleanup(ctx: Context) -> CleanupStats:
     cleanup = Cleanup(ctx["sessions"], storage.uploads, CleanupSettings.from_settings(settings))
     async with _exclusive(ctx["engine"], CLEANUP_LOCK_KEY):
         return await cleanup.run()
+
+
+async def refresh_off_products(ctx: Context) -> dict[str, int]:
+    """Fetch again, from OFF, products stored before the serving and allergens were
+    imported (T40). Waits for a running bulk import (they share its lock)."""
+    try:
+        stats = await run_refresh_off(ctx)
+    except ImportBusyError as error:
+        raise Retry(defer=BUSY_RETRY_SECONDS) from error
+    return asdict(stats)
+
+
+async def run_refresh_off(ctx: Context) -> RefreshStats:
+    settings: Settings = ctx["settings"]
+    preset: ProductSource | None = ctx.get("off_source")  # tests preset a fake
+    async with AsyncExitStack() as stack:
+        source: ProductSource = (
+            preset
+            if preset is not None
+            else await stack.enter_async_context(OffClient.from_settings(settings))
+        )
+        refresher = OffRefresher(ctx["sessions"], source, _cache(ctx))
+        async with _exclusive(ctx["engine"], IMPORT_LOCK_KEY):
+            return await refresher.run()
 
 
 async def run_rescore(ctx: Context) -> RescoreStats:

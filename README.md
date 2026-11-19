@@ -168,6 +168,7 @@ uv run python -m app.worker enqueue export --force   # re-import the same export
 uv run python -m app.worker run deltas               # run now, in this process (no worker)
 uv run python -m app.worker run images               # copy product photos now
 uv run python -m app.worker run cleanup              # delete old uploads and fallbacks now
+uv run python -m app.worker run refresh-off          # fetch serving/allergens for products stored before T40
 ```
 
 Only one import runs at a time (Postgres advisory lock); a queued job that finds another

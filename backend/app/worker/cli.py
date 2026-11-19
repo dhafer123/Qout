@@ -6,6 +6,7 @@ uv run python -m app.worker run deltas              # runs now, in this process
 uv run python -m app.worker run rescore             # score outdated products now
 uv run python -m app.worker run images              # copy product photos now
 uv run python -m app.worker run cleanup             # delete old uploads and fallbacks now
+uv run python -m app.worker run refresh-off         # fetch serving/allergens for old products
 """
 
 import argparse
@@ -28,6 +29,7 @@ _JOBS = {
     "rescore": "rescore_products",
     "images": "copy_product_images",
     "cleanup": "clean_up",
+    "refresh-off": "refresh_off_products",
 }
 
 
@@ -39,7 +41,8 @@ def parser() -> argparse.ArgumentParser:
         choices=sorted(_JOBS),
         help=(
             "OFF full export, new OFF delta files, rescore outdated products, copy photos, "
-            "clean up old uploads and LLM fallback requests"
+            "clean up old uploads and LLM fallback requests, fetch again from OFF products "
+            "stored before servings and allergens were imported"
         ),
     )
     cli.add_argument(
@@ -92,6 +95,8 @@ async def _run(settings: Settings, job: str, *, force: bool) -> int:
             output = asdict(await jobs.run_copy_images(ctx))
         elif job == "cleanup":
             output = asdict(await jobs.run_cleanup(ctx))
+        elif job == "refresh-off":
+            output = asdict(await jobs.run_refresh_off(ctx))
         else:
             output = [jobs.summary(result) for result in await jobs.run_deltas(ctx)]
     except jobs.ImportBusyError:
