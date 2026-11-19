@@ -16,6 +16,7 @@ import 'package:qout/features/outbox/data/outbox_files.dart';
 import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
 import 'package:qout/features/product/data/alternatives_repository.dart';
+import 'package:qout/features/profile/data/profile_repository.dart';
 
 import 'fake_alternatives_repository.dart';
 import 'fake_outbox.dart';
@@ -29,8 +30,10 @@ extension PumpQoutApp on WidgetTester {
   /// photos without files ([outboxFiles]) and whose automatic syncs only
   /// count ([outboxTrigger]: tests send with `Outbox` itself), the queue as
   /// [outboxEntries] (empty by default; pass `database.outboxDao.watchAll()`
-  /// for the real one, then call [unmountQoutApp]), and any extra
-  /// provider [overrides] (fake repositories).
+  /// for the real one, then call [unmountQoutApp]), whether onboarding was
+  /// finished at start ([onboarded]: the welcome screens when false), and any
+  /// extra provider [overrides] (fake repositories). Screens watching the
+  /// profile use the real database stream: call [unmountQoutApp] at the end.
   Future<void> pumpQoutApp({
     AppFlavor flavor = AppFlavor.dev,
     AppDatabase? database,
@@ -40,6 +43,7 @@ extension PumpQoutApp on WidgetTester {
     FakeOutboxFiles? outboxFiles,
     OutboxTrigger? outboxTrigger,
     Stream<List<OutboxRow>>? outboxEntries,
+    bool onboarded = true,
     List<Override> overrides = const [],
   }) async {
     final db = database ?? _memoryDatabase();
@@ -50,6 +54,7 @@ extension PumpQoutApp on WidgetTester {
             AppEnv.resolve(flavorName: flavor.name),
           ),
           appDatabaseProvider.overrideWithValue(db),
+          onboardingCompletedAtStartProvider.overrideWithValue(onboarded),
           scanHistoryRepositoryProvider.overrideWithValue(
             history ?? FakeScanHistoryRepository(),
           ),

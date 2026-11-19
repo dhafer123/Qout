@@ -1,11 +1,15 @@
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/qout_api.dart';
+import 'package:qout/core/database/database.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/features/product/presentation/product_photo.dart';
+import 'package:qout/features/profile/data/profile_repository.dart';
+import 'package:qout/health/profile.dart';
 
 import '../helpers/fake_contribution.dart';
 import '../helpers/fake_product_repository.dart';
@@ -162,6 +166,60 @@ void main() {
             scrollable: find.byType(Scrollable).first,
           );
           expect(tester.takeException(), isNull);
+        });
+
+        testWidgets('welcome, every page', (tester) async {
+          await configure(tester);
+          await tester.pumpQoutApp(onboarded: false);
+          for (var page = 0; page < 2; page++) {
+            expect(tester.takeException(), isNull);
+            await tester.tap(find.text('Next'));
+            await tester.pumpAndSettle();
+          }
+          expect(find.text('Set up my profile'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        });
+
+        testWidgets('profile form', (tester) async {
+          await configure(tester);
+          await tester.pumpQoutApp();
+          await tester.pushRoute(AppRoutes.profileEdit);
+          await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(
+            find.text('Save'),
+            300,
+            scrollable: find.byType(Scrollable).first,
+          );
+          await tester.tap(find.text('Save')); // every error shown
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+          await tester.unmountQoutApp();
+        });
+
+        testWidgets('profile with daily needs', (tester) async {
+          await configure(tester);
+          final database = AppDatabase(NativeDatabase.memory());
+          addTearDown(database.close);
+          await ProfileRepository(dao: database.profileDao).save(
+            Profile(
+              sex: Sex.female,
+              age: 22,
+              heightCm: 165,
+              weightKg: 58,
+              activity: ActivityLevel.active,
+              allergens: const {Allergen.gluten, Allergen.sulphites},
+            ),
+          );
+          await tester.pumpQoutApp(database: database);
+          await tester.pushRoute(AppRoutes.profile);
+          await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(
+            find.text('Delete my profile'),
+            300,
+            scrollable: find.byType(Scrollable).first,
+          );
+          expect(tester.takeException(), isNull);
+          await tester.unmountQoutApp();
         });
       });
     }

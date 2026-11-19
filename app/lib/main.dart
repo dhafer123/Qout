@@ -3,15 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qout/app/app.dart';
+import 'package:qout/core/database/database.dart';
+import 'package:qout/core/database/database_provider.dart';
 import 'package:qout/core/env/app_env.dart';
+import 'package:qout/features/profile/data/profile_repository.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   // Resolve before runApp so a bad flavor or URL fails at startup.
   final env = AppEnv.fromBuild();
   LicenseRegistry.addLicense(_bundledFontLicenses);
+  // Read before the first frame (the splash screen stays meanwhile), so the
+  // first screen is the right one: welcome on the first run, else home.
+  final database = AppDatabase.open();
+  final onboarded = await ProfileRepository(
+    dao: database.profileDao,
+  ).onboardingCompleted().catchError((Object _) => true);
   runApp(
     ProviderScope(
-      overrides: [appEnvProvider.overrideWithValue(env)],
+      overrides: [
+        appEnvProvider.overrideWithValue(env),
+        appDatabaseProvider.overrideWithValue(database),
+        onboardingCompletedAtStartProvider.overrideWithValue(onboarded),
+      ],
       child: const QoutApp(),
     ),
   );

@@ -97,20 +97,22 @@ enum ProfileProblem {
   outOfRange,
 }
 
-/// The fields of a profile that fail the checks (decision H7), by name:
-/// `age`, `height`, `weight`. Empty: valid.
+/// The given fields that fail the checks (decision H7), by name: `age`,
+/// `height`, `weight`. Empty: valid. A field left out (null) is not checked.
 Map<String, ProfileProblem> profileProblems({
-  required int age,
-  required double heightCm,
-  required double weightKg,
+  int? age,
+  double? heightCm,
+  double? weightKg,
 }) => {
-  if (age < ProfileLimits.minAge)
+  if (age != null && age < ProfileLimits.minAge)
     'age': ProfileProblem.underage
-  else if (age > ProfileLimits.maxAge)
+  else if (age != null && age > ProfileLimits.maxAge)
     'age': ProfileProblem.outOfRange,
-  if (!_within(heightCm, ProfileLimits.minHeightCm, ProfileLimits.maxHeightCm))
+  if (heightCm != null &&
+      !_within(heightCm, ProfileLimits.minHeightCm, ProfileLimits.maxHeightCm))
     'height': ProfileProblem.outOfRange,
-  if (!_within(weightKg, ProfileLimits.minWeightKg, ProfileLimits.maxWeightKg))
+  if (weightKg != null &&
+      !_within(weightKg, ProfileLimits.minWeightKg, ProfileLimits.maxWeightKg))
     'weight': ProfileProblem.outOfRange,
 };
 
@@ -161,6 +163,12 @@ class Profile {
       other.activity == activity &&
       other.allergens.length == allergens.length &&
       other.allergens.containsAll(allergens);
+
+  @override
+  String toString() =>
+      'Profile(sex: ${sex?.value}, age: $age, heightCm: $heightCm, '
+      'weightKg: $weightKg, pal: ${activity.value}, '
+      'allergens: ${allergens.map((a) => a.key).toList()..sort()})';
 
   @override
   int get hashCode => Object.hash(

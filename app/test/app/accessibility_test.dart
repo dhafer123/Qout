@@ -92,6 +92,38 @@ void main() {
         await checkGuidelines(tester);
         handle.dispose();
       });
+
+      testWidgets('welcome', (tester) async {
+        await configure(tester);
+        final handle = tester.ensureSemantics();
+        await tester.pumpQoutApp(flavor: AppFlavor.prod, onboarded: false);
+        await checkGuidelines(tester);
+        handle.dispose();
+      });
+
+      testWidgets('profile form', (tester) async {
+        await configure(tester);
+        final handle = tester.ensureSemantics();
+        await tester.pumpQoutApp(flavor: AppFlavor.prod);
+        await tester.pushRoute(AppRoutes.profileEdit);
+        await tester.pumpAndSettle();
+
+        await checkGuidelines(tester);
+        handle.dispose();
+        await tester.unmountQoutApp();
+      });
+
+      testWidgets('profile without a profile', (tester) async {
+        await configure(tester);
+        final handle = tester.ensureSemantics();
+        await tester.pumpQoutApp(flavor: AppFlavor.prod);
+        await tester.pushRoute(AppRoutes.profile);
+        await tester.pumpAndSettle();
+
+        await checkGuidelines(tester);
+        handle.dispose();
+        await tester.unmountQoutApp();
+      });
     });
   }
 }

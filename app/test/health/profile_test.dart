@@ -32,6 +32,14 @@ void main() {
       );
     });
 
+    test('only the fields given are checked', () {
+      expect(profileProblems(), isEmpty);
+      expect(profileProblems(age: 17), {'age': ProfileProblem.underage});
+      expect(profileProblems(weightKg: 500), {
+        'weight': ProfileProblem.outOfRange,
+      });
+    });
+
     test('the constructor refuses an invalid profile', () {
       expect(
         () => Profile(

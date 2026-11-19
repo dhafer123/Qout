@@ -11,6 +11,10 @@ import 'package:qout/features/label_eval/presentation/label_eval_screen.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/presentation/product_screen.dart';
+import 'package:qout/features/profile/data/profile_repository.dart';
+import 'package:qout/features/profile/presentation/profile_edit_screen.dart';
+import 'package:qout/features/profile/presentation/profile_screen.dart';
+import 'package:qout/features/profile/presentation/welcome_screen.dart';
 import 'package:qout/features/scan/presentation/scan_screen.dart';
 
 /// Route paths, in one place.
@@ -21,6 +25,9 @@ abstract final class AppRoutes {
   static const signIn = '/sign-in';
   static const contributePattern = '/contribute/:ean';
   static const outbox = '/outbox';
+  static const welcome = '/welcome';
+  static const profile = '/profile';
+  static const profileEdit = '/profile/edit';
 
   /// Dev flavor only (label evaluation set, T27).
   static const labelOcr = '/dev/label-ocr';
@@ -32,6 +39,10 @@ abstract final class AppRoutes {
 final routerProvider = Provider<GoRouter>((ref) {
   final dev = ref.watch(appEnvProvider).flavor == AppFlavor.dev;
   final router = GoRouter(
+    // First run: the welcome screens (T39).
+    initialLocation: ref.read(onboardingCompletedAtStartProvider)
+        ? AppRoutes.home
+        : AppRoutes.welcome,
     routes: [
       GoRoute(
         path: AppRoutes.home,
@@ -81,6 +92,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.outbox,
         builder: (context, state) => const OutboxScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.welcome,
+        builder: (context, state) => const WelcomeScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.profile,
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.profileEdit,
+        builder: (context, state) =>
+            ProfileEditScreen(firstRun: state.extra == firstRunEdit),
       ),
       if (dev)
         GoRoute(

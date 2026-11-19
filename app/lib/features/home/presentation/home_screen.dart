@@ -52,6 +52,10 @@ class HomeScreen extends ConsumerWidget {
             tooltip: 'More',
             icon: const Icon(PhosphorIconsRegular.dotsThreeVertical),
             itemBuilder: (context) => [
+              PopupMenuItem(
+                onTap: () => context.push(AppRoutes.profile),
+                child: const Text('Your profile'),
+              ),
               if (auth case SignedIn(:final email))
                 PopupMenuItem(
                   onTap: () => unawaited(_signOut(context, ref)),
