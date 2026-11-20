@@ -26,10 +26,12 @@ void main() {
       ..physicalSize = const Size(400, 900)
       ..devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpQoutApp(database: database, onboarded: false);
+    await tester.pumpQoutApp(database: database, start: StartScreen.welcome);
   }
 
-  testWidgets('first run: three pages, then set up or skip', (tester) async {
+  testWidgets('first run: three pages, then the profile (no skip)', (
+    tester,
+  ) async {
     await openFirstRun(tester);
     expect(find.byType(WelcomeScreen), findsOneWidget);
     expect(find.byType(HomeScreen), findsNothing);
@@ -49,17 +51,8 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Set up my profile'), findsOneWidget);
-    expect(find.text('Skip for now'), findsOneWidget);
-  });
-
-  testWidgets('skip: home, and the welcome screens are done', (tester) async {
-    await openFirstRun(tester);
-    await tester.tap(find.text('Skip'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(HomeScreen), findsOneWidget);
-    expect(await repository.onboardingCompleted(), isTrue);
-    expect(await repository.get(), isNull);
+    // The profile is required (T31e).
+    expect(find.textContaining('Skip'), findsNothing);
   });
 
   testWidgets('set up: the form, then home with the profile saved', (
@@ -117,9 +110,48 @@ void main() {
     await tester.unmountQoutApp();
   });
 
-  testWidgets('onboarding already done: straight home', (tester) async {
+  testWidgets('a profile saved: straight home', (tester) async {
     await tester.pumpQoutApp(database: database);
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(find.byType(WelcomeScreen), findsNothing);
+  });
+
+  testWidgets('no profile saved yet: the form, without a way back', (
+    tester,
+  ) async {
+    await tester.pumpQoutApp(
+      database: database,
+      start: StartScreen.profileForm,
+    );
+    expect(find.byType(ProfileEditScreen), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Your profile'), findsOneWidget);
+    expect(find.byType(BackButton), findsNothing);
+    expect(find.byType(HomeScreen), findsNothing);
+  });
+
+  group('start screen', () {
+    test('first run: welcome', () async {
+      expect(await repository.startScreen(), StartScreen.welcome);
+    });
+
+    test('welcome seen, no profile (skipped before T31e): the form', () async {
+      await repository.completeOnboarding();
+      expect(await repository.startScreen(), StartScreen.profileForm);
+    });
+
+    test('a profile: home; deleted again: the form', () async {
+      await repository.save(
+        Profile(
+          sex: Sex.male,
+          age: 30,
+          heightCm: 180,
+          weightKg: 75,
+          activity: ActivityLevel.lowActive,
+        ),
+      );
+      expect(await repository.startScreen(), StartScreen.home);
+      await repository.delete();
+      expect(await repository.startScreen(), StartScreen.profileForm);
+    });
   });
 }

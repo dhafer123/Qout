@@ -19,17 +19,18 @@ Future<void> main() async {
   unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
   LicenseRegistry.addLicense(_bundledFontLicenses);
   // Read before the first frame (the splash screen stays meanwhile), so the
-  // first screen is the right one: welcome on the first run, else home.
+  // first screen is the right one: welcome on the first run, the profile
+  // form while none is saved, else home.
   final database = AppDatabase.open();
-  final onboarded = await ProfileRepository(
+  final start = await ProfileRepository(
     dao: database.profileDao,
-  ).onboardingCompleted().catchError((Object _) => true);
+  ).startScreen().catchError((Object _) => StartScreen.home);
   runApp(
     ProviderScope(
       overrides: [
         appEnvProvider.overrideWithValue(env),
         appDatabaseProvider.overrideWithValue(database),
-        onboardingCompletedAtStartProvider.overrideWithValue(onboarded),
+        startScreenProvider.overrideWithValue(start),
       ],
       child: const QoutApp(),
     ),

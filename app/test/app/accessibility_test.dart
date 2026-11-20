@@ -5,6 +5,7 @@ import 'package:qout/core/api/qout_api.dart' hide Allergen;
 import 'package:qout/core/env/app_env.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
+import 'package:qout/features/profile/data/profile_repository.dart';
 import 'package:qout/health/profile.dart';
 
 import '../helpers/fake_product_repository.dart';
@@ -135,7 +136,10 @@ void main() {
       testWidgets('welcome', (tester) async {
         await configure(tester);
         final handle = tester.ensureSemantics();
-        await tester.pumpQoutApp(flavor: AppFlavor.prod, onboarded: false);
+        await tester.pumpQoutApp(
+          flavor: AppFlavor.prod,
+          start: StartScreen.welcome,
+        );
         await checkGuidelines(tester);
         handle.dispose();
       });

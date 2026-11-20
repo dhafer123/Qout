@@ -19,6 +19,7 @@ import 'package:qout/features/product/presentation/product_labels.dart'
 import 'package:qout/features/profile/data/profile_repository.dart';
 import 'package:qout/features/profile/domain/profile_form.dart';
 import 'package:qout/features/profile/presentation/profile_labels.dart';
+import 'package:qout/features/profile/presentation/welcome_screen.dart';
 import 'package:qout/health/needs.dart';
 import 'package:qout/health/profile.dart';
 
@@ -531,8 +532,8 @@ class _DeleteProfile extends ConsumerWidget {
         title: const Text('Delete your profile?'),
         content: const Text(
           'Your age, height, weight, activity, allergies and the additives you '
-          'avoid are removed from this phone. Advice then uses the EU '
-          'reference intakes.',
+          'avoid are removed from this phone. Qout then asks for a new '
+          'profile.',
         ),
         actions: [
           TextButton(
@@ -546,7 +547,12 @@ class _DeleteProfile extends ConsumerWidget {
         ],
       ),
     );
-    if (delete ?? false) await ref.read(profileRepositoryProvider).delete();
+    if (!(delete ?? false)) return;
+    await ref.read(profileRepositoryProvider).delete();
+    // The profile is required (T31e): straight back to its form.
+    if (context.mounted) {
+      context.go(AppRoutes.profileEdit, extra: firstRunEdit);
+    }
   }
 }
 

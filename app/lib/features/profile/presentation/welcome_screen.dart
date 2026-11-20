@@ -1,25 +1,24 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart' show Grade;
 import 'package:qout/features/product/presentation/grade_badge.dart';
-import 'package:qout/features/profile/data/profile_repository.dart';
 
 /// First run (`/welcome`): what the grade means, that scanning needs no
-/// account, and what happens to the user's data; then the profile, or skip.
-class WelcomeScreen extends ConsumerStatefulWidget {
+/// account, and what happens to the user's data; then the profile, which is
+/// required (T31e).
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
   @override
-  ConsumerState<WelcomeScreen> createState() => _WelcomeScreenState();
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
 }
 
-class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
+class _WelcomeScreenState extends State<WelcomeScreen> {
   final _pages = PageController();
   int _page = 0;
 
@@ -39,11 +38,6 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
       curve: Curves.easeOut,
     ),
   );
-
-  Future<void> _skip() async {
-    await ref.read(profileRepositoryProvider).completeOnboarding();
-    if (mounted) context.go(AppRoutes.home);
-  }
 
   void _setUp() =>
       unawaited(context.push(AppRoutes.profileEdit, extra: firstRunEdit));
@@ -70,11 +64,6 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                   FilledButton(
                     onPressed: _last ? _setUp : _next,
                     child: Text(_last ? 'Set up my profile' : 'Next'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: _skip,
-                    child: Text(_last ? 'Skip for now' : 'Skip'),
                   ),
                 ],
               ),

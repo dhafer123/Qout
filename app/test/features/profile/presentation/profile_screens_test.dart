@@ -136,7 +136,7 @@ void main() {
       await tester.unmountQoutApp();
     });
 
-    testWidgets('delete asks first, then shows the reference intakes', (
+    testWidgets('delete asks first, then asks for a new profile', (
       tester,
     ) async {
       await repository.save(_profile);
@@ -154,7 +154,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(await repository.get(), isNull);
       expect(await repository.onboardingCompleted(), isTrue);
-      expect(find.text('No profile yet'), findsOneWidget);
+      // Required (T31e): the empty form, with no way back without saving.
+      expect(find.byType(ProfileEditScreen), findsOneWidget);
+      expect(find.widgetWithText(AppBar, 'Your profile'), findsOneWidget);
+      expect(find.byType(BackButton), findsNothing);
+      expect(find.byType(ProfileScreen), findsNothing);
       await tester.unmountQoutApp();
     });
   });

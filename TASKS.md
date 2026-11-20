@@ -296,6 +296,14 @@ Found testing on a phone (Android 16, 3-button navigation, 2026-11-20): content 
 - Tests: **W** regression per scrolling screen (last action above a 48 dp navigation bar); home, profile and product tests follow the new controls.
 - Done (2026-11-20): app 1199 tests. `qoutSystemOverlayStyle` (theme) sets transparent bars without the contrast scrim, applied by the app bars and by an `AnnotatedRegion` around the whole app; `main` asks for edge-to-edge on every Android version. `EdgeInsets.clearOfNavigationBar` (`core/ui/insets.dart`) adds the bar's height at the end of every scroll view; screens already in a `SafeArea` (sign in, contribution flow, welcome) were fine; the report sheet adds it under its send button. Shared `SectionCard` (`core/ui/section_card.dart`: card, icon tile, title) for the profile and product sections; `SectionLabel` takes an `action` (history's "Clear", read as "Clear history"). Sign out now asks first. Daily needs: energy in kcal with kJ beside it (the shared `kjPerKcalForDisplay`), four tiles, sources in a folded "How these are worked out" / "Where these come from". App bars take a lighter shade when content scrolls under them. The score bar in "Why this score" shortens when large text leaves no room (it overflowed at text ×2 inside the cards). Entrance animations: `core/ui/entrance.dart` (`EntranceScope` + `Entrance`, `TweenAnimationBuilder`), not `flutter_animate`: it would replay on rows scrolled back into view, and the in-house version is 40 lines with no new dependency.
 
+### T31e · The profile is required on first open
+Decided 2026-11-20 after testing: Qout is one person per phone. The profile filled in on first open is what the app builds on; accounts stay only for contributing, and nothing is cleared when another account signs in (a plan to clear the previous account's data was dropped).
+- [x] Welcome screens without "Skip": the last page opens the profile form, and home only after it is saved (changes T39's "can be skipped")
+- [x] Installs without a saved profile (skipped before this change) open on the form at the next start; a saved profile opens home
+- [x] "Delete my profile" stays (T39: deletable), then goes straight back to the form
+- Tests: **U** start screen (first run, welcome seen without a profile, profile saved, deleted); **W** no skip, the form without a way back, delete returns to the form.
+- Done (2026-11-20): app 1202 tests. `ProfileRepository.startScreen()` (`StartScreen`: welcome, profile form, home) replaces the "onboarding finished" flag at start (`startScreenProvider`, read in `main`); the router opens the form with the first-run `extra`, so saving goes home. The EU reference intakes stay as the fallback when the profile can't be read and for "Prefer not to say".
+
 ---
 
 ## Phase 4b — Healthy eating: personal advice

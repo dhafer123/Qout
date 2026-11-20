@@ -39,10 +39,16 @@ abstract final class AppRoutes {
 final routerProvider = Provider<GoRouter>((ref) {
   final dev = ref.watch(appEnvProvider).flavor == AppFlavor.dev;
   final router = GoRouter(
-    // First run: the welcome screens (T39).
-    initialLocation: ref.read(onboardingCompletedAtStartProvider)
-        ? AppRoutes.home
-        : AppRoutes.welcome,
+    // First run: the welcome screens (T39); no profile yet: its form, which
+    // is required (T31e).
+    initialLocation: switch (ref.read(startScreenProvider)) {
+      StartScreen.welcome => AppRoutes.welcome,
+      StartScreen.profileForm => AppRoutes.profileEdit,
+      StartScreen.home => AppRoutes.home,
+    },
+    initialExtra: ref.read(startScreenProvider) == StartScreen.profileForm
+        ? firstRunEdit
+        : null,
     routes: [
       GoRoute(
         path: AppRoutes.home,

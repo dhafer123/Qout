@@ -19,6 +19,14 @@ class ProfileRepository {
   /// Whether the welcome screens were finished (skipped or not).
   Future<bool> onboardingCompleted() async => (await _dao.get()) != null;
 
+  /// The first screen at app start: the profile is required (T31e), so
+  /// home only once one is saved.
+  Future<StartScreen> startScreen() async {
+    final row = await _dao.get();
+    if (row == null) return StartScreen.welcome;
+    return _profile(row) == null ? StartScreen.profileForm : StartScreen.home;
+  }
+
   Future<void> completeOnboarding() => _dao.completeOnboarding(_clock());
 
   /// The profile as it is now (the age grows with time), null when there is
@@ -117,9 +125,21 @@ final profileRepositoryProvider = Provider<ProfileRepository>(
   (ref) => ProfileRepository(dao: ref.watch(appDatabaseProvider).profileDao),
 );
 
-/// Whether onboarding was finished when the app started: read in `main()`
-/// before the first frame, so the first screen is right at once.
-final onboardingCompletedAtStartProvider = Provider<bool>(
+/// Where the app opens.
+enum StartScreen {
+  /// First run: the welcome pages, then the profile form.
+  welcome,
+
+  /// The welcome pages were seen but no profile is saved (skipped before
+  /// it was required, or deleted): the form straight away.
+  profileForm,
+
+  home,
+}
+
+/// The first screen, decided when the app started: read in `main()` before
+/// the first frame, so the first screen is right at once.
+final startScreenProvider = Provider<StartScreen>(
   (ref) => throw UnimplementedError('read in main() and overridden'),
 );
 

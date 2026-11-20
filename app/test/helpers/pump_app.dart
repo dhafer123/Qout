@@ -31,8 +31,8 @@ extension PumpQoutApp on WidgetTester {
   /// photos without files ([outboxFiles]) and whose automatic syncs only
   /// count ([outboxTrigger]: tests send with `Outbox` itself), the queue as
   /// [outboxEntries] (empty by default; pass `database.outboxDao.watchAll()`
-  /// for the real one, then call [unmountQoutApp]), whether onboarding was
-  /// finished at start ([onboarded]: the welcome screens when false), the
+  /// for the real one, then call [unmountQoutApp]), the screen it opens on
+  /// ([start]: home by default), the
   /// [profile] and [avoidedAdditives] (fixed values by default; with
   /// [liveProfile], read from the database and followed as it changes: call
   /// [unmountQoutApp] at the end), and any extra provider [overrides] (fake
@@ -46,7 +46,7 @@ extension PumpQoutApp on WidgetTester {
     FakeOutboxFiles? outboxFiles,
     OutboxTrigger? outboxTrigger,
     Stream<List<OutboxRow>>? outboxEntries,
-    bool onboarded = true,
+    StartScreen start = StartScreen.home,
     Profile? profile,
     Set<String> avoidedAdditives = const {},
     bool liveProfile = false,
@@ -60,7 +60,7 @@ extension PumpQoutApp on WidgetTester {
             AppEnv.resolve(flavorName: flavor.name),
           ),
           appDatabaseProvider.overrideWithValue(db),
-          onboardingCompletedAtStartProvider.overrideWithValue(onboarded),
+          startScreenProvider.overrideWithValue(start),
           // Not the drift streams by default (see [unmountQoutApp]).
           if (!liveProfile) ...[
             profileProvider.overrideWith((ref) => Stream.value(profile)),
