@@ -108,9 +108,10 @@ void main() {
             await tester.pumpAndSettle();
 
             // Scroll to the end: every section lays out without overflow.
+            // At double text size the page is over 15 000 px long.
             await tester.scrollUntilVisible(
               find.text('Report an error'),
-              300,
+              600,
               scrollable: find.byType(Scrollable).first,
             );
             await tester.pumpAndSettle();

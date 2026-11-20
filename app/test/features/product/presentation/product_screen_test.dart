@@ -744,6 +744,31 @@ void main() {
       expect(row.payload, contains('"comment":"Salt is 0.3 g"'));
     });
   });
+
+  testWidgets('the app bar shows the name once it has scrolled away', (
+    tester,
+  ) async {
+    repository.results = [_found('product-general-graded')];
+    await openProduct(tester);
+    // Not tall here: the page must scroll.
+    tester.view.physicalSize = const Size(400, 800);
+    await tester.pumpAndSettle();
+
+    final inAppBar = find.descendant(
+      of: find.byType(AppBar),
+      matching: find.text('Jbs qtw'),
+    );
+    expect(inAppBar, findsNothing);
+    expect(find.text('Jbs qtw'), findsOneWidget); // the header
+
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -700));
+    await tester.pumpAndSettle();
+    expect(inAppBar, findsOneWidget);
+
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, 2000));
+    await tester.pumpAndSettle();
+    expect(inAppBar, findsNothing);
+  });
 }
 
 /// A row showing [label] and [value] side by side.

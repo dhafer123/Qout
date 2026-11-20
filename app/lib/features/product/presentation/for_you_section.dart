@@ -40,7 +40,7 @@ class ForYouSection extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
     return ProductSection(
       title: 'For you',
-      first: true,
+      icon: PhosphorIconsRegular.heartbeat,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

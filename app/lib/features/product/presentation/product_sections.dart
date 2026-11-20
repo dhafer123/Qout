@@ -6,6 +6,7 @@ import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/core/ui/fading_rule.dart';
+import 'package:qout/core/ui/section_card.dart';
 import 'package:qout/core/ui/section_label.dart';
 import 'package:qout/features/product/data/alternatives_repository.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
@@ -15,41 +16,23 @@ import 'package:qout/features/profile/data/profile_repository.dart';
 
 const _tabular = [FontFeature.tabularFigures()];
 
-/// A titled section of the result screen: a fading rule above (unless
-/// [first]), the title, then the content.
+/// A titled section of the result screen: a card with an icon and the
+/// title, then the content.
 class ProductSection extends StatelessWidget {
   const ProductSection({
     required this.title,
+    required this.icon,
     required this.child,
-    this.first = false,
     super.key,
   });
 
   final String title;
+  final IconData icon;
   final Widget child;
-  final bool first;
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (!first)
-          const Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: FadingRule(),
-          ),
-        Padding(
-          padding: EdgeInsets.fromLTRB(16, first ? 26 : 22, 16, 8),
-          child: Semantics(
-            header: true,
-            child: Text(title, style: Theme.of(context).textTheme.titleMedium),
-          ),
-        ),
-        child,
-      ],
-    );
-  }
+  Widget build(BuildContext context) =>
+      SectionCard(title: title, icon: icon, child: child);
 }
 
 /// Name, brand, barcode and whether the product is verified.
@@ -218,6 +201,7 @@ class ScoreSection extends StatelessWidget {
     );
     return ProductSection(
       title: 'Why this score',
+      icon: PhosphorIconsRegular.chartBar,
       child: switch (explanation) {
         final GradedExplanation graded => _GradedBreakdown(graded, nutrition),
         WaterExplanation() => text('Plain water is always graded A.'),
@@ -429,12 +413,15 @@ class ComponentRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            SizedBox(
-              width: 92,
-              child: _Bar(
-                fill: fill(component),
-                color: notCounted ? palette.muted : color,
-                track: palette.track,
+            // 92 px, shorter when large text leaves less room.
+            Flexible(
+              child: SizedBox(
+                width: 92,
+                child: _Bar(
+                  fill: fill(component),
+                  color: notCounted ? palette.muted : color,
+                  track: palette.track,
+                ),
               ),
             ),
             const SizedBox(width: 10),
@@ -495,6 +482,7 @@ class NutritionSection extends StatelessWidget {
     if (n == null) {
       return ProductSection(
         title: 'Nutrition',
+        icon: PhosphorIconsRegular.forkKnife,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
           child: Text(
@@ -506,8 +494,19 @@ class NutritionSection extends StatelessWidget {
     }
     final unit = n.basis == NutritionBasis.per100ml ? '100 mL' : '100 g';
     String grams(double? v) => v == null ? '–' : '${formatAmount(v)} g';
+    final anyMissing = [
+      n.energyKj,
+      n.totalFatG,
+      n.saturatedFatG,
+      n.sugarsG,
+      n.fibreG,
+      n.proteinG,
+      n.saltG,
+      n.fvlPercent,
+    ].contains(null);
     return ProductSection(
       title: 'Nutrition per $unit',
+      icon: PhosphorIconsRegular.forkKnife,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -533,10 +532,11 @@ class NutritionSection extends StatelessWidget {
           ),
           if (n.nonNutritiveSweeteners case final sweeteners?)
             _NutrientRow('Sweeteners', sweeteners ? 'Yes' : 'No'),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Text('– not declared', style: textTheme.bodySmall),
-          ),
+          if (anyMissing)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Text('– not declared', style: textTheme.bodySmall),
+            ),
         ],
       ),
     );
@@ -586,6 +586,7 @@ class ProcessingSection extends StatelessWidget {
     final label = novaLabel(novaGroup);
     return ProductSection(
       title: 'Processing (NOVA)',
+      icon: PhosphorIconsRegular.factory,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
         child: Text(label == null ? 'Unknown' : 'Group $novaGroup: $label'),
@@ -609,22 +610,29 @@ class AdditivesSection extends ConsumerWidget {
     if (additives.isEmpty) {
       return const ProductSection(
         title: 'Additives',
+        icon: PhosphorIconsRegular.flask,
         child: Padding(
           padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
           child: Text('No additives listed.'),
         ),
       );
     }
+    final anyNotEvaluated = additives.any(
+      (a) => switch (a.overexposureRisk) {
+        OverexposureRisk.unknown || OverexposureRisk.unrecognized => true,
+        _ => false,
+      },
+    );
     return ProductSection(
       title: 'Additives (${additives.length})',
+      icon: PhosphorIconsRegular.flask,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (final additive in additives)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsetsDirectional.fromSTEB(16, 6, 8, 6),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(top: 1),
@@ -666,14 +674,16 @@ class AdditivesSection extends ConsumerWidget {
                 ],
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-            child: Text(
-              '"Not evaluated" means no risk level is recorded for this '
-              'additive: it is neither a warning nor a sign that it is safe.',
-              style: theme.textTheme.bodySmall,
+          if (anyNotEvaluated)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+              child: Text(
+                '"Not evaluated" means no risk level is recorded for this '
+                'additive: it is neither a warning nor a sign that it is '
+                'safe.',
+                style: theme.textTheme.bodySmall,
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -690,28 +700,46 @@ class _AvoidButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
-    return IconButton(
-      tooltip: avoided ? 'Stop avoiding $code' : 'Avoid $code',
-      isSelected: avoided,
-      icon: const Icon(PhosphorIconsRegular.prohibit),
-      selectedIcon: Icon(PhosphorIconsFill.prohibit, color: scheme.error),
-      onPressed: () async {
-        final messenger = ScaffoldMessenger.of(context);
-        await ref
-            .read(profileRepositoryProvider)
-            .setAvoided(code, avoid: !avoided);
-        messenger
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(
-                avoided
-                    ? 'You no longer avoid $code.'
-                    : 'You avoid $code: products with it are pointed out.',
+    final palette = QoutPalette.of(context);
+    return Tooltip(
+      message: avoided ? 'Stop avoiding $code' : 'Avoid $code',
+      child: FilterChip(
+        selected: avoided,
+        showCheckmark: false,
+        materialTapTargetSize: MaterialTapTargetSize.padded,
+        visualDensity: VisualDensity.compact,
+        avatar: Icon(
+          avoided ? PhosphorIconsFill.prohibit : PhosphorIconsRegular.prohibit,
+          size: 16,
+          color: avoided ? scheme.onErrorContainer : palette.muted,
+        ),
+        label: Text(avoided ? 'Avoiding' : 'Avoid'),
+        labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
+          color: avoided ? scheme.onErrorContainer : scheme.onSurface,
+        ),
+        backgroundColor: Colors.transparent,
+        selectedColor: scheme.errorContainer,
+        side: BorderSide(
+          color: avoided ? scheme.error.withValues(alpha: 0.6) : palette.edge,
+        ),
+        onSelected: (_) async {
+          final messenger = ScaffoldMessenger.of(context);
+          await ref
+              .read(profileRepositoryProvider)
+              .setAvoided(code, avoid: !avoided);
+          messenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(
+                  avoided
+                      ? 'You no longer avoid $code.'
+                      : 'You avoid $code: products with it are pointed out.',
+                ),
               ),
-            ),
-          );
-      },
+            );
+        },
+      ),
     );
   }
 }
@@ -733,6 +761,7 @@ class SourceSection extends StatelessWidget {
     final muted = QoutPalette.of(context).muted;
     return ProductSection(
       title: 'Source',
+      icon: PhosphorIconsRegular.database,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
         child: Column(
@@ -784,6 +813,7 @@ class AlternativesSection extends ConsumerWidget {
     if (items == null || items.isEmpty) return const SizedBox.shrink();
     return ProductSection(
       title: 'Better choices',
+      icon: PhosphorIconsRegular.trendUp,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
 import 'package:qout/features/product/presentation/product_sections.dart';
+import 'package:qout/features/profile/data/profile_repository.dart';
 
 import '../../../helpers/fixtures.dart';
 
@@ -147,5 +149,76 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  group('notes shown only when they apply (T31d)', () {
+    testWidgets('"– not declared" only with a value missing', (tester) async {
+      await pump(
+        tester,
+        NutritionSection(
+          nutrition: recordedProduct('product-general-graded').nutrition,
+        ),
+      );
+      expect(find.text('– not declared'), findsOneWidget); // no fibre
+
+      await pump(
+        tester,
+        NutritionSection(
+          nutrition: recordedProduct('product-serving-allergens').nutrition,
+        ),
+      );
+      expect(find.text('– not declared'), findsNothing);
+    });
+
+    Future<void> pumpAdditives(
+      WidgetTester tester,
+      List<AdditiveDetail> additives, {
+      Set<String> avoided = const {},
+    }) => tester.pumpWidget(
+      ProviderScope(
+        // A new scope per call: overrides can't change on a live one.
+        key: ValueKey(avoided.join()),
+        overrides: [
+          avoidedAdditivesProvider.overrideWith((ref) => Stream.value(avoided)),
+        ],
+        child: MaterialApp(
+          theme: buildQoutTheme(Brightness.dark),
+          home: Scaffold(
+            body: ListView(children: [AdditivesSection(additives: additives)]),
+          ),
+        ),
+      ),
+    );
+
+    final beverage = recordedProduct('product-beverage-graded').additives;
+    final evaluatedOnly = [
+      for (final a in beverage)
+        if (a.overexposureRisk == OverexposureRisk.high) a,
+    ];
+
+    testWidgets('"Not evaluated" explained only when an additive is', (
+      tester,
+    ) async {
+      await pumpAdditives(tester, beverage);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('"Not evaluated" means'), findsOneWidget);
+
+      await pumpAdditives(tester, evaluatedOnly);
+      await tester.pumpAndSettle();
+      expect(evaluatedOnly, isNotEmpty);
+      expect(find.textContaining('"Not evaluated" means'), findsNothing);
+    });
+
+    testWidgets('a labelled chip says whether it is avoided', (tester) async {
+      await pumpAdditives(tester, evaluatedOnly, avoided: {'E211'});
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(FilterChip, 'Avoiding'), findsOneWidget);
+      expect(find.byTooltip('Stop avoiding E211'), findsOneWidget);
+
+      await pumpAdditives(tester, evaluatedOnly);
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(FilterChip, 'Avoid'), findsOneWidget);
+      expect(find.byTooltip('Avoid E211'), findsOneWidget);
+    });
   });
 }

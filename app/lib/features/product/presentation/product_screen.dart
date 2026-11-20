@@ -7,7 +7,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart';
-import 'package:qout/core/ui/fading_rule.dart';
 import 'package:qout/core/ui/insets.dart';
 import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
@@ -23,13 +22,37 @@ import 'package:qout/features/product/presentation/report_error_sheet.dart';
 
 /// The result of a scan: the product with its score explained, or why there
 /// is none.
-class ProductScreen extends ConsumerWidget {
+class ProductScreen extends ConsumerStatefulWidget {
   const ProductScreen({required this.ean, super.key});
 
   final String ean;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProductScreen> createState() => _ProductScreenState();
+}
+
+class _ProductScreenState extends ConsumerState<ProductScreen> {
+  /// Whether the product's name has scrolled away, so the app bar shows it.
+  final ValueNotifier<bool> _nameScrolledAway = ValueNotifier(false);
+
+  @override
+  void dispose() {
+    _nameScrolledAway.dispose();
+    super.dispose();
+  }
+
+  bool _onScroll(ScrollNotification notification, ProductDetail? product) {
+    if (notification.depth != 0 || product == null) return false;
+    final photo = product.imageUrl?.isNotEmpty ?? false;
+    // Below the photo (when there is one) and the name.
+    final nameEnd = (photo ? ProductPhoto.height : 0) + 56;
+    _nameScrolledAway.value = notification.metrics.pixels > nameEnd;
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ean = widget.ean;
     final result = ref.watch(productResultProvider(ean));
     void retry() => ref.invalidate(productResultProvider(ean));
     final found = switch (result.valueOrNull) {
@@ -37,8 +60,27 @@ class ProductScreen extends ConsumerWidget {
       _ => null,
     };
     final refreshing = found?.freshness == ProductFreshness.refreshing;
+    final name = found?.product.name;
     return Scaffold(
       appBar: AppBar(
+        title: name == null
+            ? null
+            : ValueListenableBuilder(
+                valueListenable: _nameScrolledAway,
+                // Built only while shown: the name is on screen once.
+                builder: (context, shown, child) => AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 180),
+                  child: shown ? child : const SizedBox.shrink(),
+                ),
+                child: Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontSize: 17,
+                  ),
+                ),
+              ),
         actions: [
           if (found != null)
             IconButton(
@@ -57,45 +99,49 @@ class ProductScreen extends ConsumerWidget {
               )
             : null,
       ),
-      body: result.when(
-        skipLoadingOnRefresh: false,
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => StateMessage(
-          icon: PhosphorIconsRegular.warningCircle,
-          title: 'Something went wrong',
-          message: 'The product could not be shown.',
-          actions: [
-            FilledButton(onPressed: retry, child: const Text('Retry')),
-          ],
-        ),
-        data: (result) => switch (result) {
-          final ProductFound found => _ProductView(found),
-          ProductNotFound(:final ean) => _NotFound(ean: ean),
-          InvalidBarcode(:final ean, :final message) => StateMessage(
-            icon: PhosphorIconsRegular.barcode,
-            title: 'This barcode is not valid',
-            message: '$ean: $message',
-            actions: const [_ScanAgainButton(primary: true)],
-          ),
-          final ProductUnavailable unavailable => StateMessage(
-            icon: unavailable.isOffline
-                ? PhosphorIconsRegular.wifiSlash
-                : PhosphorIconsRegular.cloudSlash,
-            title: unavailable.isOffline
-                ? 'You are offline'
-                : 'Qout is unavailable right now',
-            message: unavailable.isOffline
-                ? 'This product is not saved on your phone yet. Connect to '
-                      'the internet and try again.'
-                : switch (unavailable.retryAfter) {
-                    final wait? => 'Try again in ${wait.inSeconds} seconds.',
-                    null => 'Try again in a moment.',
-                  },
+      body: NotificationListener<ScrollNotification>(
+        onNotification: (notification) =>
+            _onScroll(notification, found?.product),
+        child: result.when(
+          skipLoadingOnRefresh: false,
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => StateMessage(
+            icon: PhosphorIconsRegular.warningCircle,
+            title: 'Something went wrong',
+            message: 'The product could not be shown.',
             actions: [
               FilledButton(onPressed: retry, child: const Text('Retry')),
             ],
           ),
-        },
+          data: (result) => switch (result) {
+            final ProductFound found => _ProductView(found),
+            ProductNotFound(:final ean) => _NotFound(ean: ean),
+            InvalidBarcode(:final ean, :final message) => StateMessage(
+              icon: PhosphorIconsRegular.barcode,
+              title: 'This barcode is not valid',
+              message: '$ean: $message',
+              actions: const [_ScanAgainButton(primary: true)],
+            ),
+            final ProductUnavailable unavailable => StateMessage(
+              icon: unavailable.isOffline
+                  ? PhosphorIconsRegular.wifiSlash
+                  : PhosphorIconsRegular.cloudSlash,
+              title: unavailable.isOffline
+                  ? 'You are offline'
+                  : 'Qout is unavailable right now',
+              message: unavailable.isOffline
+                  ? 'This product is not saved on your phone yet. Connect to '
+                        'the internet and try again.'
+                  : switch (unavailable.retryAfter) {
+                      final wait? => 'Try again in ${wait.inSeconds} seconds.',
+                      null => 'Try again in a moment.',
+                    },
+              actions: [
+                FilledButton(onPressed: retry, child: const Text('Retry')),
+              ],
+            ),
+          },
+        ),
       ),
     );
   }
@@ -124,7 +170,14 @@ class _ProductView extends StatelessWidget {
       children: [
         if (found.freshness == ProductFreshness.refreshFailed)
           _StaleBanner(found),
-        ProductPhoto(imageUrl: product.imageUrl, name: product.name),
+        if (product.imageUrl case final url? when url.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(QoutRadius.lg),
+              child: ProductPhoto(imageUrl: url, name: product.name),
+            ),
+          ),
         ProductHeader(product: product),
         GradeCard(explanation: explanation),
         ForYouSection(product: product),
@@ -138,12 +191,8 @@ class _ProductView extends StatelessWidget {
         ProcessingSection(novaGroup: product.novaGroup),
         AdditivesSection(additives: product.additives),
         SourceSection(product: product),
-        const Padding(
-          padding: EdgeInsets.only(top: 8),
-          child: FadingRule(),
-        ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -233,7 +282,7 @@ class _CompleteValues extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
