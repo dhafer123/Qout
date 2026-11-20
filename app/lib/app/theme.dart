@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-/// Qout's look: the "Nocturne" direction (Claude Design handoff, 2026-11-18).
-/// A blue-grey ground, Inter at medium weight, 8 px corners, and one blurple
-/// accent used as a line (outlines, focus, progress) rather than a fill.
-/// Dark and light follow the phone's setting.
+/// Qout's look (T41, from Dhafer's inspiration shots, 2026-11-20): a fresh
+/// green on a light grey-green ground, white cards with a soft shadow, Inter
+/// at medium weight, and filled green primary actions. Dark mode keeps the
+/// green on a near-black green-grey. Dark and light follow the phone's
+/// setting. Every text colour passes WCAG AA on the surfaces it is used on.
 
 /// Font family bundled in `assets/fonts/inter` (SIL Open Font License).
 const String qoutFontFamily = 'Inter';
@@ -76,36 +77,36 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
   final Color doubt;
 
   static const QoutPalette dark = QoutPalette(
-    muted: Color(0xFF9EA2B6),
-    edge: Color(0xFF3F424D),
-    divider: Color(0x29E9E9ED),
-    track: Color(0xFF2E3140),
-    accent: Color(0xFF9184D9),
-    accentText: Color(0xFFD2CEFD),
-    accentTint: Color(0x149184D9),
-    tag: Color(0xFF423A6A),
-    onTag: Color(0xFFF5F4FF),
+    muted: Color(0xFF9DAAA0),
+    edge: Color(0xFF2A362D),
+    divider: Color(0x29E7EEE8),
+    track: Color(0xFF26322A),
+    accent: Color(0xFF6FCF7A),
+    accentText: Color(0xFFA6E8AD),
+    accentTint: Color(0x1A6FCF7A),
+    tag: Color(0xFF1F3A24),
+    onTag: Color(0xFFD8F5DB),
     against: Color(0xFFF47D67),
     inFavour: Color(0xFF72D48A),
-    photoStripeA: Color(0xFF232532),
-    photoStripeB: Color(0xFF2E3140),
+    photoStripeA: Color(0xFF18221B),
+    photoStripeB: Color(0xFF26322A),
     doubt: Color(0xFFF6A14F),
   );
 
   static const QoutPalette light = QoutPalette(
-    muted: Color(0xFF595D6C),
-    edge: Color(0xFFDFE2F0),
-    divider: Color(0x241B1D2B),
-    track: Color(0xFFE4E7F5),
-    accent: Color(0xFF796CBF),
-    accentText: Color(0xFF4F4589),
-    accentTint: Color(0x0F796CBF),
-    tag: Color(0xFFE7E5FE),
-    onTag: Color(0xFF423A6A),
+    muted: Color(0xFF5B665E),
+    edge: Color(0xFFE2E8E1),
+    divider: Color(0x2417201A),
+    track: Color(0xFFE6ECE5),
+    accent: Color(0xFF2E7D32),
+    accentText: Color(0xFF1F6A27),
+    accentTint: Color(0x142E7D32),
+    tag: Color(0xFFE3F1E3),
+    onTag: Color(0xFF1B4D20),
     against: Color(0xFFE05C45),
-    inFavour: Color(0xFF399D57),
-    photoStripeA: Color(0xFFFBFBFE),
-    photoStripeB: Color(0xFFE4E7F5),
+    inFavour: Color(0xFF2E8B47),
+    photoStripeA: Color(0xFFFFFFFF),
+    photoStripeB: Color(0xFFE6ECE5),
     doubt: Color(0xFF9A5400),
   );
 
@@ -204,23 +205,24 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
 ColorScheme _scheme(Brightness brightness) {
   final dark = brightness == Brightness.dark;
   final p = dark ? QoutPalette.dark : QoutPalette.light;
-  final ground = dark ? const Color(0xFF161826) : const Color(0xFFF3F5FE);
-  final surface = dark ? const Color(0xFF232532) : const Color(0xFFFBFBFE);
-  final text = dark ? const Color(0xFFE9E9ED) : const Color(0xFF1B1D2B);
+  final ground = dark ? const Color(0xFF0F1612) : const Color(0xFFF3F6F2);
+  final surface = dark ? const Color(0xFF18221B) : const Color(0xFFFFFFFF);
+  final text = dark ? const Color(0xFFE7EEE8) : const Color(0xFF17201A);
   return ColorScheme(
     brightness: brightness,
     primary: p.accent,
-    onPrimary: ground,
+    // White on the light green; the dark ground on the dark mode's green.
+    onPrimary: dark ? ground : const Color(0xFFFFFFFF),
     primaryContainer: p.tag,
     onPrimaryContainer: p.onTag,
     secondary: p.accent,
-    onSecondary: ground,
+    onSecondary: dark ? ground : const Color(0xFFFFFFFF),
     secondaryContainer: p.tag,
     onSecondaryContainer: p.onTag,
     tertiary: p.accent,
-    onTertiary: ground,
+    onTertiary: dark ? ground : const Color(0xFFFFFFFF),
     error: dark ? const Color(0xFFF47D67) : const Color(0xFFB4372A),
-    onError: dark ? const Color(0xFF161826) : const Color(0xFFFFFFFF),
+    onError: dark ? const Color(0xFF0F1612) : const Color(0xFFFFFFFF),
     errorContainer: dark ? const Color(0xFF4A2621) : const Color(0xFFFBE3DF),
     onErrorContainer: dark ? const Color(0xFFFFDAD3) : const Color(0xFF5C1A12),
     surface: ground,
@@ -310,31 +312,39 @@ ThemeData buildQoutTheme(Brightness brightness) {
     borderRadius: BorderRadius.circular(QoutRadius.md),
     side: BorderSide(color: p.edge),
   );
-  // Primary actions are an accent outline with a faint wash, never a fill.
+  // Cards: a soft shadow on the light ground, a hairline on the dark one.
+  final cardShape = RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(QoutRadius.lg),
+    side: dark ? BorderSide(color: p.edge) : BorderSide.none,
+  );
+  // Primary actions are filled with the green.
   final primaryAction = ButtonStyle(
     minimumSize: const WidgetStatePropertyAll(Size(64, 48)),
     padding: const WidgetStatePropertyAll(
       EdgeInsets.symmetric(horizontal: 16, vertical: 10),
     ),
-    shape: WidgetStatePropertyAll(shape),
+    shape: WidgetStatePropertyAll(
+      RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(QoutRadius.lg),
+      ),
+    ),
     textStyle: WidgetStatePropertyAll(text.labelLarge),
     elevation: const WidgetStatePropertyAll(0),
     backgroundColor: WidgetStateProperty.resolveWith(
-      (states) => states.contains(WidgetState.disabled)
-          ? Colors.transparent
-          : p.accentTint,
+      (states) =>
+          states.contains(WidgetState.disabled) ? p.track : scheme.primary,
     ),
     foregroundColor: WidgetStateProperty.resolveWith(
-      (states) => states.contains(WidgetState.disabled)
-          ? p.muted.withValues(alpha: 0.6)
-          : p.accentText,
+      (states) =>
+          states.contains(WidgetState.disabled) ? p.muted : scheme.onPrimary,
     ),
-    side: WidgetStateProperty.resolveWith(
-      (states) => BorderSide(
-        color: states.contains(WidgetState.disabled) ? p.edge : p.accent,
-      ),
+    iconColor: WidgetStateProperty.resolveWith(
+      (states) =>
+          states.contains(WidgetState.disabled) ? p.muted : scheme.onPrimary,
     ),
-    overlayColor: WidgetStatePropertyAll(p.accent.withValues(alpha: 0.12)),
+    overlayColor: WidgetStatePropertyAll(
+      scheme.onPrimary.withValues(alpha: 0.12),
+    ),
   );
   final inputBorder = OutlineInputBorder(
     borderRadius: BorderRadius.circular(QoutRadius.md),
@@ -434,9 +444,10 @@ ThemeData buildQoutTheme(Brightness brightness) {
     cardTheme: CardThemeData(
       color: scheme.surfaceContainer,
       surfaceTintColor: Colors.transparent,
-      elevation: 0,
+      elevation: dark ? 0 : 2,
+      shadowColor: const Color(0x2E17401C),
       margin: EdgeInsets.zero,
-      shape: edged,
+      shape: cardShape,
     ),
     listTileTheme: ListTileThemeData(
       iconColor: p.muted,
