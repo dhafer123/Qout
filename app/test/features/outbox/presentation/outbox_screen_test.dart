@@ -9,9 +9,9 @@ import 'package:qout/core/api/api_providers.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/core/database/database.dart';
 import 'package:qout/features/auth/presentation/sign_in_screen.dart';
-import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/outbox/domain/queued_contribution.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
+import 'package:qout/features/profile/presentation/profile_screen.dart';
 
 import '../../../helpers/fake_auth_api.dart';
 import '../../../helpers/fake_outbox.dart';
@@ -101,7 +101,8 @@ void main() {
   group('home card', () {
     testWidgets('hidden while nothing is queued', (tester) async {
       await open(tester);
-      expect(find.byType(OutboxCard), findsOneWidget);
+      // There, but empty: no height, so not on screen either.
+      expect(find.byType(OutboxCard, skipOffstage: false), findsOneWidget);
       expect(find.textContaining('waiting to be sent'), findsNothing);
       await tester.unmountQoutApp();
     });
@@ -317,7 +318,7 @@ void main() {
       );
       expect(trigger.signIns, 0); // starting signed out isn't signing in
 
-      await tester.tap(find.byTooltip('More'));
+      await tester.tap(find.byTooltip('Your profile'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sign in'));
       await tester.pumpAndSettle();
@@ -332,7 +333,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.byType(ProfileScreen), findsOneWidget);
       expect(trigger.signIns, 1);
     });
   });

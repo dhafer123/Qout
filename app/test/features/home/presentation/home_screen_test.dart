@@ -84,13 +84,20 @@ void main() {
     Future<void> pumpHome(
       WidgetTester tester, {
       FakeProductRepository? products,
-    }) => tester.pumpQoutApp(
-      history: history,
-      overrides: [
-        if (products != null)
-          productRepositoryProvider.overrideWithValue(products),
-      ],
-    );
+    }) async {
+      // Tall enough for every row: the list builds only what is on screen.
+      tester.view
+        ..physicalSize = const Size(800, 1600)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpQoutApp(
+        history: history,
+        overrides: [
+          if (products != null)
+            productRepositoryProvider.overrideWithValue(products),
+        ],
+      );
+    }
 
     Finder tile(String text) => find.ancestor(
       of: find.textContaining(text),
@@ -105,10 +112,8 @@ void main() {
         find.text('Scanned products appear here, also offline.'),
         findsOneWidget,
       );
-      await tester.tap(find.byTooltip('More'));
-      await tester.pumpAndSettle();
-      expect(find.text('Clear history'), findsNothing);
-      expect(find.text('Sign in'), findsOneWidget);
+      expect(find.bySemanticsLabel('Clear history'), findsNothing);
+      expect(find.byTooltip('Your profile'), findsOneWidget);
     });
 
     testWidgets('newest first, with grade, name and brand', (tester) async {
@@ -210,9 +215,8 @@ void main() {
         ..seed('222', at: t0.add(const Duration(minutes: 1)));
       await pumpHome(tester);
 
-      await tester.tap(find.byTooltip('More'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Clear history'));
+      // Next to the history heading.
+      await tester.tap(find.text('Clear'));
       await tester.pumpAndSettle();
       expect(find.text('Clear history?'), findsOneWidget);
 
@@ -220,11 +224,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(history.entries, hasLength(2));
 
-      await tester.tap(find.byTooltip('More'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Clear history'));
-      await tester.pumpAndSettle();
       await tester.tap(find.text('Clear'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
       await tester.pumpAndSettle();
 
       expect(history.entries, isEmpty);

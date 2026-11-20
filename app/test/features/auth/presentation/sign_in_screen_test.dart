@@ -224,10 +224,12 @@ void main() {
       refreshExpiresAt: DateTime.now().add(const Duration(days: 30)),
     );
 
-    testWidgets('signed out: Sign in opens the form', (tester) async {
+    testWidgets('signed out: Sign in on the profile opens the form', (
+      tester,
+    ) async {
       await tester.pumpQoutApp(tokens: tokens);
 
-      await tester.tap(find.byTooltip('More'));
+      await tester.tap(find.byTooltip('Your profile'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sign in'));
       await tester.pumpAndSettle();
@@ -235,23 +237,35 @@ void main() {
       expect(find.byType(SignInScreen), findsOneWidget);
     });
 
-    testWidgets('signed in: Sign out forgets the session', (tester) async {
+    testWidgets('signed in: Sign out on the profile asks, then forgets the '
+        'session', (tester) async {
       tokens.session = session;
       await tester.pumpQoutApp(
         tokens: tokens,
         overrides: [authApiProvider.overrideWithValue(api)],
       );
 
-      await tester.tap(find.byTooltip('More'));
+      // The profile button shows the account's initial.
+      expect(find.text('A'), findsOneWidget);
+      await tester.tap(find.byTooltip('Your profile'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Sign out (a@example.tn)'));
+      expect(find.text('a@example.tn'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Sign out'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(tokens.session, isNotNull);
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Sign out'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign out'));
       await tester.pumpAndSettle();
 
       expect(find.text('Signed out'), findsOneWidget);
       expect(tokens.session, isNull);
       expect(api.logouts, ['refresh-0']);
-      await tester.tap(find.byTooltip('More'));
-      await tester.pumpAndSettle();
+      expect(find.text('Not signed in'), findsOneWidget);
       expect(find.text('Sign in'), findsOneWidget);
     });
   });

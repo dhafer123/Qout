@@ -14,9 +14,14 @@ import '../../../helpers/fake_label_eval.dart';
 import '../../../helpers/pump_app.dart';
 
 void main() {
-  Future<void> openMenu(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('More'));
+  Future<void> openProfile(WidgetTester tester) async {
+    await tester.tap(find.byTooltip('Your profile'));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Label OCR (dev)'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
   }
 
   Future<FakeLabelEval> openScreen(
@@ -25,13 +30,13 @@ void main() {
   ]) async {
     final value = fake ?? FakeLabelEval();
     await tester.pumpQoutApp(overrides: value.overrides);
-    await openMenu(tester);
+    await openProfile(tester);
     await tester.tap(find.text('Label OCR (dev)'));
     await tester.pumpAndSettle();
     return value;
   }
 
-  testWidgets('dev builds open it from the home menu', (tester) async {
+  testWidgets('dev builds open it from the profile', (tester) async {
     await openScreen(tester);
 
     expect(find.byType(LabelEvalScreen), findsOneWidget);
@@ -40,14 +45,22 @@ void main() {
   });
 
   for (final flavor in [AppFlavor.staging, AppFlavor.prod]) {
-    testWidgets('${flavor.name} builds have neither menu item nor route', (
+    testWidgets('${flavor.name} builds have neither the item nor the route', (
       tester,
     ) async {
       await tester.pumpQoutApp(flavor: flavor);
-      await openMenu(tester);
+      await tester.tap(find.byTooltip('Your profile'));
+      await tester.pumpAndSettle();
+      await tester.fling(
+        find.byType(Scrollable).first,
+        const Offset(0, -5000),
+        5000,
+      );
+      await tester.pumpAndSettle();
 
+      expect(find.text('Developer'), findsNothing);
       expect(find.text('Label OCR (dev)'), findsNothing);
-      await tester.tapAt(Offset.zero); // close the menu
+      await tester.pageBack();
       await tester.pumpAndSettle();
 
       unawaited(

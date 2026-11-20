@@ -6,8 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
-import 'package:qout/core/env/app_env.dart';
-import 'package:qout/core/ui/fading_rule.dart';
 import 'package:qout/core/ui/section_label.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
@@ -25,11 +23,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textTheme = Theme.of(context).textTheme;
     final history = ref.watch(scanHistoryProvider);
-    final hasHistory = history.valueOrNull?.isNotEmpty ?? false;
-    final auth = ref.watch(authStateProvider).valueOrNull;
-    final dev = ref.watch(appEnvProvider).flavor == AppFlavor.dev;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -47,77 +41,14 @@ class HomeScreen extends ConsumerWidget {
             const Text('Qout'),
           ],
         ),
-        actions: [
-          PopupMenuButton<void>(
-            tooltip: 'More',
-            icon: const Icon(PhosphorIconsRegular.dotsThreeVertical),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                onTap: () => context.push(AppRoutes.profile),
-                child: const Text('Your profile'),
-              ),
-              if (auth case SignedIn(:final email))
-                PopupMenuItem(
-                  onTap: () => unawaited(_signOut(context, ref)),
-                  child: Text('Sign out ($email)'),
-                )
-              else
-                PopupMenuItem(
-                  onTap: () => context.push(AppRoutes.signIn),
-                  child: const Text('Sign in'),
-                ),
-              if (hasHistory)
-                PopupMenuItem(
-                  onTap: () => unawaited(_confirmClear(context, ref)),
-                  child: const Text('Clear history'),
-                ),
-              if (dev)
-                PopupMenuItem(
-                  onTap: () => context.push(AppRoutes.labelOcr),
-                  child: const Text('Label OCR (dev)'),
-                ),
-            ],
-          ),
-          const SizedBox(width: 4),
-        ],
+        actions: const [ProfileButton(), SizedBox(width: 8)],
       ),
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 290),
-                    child: Text(
-                      'Scan a food barcode to see its nutrition score.',
-                      style: textTheme.headlineSmall,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(56),
-                        textStyle: textTheme.titleSmall?.copyWith(
-                          fontSize: 17,
-                        ),
-                      ),
-                      onPressed: () => context.push(AppRoutes.scan),
-                      icon: const Icon(PhosphorIconsRegular.barcode, size: 24),
-                      label: const Text('Scan'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          const SliverToBoxAdapter(child: _ScanCard()),
           const SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
               child: OutboxCard(),
             ),
           ),
@@ -149,11 +80,24 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ]
                 : [
-                    const SliverToBoxAdapter(child: SectionLabel('History')),
+                    SliverToBoxAdapter(
+                      child: SectionLabel(
+                        'History',
+                        padding: const EdgeInsets.fromLTRB(16, 8, 4, 2),
+                        action: TextButton(
+                          onPressed: () =>
+                              unawaited(_confirmClear(context, ref)),
+                          child: const Text(
+                            'Clear',
+                            semanticsLabel: 'Clear history',
+                          ),
+                        ),
+                      ),
+                    ),
                     _HistoryList(entries),
                     SliverToBoxAdapter(
                       child: SizedBox(
-                        height: 24 + MediaQuery.paddingOf(context).bottom,
+                        height: 16 + MediaQuery.paddingOf(context).bottom,
                       ),
                     ),
                   ],
@@ -161,12 +105,6 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _signOut(BuildContext context, WidgetRef ref) async {
-    final messenger = ScaffoldMessenger.of(context);
-    await ref.read(authRepositoryProvider).signOut();
-    messenger.showSnackBar(const SnackBar(content: Text('Signed out')));
   }
 
   Future<void> _confirmClear(BuildContext context, WidgetRef ref) async {
@@ -191,6 +129,153 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
     if (clear ?? false) await ref.read(scanHistoryRepositoryProvider).clear();
+  }
+}
+
+/// Opens the profile: the account's initial when signed in, else a person.
+class ProfileButton extends ConsumerWidget {
+  const ProfileButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authStateProvider).valueOrNull;
+    final palette = QoutPalette.of(context);
+    final initial = switch (auth) {
+      SignedIn(:final email) when email.isNotEmpty =>
+        email.characters.first.toUpperCase(),
+      _ => null,
+    };
+    return IconButton(
+      tooltip: 'Your profile',
+      onPressed: () => context.push(AppRoutes.profile),
+      icon: SizedBox.square(
+        dimension: 34,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: initial == null ? null : palette.tag,
+            border: Border.all(
+              color: initial == null ? palette.edge : palette.accent,
+            ),
+          ),
+          child: Center(
+            child: initial == null
+                ? Icon(
+                    PhosphorIconsRegular.user,
+                    size: 19,
+                    color: palette.muted,
+                  )
+                : Text(
+                    initial,
+                    style: TextStyle(
+                      color: palette.onTag,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      height: 1,
+                    ),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The prompt and the scan button, on a card washed with the accent.
+class _ScanCard extends StatelessWidget {
+  const _ScanCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final palette = QoutPalette.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(QoutRadius.lg),
+          border: Border.all(color: palette.edge),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              palette.accent.withValues(alpha: dark ? 0.24 : 0.16),
+              theme.colorScheme.surfaceContainer,
+            ],
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(QoutRadius.lg),
+          child: Stack(
+            children: [
+              PositionedDirectional(
+                end: -14,
+                top: -14,
+                child: ExcludeSemantics(
+                  child: Icon(
+                    PhosphorIconsLight.barcode,
+                    size: 112,
+                    color: palette.accent.withValues(alpha: 0.09),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 290),
+                      child: Text(
+                        'Scan a food barcode to see its nutrition score.',
+                        style: textTheme.headlineSmall,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'No account needed. Scanned products stay on this '
+                      'phone, also offline.',
+                      // Not the muted grey: too faint on the wash.
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.82,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(56),
+                          // The deeper accent in light mode, for the
+                          // contrast of its label.
+                          backgroundColor: dark
+                              ? palette.accent
+                              : palette.accentText,
+                          foregroundColor: theme.colorScheme.surface,
+                          textStyle: textTheme.titleSmall?.copyWith(
+                            fontSize: 17,
+                          ),
+                        ),
+                        onPressed: () => context.push(AppRoutes.scan),
+                        icon: const Icon(
+                          PhosphorIconsRegular.barcode,
+                          size: 24,
+                        ),
+                        label: const Text('Scan'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -269,29 +354,29 @@ class _HistoryListState extends ConsumerState<_HistoryList> {
       itemBuilder: (context, index) {
         final entry = entries[index];
         final scheme = Theme.of(context).colorScheme;
-        return Dismissible(
-          key: ValueKey(entry.id),
-          direction: DismissDirection.endToStart,
-          background: ColoredBox(
-            color: scheme.errorContainer,
-            child: Align(
-              alignment: AlignmentDirectional.centerEnd,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Icon(
-                  PhosphorIconsRegular.trash,
-                  color: scheme.onErrorContainer,
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            child: Dismissible(
+              key: ValueKey(entry.id),
+              direction: DismissDirection.endToStart,
+              background: ColoredBox(
+                color: scheme.errorContainer,
+                child: Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Icon(
+                      PhosphorIconsRegular.trash,
+                      color: scheme.onErrorContainer,
+                    ),
+                  ),
                 ),
               ),
+              onDismissed: (_) => _remove(entry),
+              child: HistoryTile(entry: entry),
             ),
-          ),
-          onDismissed: (_) => _remove(entry),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              HistoryTile(entry: entry),
-              const FadingRule(),
-            ],
           ),
         );
       },
@@ -320,7 +405,7 @@ class HistoryTile extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 68),
         child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 12, 10),
+          padding: const EdgeInsetsDirectional.fromSTEB(12, 10, 10, 10),
           child: Row(
             children: [
               GradeBadge(

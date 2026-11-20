@@ -6,25 +6,32 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
+import 'package:qout/core/env/app_env.dart';
 import 'package:qout/core/ui/fading_rule.dart';
 import 'package:qout/core/ui/insets.dart';
-import 'package:qout/core/ui/section_label.dart';
+import 'package:qout/core/ui/section_card.dart';
 import 'package:qout/core/ui/state_message.dart';
+import 'package:qout/features/auth/data/auth_repository.dart';
+import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/product/presentation/product_labels.dart'
-    show formatAmount, formatEnergy;
+    show formatAmount, kjPerKcalForDisplay;
 import 'package:qout/features/profile/data/profile_repository.dart';
 import 'package:qout/features/profile/domain/profile_form.dart';
 import 'package:qout/features/profile/presentation/profile_labels.dart';
 import 'package:qout/health/needs.dart';
 import 'package:qout/health/profile.dart';
 
-/// The profile and the daily needs worked out from it (`/profile`).
+const _tabular = [FontFeature.tabularFigures()];
+
+/// The account, the profile and the daily needs worked out from it
+/// (`/profile`).
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(profileProvider);
+    final dev = ref.watch(appEnvProvider).flavor == AppFlavor.dev;
     return Scaffold(
       appBar: AppBar(title: const Text('Your profile')),
       body: profile.when(
@@ -36,14 +43,154 @@ class ProfileScreen extends ConsumerWidget {
         ),
         data: (profile) => ListView(
           padding: const EdgeInsets.only(
+            top: 4,
             bottom: 24,
           ).clearOfNavigationBar(context),
           children: [
-            if (profile == null) const _NoProfile() else _About(profile),
+            const _Account(),
+            if (profile == null) const _NoProfile(),
             _Needs(computeNeeds(profile)),
+            if (profile != null) _About(profile),
             const _AvoidedAdditives(),
-            if (profile != null) const _Actions(),
+            if (profile != null) const _DeleteProfile(),
+            if (dev) const _Developer(),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Who is signed in, with sign out; or why and where to sign in.
+class _Account extends ConsumerWidget {
+  const _Account();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authStateProvider).valueOrNull;
+    final textTheme = Theme.of(context).textTheme;
+    final palette = QoutPalette.of(context);
+    final email = switch (auth) {
+      SignedIn(:final email) => email,
+      _ => null,
+    };
+    return SectionCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              _Avatar(email: email),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      email == null ? 'Not signed in' : 'Signed in as',
+                      style: email == null
+                          ? textTheme.titleSmall
+                          : textTheme.bodySmall,
+                    ),
+                    Text(
+                      email ??
+                          'Scanning needs no account. Sign in to add '
+                              'products.',
+                      style: email == null
+                          ? textTheme.bodySmall
+                          : textTheme.titleSmall,
+                      maxLines: email == null ? null : 2,
+                      overflow: email == null ? null : TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          if (email == null)
+            FilledButton.icon(
+              onPressed: () => context.push(AppRoutes.signIn),
+              icon: const Icon(PhosphorIconsRegular.signIn, size: 20),
+              label: const Text('Sign in'),
+            )
+          else
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(foregroundColor: palette.muted),
+              onPressed: () => unawaited(_signOut(context, ref)),
+              icon: const Icon(PhosphorIconsRegular.signOut, size: 20),
+              label: const Text('Sign out'),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final signOut = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign out?'),
+        content: const Text(
+          'Scanning keeps working. Adding products needs you to sign in '
+          'again; anything waiting to be sent waits until then.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+    if (!(signOut ?? false)) return;
+    await ref.read(authRepositoryProvider).signOut();
+    messenger.showSnackBar(const SnackBar(content: Text('Signed out')));
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.email});
+
+  final String? email;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = QoutPalette.of(context);
+    final email = this.email;
+    final initial = email == null || email.isEmpty
+        ? null
+        : email.characters.first.toUpperCase();
+    return ExcludeSemantics(
+      child: SizedBox.square(
+        dimension: 48,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: initial == null ? palette.track : palette.tag,
+            border: Border.all(
+              color: initial == null ? palette.edge : palette.accent,
+            ),
+          ),
+          child: Center(
+            child: initial == null
+                ? Icon(PhosphorIconsRegular.user, color: palette.muted)
+                : Text(
+                    initial,
+                    style: TextStyle(
+                      color: palette.onTag,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      height: 1,
+                    ),
+                  ),
+          ),
         ),
       ),
     );
@@ -54,16 +201,13 @@ class _NoProfile extends StatelessWidget {
   const _NoProfile();
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+  Widget build(BuildContext context) => SectionCard(
+    title: 'No profile yet',
+    icon: PhosphorIconsRegular.userCircle,
+    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'No profile yet',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 6),
         const Text(
           'Add your age, height, weight and activity to compare products '
           'with your own daily needs. It stays on this phone.',
@@ -79,7 +223,7 @@ class _NoProfile extends StatelessWidget {
   );
 }
 
-/// What the user entered, and the BMI in neutral words.
+/// What the user entered, the BMI in neutral words, and the way to edit it.
 class _About extends StatelessWidget {
   const _About(this.profile);
 
@@ -94,26 +238,38 @@ class _About extends StatelessWidget {
             for (final allergen in Allergen.values)
               if (profile.allergens.contains(allergen)) allergenLabel(allergen),
           ].join(', ');
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const SectionLabel('About you'),
-        _Row('Sex', sexChoiceLabel(SexChoiceX.of(profile.sex))),
-        _Row('Age', '${profile.age} years'),
-        _Row('Height', '${formatAmount(profile.heightCm, decimals: 1)} cm'),
-        _Row('Weight', '${formatAmount(profile.weightKg, decimals: 1)} kg'),
-        _Row('Activity', activityTitle(profile.activity)),
-        _Row('Allergies', allergens),
-        _Row('BMI', '${bmi.display}, ${bmiText(bmi)}'),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-          child: Text(
-            'BMI does not tell muscle from fat; it is shown for information '
-            'only.',
-            style: Theme.of(context).textTheme.bodySmall,
+    return SectionCard(
+      title: 'About you',
+      icon: PhosphorIconsRegular.identificationCard,
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _Row('Sex', sexChoiceLabel(SexChoiceX.of(profile.sex))),
+          _Row('Age', '${profile.age} years'),
+          _Row('Height', '${formatAmount(profile.heightCm, decimals: 1)} cm'),
+          _Row('Weight', '${formatAmount(profile.weightKg, decimals: 1)} kg'),
+          _Row('Activity', activityTitle(profile.activity)),
+          _Row('Allergies', allergens),
+          _Row('BMI', '${bmi.display}, ${bmiText(bmi)}', last: true),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 2, 16, 14),
+            child: Text(
+              'BMI does not tell muscle from fat; it is shown for '
+              'information only.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: FilledButton.icon(
+              onPressed: () => context.push(AppRoutes.profileEdit),
+              icon: const Icon(PhosphorIconsRegular.pencilSimple, size: 20),
+              label: const Text('Edit profile'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -129,31 +285,182 @@ class _Needs extends StatelessWidget {
   Widget build(BuildContext context) {
     final personal = needs.basis == NeedsBasis.personal;
     final textTheme = Theme.of(context).textTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SectionLabel(personal ? 'Your daily needs' : 'Daily reference'),
-        _Row('Energy', formatEnergy(needs.energyKj.toDouble())),
-        _Row('Fat', 'up to ${needs.fatG} g'),
-        _Row('Saturated fat', 'up to ${needs.saturatesG} g'),
-        _Row('Sugars', '${needs.sugarsG} g (reference)'),
-        _Row('Salt', personal ? 'under ${needs.saltG} g' : '${needs.saltG} g'),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: Text(
-            personal
-                ? 'Energy to keep your current weight: EFSA (2013). Fat: up '
-                      'to 35 % of energy (EFSA). Saturated fat: 10 % of energy '
-                      '(WHO, 2023). Salt: WHO (2012). Sugars: the EU reference '
-                      'intake for total sugars; WHO advises keeping free '
-                      'sugars (added sugars, honey, syrups, fruit juices) '
-                      'under 10 % of energy.'
-                : '${referenceReasonText(needs.referenceReason!)} '
-                      'Regulation (EU) 1169/2011, Annex XIII.',
-            style: textTheme.bodySmall,
+    final palette = QoutPalette.of(context);
+    final kj = needs.energyKj;
+    final kcal = formatAmount(kj / kjPerKcalForDisplay, decimals: 0);
+    final energySpoken = '$kcal kilocalories, $kj kilojoules a day';
+    return SectionCard(
+      title: personal ? 'Your daily needs' : 'Daily reference',
+      icon: PhosphorIconsRegular.target,
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(
+            label: 'Energy: $energySpoken',
+            excludeSemantics: true,
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.end,
+              spacing: 8,
+              children: [
+                Text(
+                  '$kcal kcal',
+                  style: textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: _tabular,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 3),
+                  child: Text(
+                    '$kj kJ a day',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: palette.muted,
+                      fontFeatures: _tabular,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          _NeedTiles(
+            tiles: [
+              ('Fat', 'up to', '${needs.fatG} g'),
+              ('Saturated fat', 'up to', '${needs.saturatesG} g'),
+              ('Sugars (reference)', null, '${needs.sugarsG} g'),
+              ('Salt', personal ? 'under' : null, '${needs.saltG} g'),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Theme(
+            // No lines above and below the opened tile.
+            data: Theme.of(
+              context,
+            ).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: const EdgeInsets.only(bottom: 14),
+              expandedAlignment: Alignment.centerLeft,
+              iconColor: palette.muted,
+              collapsedIconColor: palette.muted,
+              title: Text(
+                personal ? 'How these are worked out' : 'Where these come from',
+                style: textTheme.bodySmall,
+              ),
+              children: [
+                Text(
+                  personal
+                      ? 'Energy to keep your current weight: EFSA (2013). '
+                            'Fat: up to 35 % of energy (EFSA). Saturated '
+                            'fat: 10 % of energy (WHO, 2023). Salt: WHO '
+                            '(2012). Sugars: the EU reference intake for '
+                            'total sugars; WHO advises keeping free sugars '
+                            '(added sugars, honey, syrups, fruit juices) '
+                            'under 10 % of energy.'
+                      : '${referenceReasonText(needs.referenceReason!)} '
+                            'Regulation (EU) 1169/2011, Annex XIII.',
+                  style: textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Two tiles per row; one per row when text is large.
+class _NeedTiles extends StatelessWidget {
+  const _NeedTiles({required this.tiles});
+
+  /// Label, the word before the amount (or none), the amount.
+  final List<(String, String?, String)> tiles;
+
+  @override
+  Widget build(BuildContext context) {
+    final large = MediaQuery.textScalerOf(context).scale(10) > 13;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const gap = 8.0;
+        final width = large
+            ? constraints.maxWidth
+            : (constraints.maxWidth - gap) / 2;
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            for (final (label, qualifier, amount) in tiles)
+              SizedBox(
+                width: width,
+                child: _NeedTile(
+                  label: label,
+                  qualifier: qualifier,
+                  amount: amount,
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _NeedTile extends StatelessWidget {
+  const _NeedTile({
+    required this.label,
+    required this.qualifier,
+    required this.amount,
+  });
+
+  final String label;
+  final String? qualifier;
+  final String amount;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final palette = QoutPalette.of(context);
+    final qualifier = this.qualifier;
+    final spoken = [label, ?qualifier, amount].join(', ');
+    return Semantics(
+      label: spoken,
+      excludeSemantics: true,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: palette.track.withValues(alpha: 0.55),
+          borderRadius: BorderRadius.circular(QoutRadius.md),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: textTheme.bodySmall),
+              const SizedBox(height: 2),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    if (qualifier != null)
+                      TextSpan(
+                        text: '$qualifier ',
+                        style: textTheme.bodySmall,
+                      ),
+                    TextSpan(
+                      text: amount,
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontFeatures: _tabular,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }
@@ -168,48 +475,48 @@ class _AvoidedAdditives extends ConsumerWidget {
         (ref.watch(avoidedAdditivesProvider).valueOrNull ?? const {}).toList()
           ..sort();
     if (codes.isEmpty) return const SizedBox.shrink();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const SectionLabel('Additives you avoid'),
-        for (final code in codes)
-          ListTile(
-            title: Text(code),
-            trailing: TextButton(
-              onPressed: () => ref
-                  .read(profileRepositoryProvider)
-                  .setAvoided(code, avoid: false),
-              child: Text('Remove', semanticsLabel: 'Stop avoiding $code'),
+    return SectionCard(
+      title: 'Additives you avoid',
+      icon: PhosphorIconsRegular.prohibit,
+      iconColor: Theme.of(context).colorScheme.error,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final code in codes)
+            ListTile(
+              title: Text(code),
+              trailing: TextButton(
+                onPressed: () => ref
+                    .read(profileRepositoryProvider)
+                    .setAvoided(code, avoid: false),
+                child: Text('Remove', semanticsLabel: 'Stop avoiding $code'),
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _Actions extends ConsumerWidget {
-  const _Actions();
+class _DeleteProfile extends ConsumerWidget {
+  const _DeleteProfile();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Padding(
-    padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        FilledButton.icon(
-          onPressed: () => context.push(AppRoutes.profileEdit),
-          icon: const Icon(PhosphorIconsRegular.pencilSimple, size: 20),
-          label: const Text('Edit profile'),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final error = Theme.of(context).colorScheme.error;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: error,
+          side: BorderSide(color: error.withValues(alpha: 0.5)),
         ),
-        const SizedBox(height: 8),
-        TextButton.icon(
-          onPressed: () => unawaited(_confirmDelete(context, ref)),
-          icon: const Icon(PhosphorIconsRegular.trash, size: 20),
-          label: const Text('Delete my profile'),
-        ),
-      ],
-    ),
-  );
+        onPressed: () => unawaited(_confirmDelete(context, ref)),
+        icon: const Icon(PhosphorIconsRegular.trash, size: 20),
+        label: const Text('Delete my profile'),
+      ),
+    );
+  }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
     final delete = await showDialog<bool>(
@@ -237,13 +544,32 @@ class _Actions extends ConsumerWidget {
   }
 }
 
+/// Dev flavor only: tools for building the app.
+class _Developer extends StatelessWidget {
+  const _Developer();
+
+  @override
+  Widget build(BuildContext context) => SectionCard(
+    title: 'Developer',
+    icon: PhosphorIconsRegular.wrench,
+    margin: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+    child: ListTile(
+      title: const Text('Label OCR (dev)'),
+      subtitle: const Text('Photograph labels for the parser evaluation'),
+      trailing: const Icon(PhosphorIconsRegular.caretRight, size: 18),
+      onTap: () => context.push(AppRoutes.labelOcr),
+    ),
+  );
+}
+
 /// A label and its value; the value moves under the label when space is
 /// short (large text).
 class _Row extends StatelessWidget {
-  const _Row(this.label, this.value);
+  const _Row(this.label, this.value, {this.last = false});
 
   final String label;
   final String value;
+  final bool last;
 
   @override
   Widget build(BuildContext context) {
@@ -267,13 +593,13 @@ class _Row extends StatelessWidget {
                 Text(
                   value,
                   style: textTheme.bodyMedium?.copyWith(
-                    fontFeatures: const [FontFeature.tabularFigures()],
+                    fontFeatures: _tabular,
                   ),
                 ),
               ],
             ),
           ),
-          const FadingRule(),
+          if (!last) const FadingRule(),
         ],
       ),
     );

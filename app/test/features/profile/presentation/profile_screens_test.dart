@@ -49,11 +49,9 @@ void main() {
   }
 
   group('profile screen', () {
-    testWidgets('opened from the home menu', (tester) async {
+    testWidgets('opened from the profile button on home', (tester) async {
       await open(tester, AppRoutes.home);
-      await tester.tap(find.byTooltip('More'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Your profile'));
+      await tester.tap(find.byTooltip('Your profile'));
       await tester.pumpAndSettle();
       expect(find.byType(ProfileScreen), findsOneWidget);
       await tester.unmountQoutApp();
@@ -64,11 +62,15 @@ void main() {
     ) async {
       await open(tester, AppRoutes.profile);
       expect(find.text('No profile yet'), findsOneWidget);
-      expect(find.text('DAILY REFERENCE'), findsOneWidget);
-      expect(find.text('8400 kJ / 2008 kcal'), findsOneWidget);
+      expect(find.text('Daily reference'), findsOneWidget);
+      expect(find.text('2008 kcal'), findsOneWidget);
+      expect(find.text('8400 kJ a day'), findsOneWidget);
       expect(find.text('up to 70 g'), findsOneWidget); // fat
       expect(find.text('up to 20 g'), findsOneWidget); // saturates
       expect(find.text('6 g'), findsOneWidget); // salt
+      expect(find.textContaining('Without a profile'), findsNothing); // folded
+      await tester.tap(find.text('Where these come from'));
+      await tester.pumpAndSettle();
       expect(find.textContaining('Without a profile'), findsOneWidget);
       expect(find.text('Delete my profile'), findsNothing);
 
@@ -96,12 +98,16 @@ void main() {
         findsOneWidget,
       );
       // scoring-spec/needs/cases/personal--female-22-active.json
-      expect(find.text('YOUR DAILY NEEDS'), findsOneWidget);
-      expect(find.text('10029 kJ / 2397 kcal'), findsOneWidget);
+      expect(find.text('Your daily needs'), findsOneWidget);
+      expect(find.text('2397 kcal'), findsOneWidget);
+      expect(find.text('10029 kJ a day'), findsOneWidget);
       expect(find.text('up to 95 g'), findsOneWidget);
       expect(find.text('up to 27 g'), findsOneWidget);
-      expect(find.text('90 g (reference)'), findsOneWidget);
+      expect(find.text('Sugars (reference)'), findsOneWidget);
+      expect(find.text('90 g'), findsOneWidget);
       expect(find.text('under 5 g'), findsOneWidget);
+      await tester.tap(find.text('How these are worked out'));
+      await tester.pumpAndSettle();
       expect(find.textContaining('EFSA (2013)'), findsOneWidget);
       await tester.unmountQoutApp();
     });
@@ -120,7 +126,9 @@ void main() {
       );
       await open(tester, AppRoutes.profile);
       expect(find.text('Prefer not to say'), findsOneWidget);
-      expect(find.text('8400 kJ / 2008 kcal'), findsOneWidget);
+      expect(find.text('2008 kcal'), findsOneWidget);
+      await tester.tap(find.text('Where these come from'));
+      await tester.pumpAndSettle();
       expect(
         find.textContaining('without your sex Qout uses the EU reference'),
         findsOneWidget,

@@ -226,10 +226,10 @@ void main() {
       GoRouter.of(tester.element(find.text('For you'))).push(AppRoutes.profile),
     );
     await tester.pumpAndSettle();
-    expect(find.text('ADDITIVES YOU AVOID'), findsOneWidget);
+    expect(find.text('Additives you avoid'), findsOneWidget);
     await tester.tap(find.bySemanticsLabel('Stop avoiding E476'));
     await tester.pumpAndSettle();
-    expect(find.text('ADDITIVES YOU AVOID'), findsNothing);
+    expect(find.text('Additives you avoid'), findsNothing);
     expect(await avoided(), '[]');
     await tester.unmountQoutApp();
   });

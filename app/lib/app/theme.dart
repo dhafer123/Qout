@@ -359,7 +359,12 @@ ThemeData buildQoutTheme(Brightness brightness) {
       closeButtonIconBuilder: (context) => const Icon(PhosphorIconsRegular.x),
     ),
     appBarTheme: AppBarTheme(
-      backgroundColor: scheme.surface,
+      // A shade lighter once content scrolls under it, so its edge shows.
+      backgroundColor: WidgetStateColor.resolveWith(
+        (states) => states.contains(WidgetState.scrolledUnder)
+            ? Color.lerp(scheme.surface, scheme.surfaceContainer, 0.6)!
+            : scheme.surface,
+      ),
       foregroundColor: scheme.onSurface,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
