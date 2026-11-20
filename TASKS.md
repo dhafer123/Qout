@@ -288,12 +288,13 @@ Many Tunisian products are on Open Food Facts without nutrition values (39 of 77
 
 ### T31d · UI fixes after manual testing
 Found testing on a phone (Android 16, 3-button navigation, 2026-11-20): content scrolls under a dark scrim behind the system navigation bar and the last buttons of long screens sit under it; the home "⋮" menu is a wide panel mixing profile, account, history and dev links; screens read as long flat pages.
-- [ ] Edge to edge: transparent navigation bar without the contrast scrim, icon colours per theme; every scrolling screen ends above the navigation bar
-- [ ] Home: profile button in the app bar instead of the "⋮" menu; "Clear" next to the history heading; the scan prompt as a card; history rows as cards
-- [ ] Profile: account card with sign in / sign out (moved from home), daily needs as tiles, sources folded away, sections as cards, "Label OCR" (dev flavor) moved here
-- [ ] Product: sections as cards, product name in the app bar once scrolled, labelled "Avoid" chip; the "Not evaluated" and "– not declared" notes only when they apply
-- [ ] Short entrance animations (`flutter_animate`), off with reduced motion
+- [x] Edge to edge: transparent navigation bar without the contrast scrim, icon colours per theme; every scrolling screen ends above the navigation bar
+- [x] Home: profile button in the app bar instead of the "⋮" menu; "Clear" next to the history heading; the scan prompt as a card; history rows as cards
+- [x] Profile: account card with sign in / sign out (moved from home), daily needs as tiles, sources folded away, sections as cards, "Label OCR" (dev flavor) moved here
+- [x] Product: sections as cards, product name in the app bar once scrolled, labelled "Avoid" chip; the "Not evaluated" and "– not declared" notes only when they apply
+- [x] Short entrance animations, off with reduced motion (changed: no `flutter_animate`, see below)
 - Tests: **W** regression per scrolling screen (last action above a 48 dp navigation bar); home, profile and product tests follow the new controls.
+- Done (2026-11-20): app 1199 tests. `qoutSystemOverlayStyle` (theme) sets transparent bars without the contrast scrim, applied by the app bars and by an `AnnotatedRegion` around the whole app; `main` asks for edge-to-edge on every Android version. `EdgeInsets.clearOfNavigationBar` (`core/ui/insets.dart`) adds the bar's height at the end of every scroll view; screens already in a `SafeArea` (sign in, contribution flow, welcome) were fine; the report sheet adds it under its send button. Shared `SectionCard` (`core/ui/section_card.dart`: card, icon tile, title) for the profile and product sections; `SectionLabel` takes an `action` (history's "Clear", read as "Clear history"). Sign out now asks first. Daily needs: energy in kcal with kJ beside it (the shared `kjPerKcalForDisplay`), four tiles, sources in a folded "How these are worked out" / "Where these come from". App bars take a lighter shade when content scrolls under them. The score bar in "Why this score" shortens when large text leaves no room (it overflowed at text ×2 inside the cards). Entrance animations: `core/ui/entrance.dart` (`EntranceScope` + `Entrance`, `TweenAnimationBuilder`), not `flutter_animate`: it would replay on rows scrolled back into view, and the in-house version is 40 lines with no new dependency.
 
 ---
 
