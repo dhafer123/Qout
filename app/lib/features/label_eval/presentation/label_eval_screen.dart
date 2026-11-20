@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qout/core/photos/label_photo_picker.dart';
+import 'package:qout/core/ui/insets.dart';
 import 'package:qout/features/label_eval/presentation/label_eval_controller.dart';
 
 /// Dev builds only: photographs nutrition labels for the parser evaluation
@@ -18,7 +19,7 @@ class LabelEvalScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Label OCR (dev)')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16).clearOfNavigationBar(context),
         children: [
           const Text(
             'Photograph a nutrition table as a user would: phone straight, '

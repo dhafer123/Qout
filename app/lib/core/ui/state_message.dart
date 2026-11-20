@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qout/app/theme.dart';
+import 'package:qout/core/ui/insets.dart';
 
 /// A whole-screen state (empty, offline, error, not found): an icon, a title,
 /// an explanation and its actions, flush left and scrollable so large text
@@ -25,7 +26,12 @@ class StateMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 32, 16, 24),
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        32,
+        16,
+        24,
+      ).clearOfNavigationBar(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -8,6 +8,7 @@ import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/core/ui/fading_rule.dart';
+import 'package:qout/core/ui/insets.dart';
 import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
@@ -117,7 +118,9 @@ class _ProductView extends StatelessWidget {
     final product = found.product;
     final explanation = explainScore(product);
     return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(
+        bottom: 24,
+      ).clearOfNavigationBar(context),
       children: [
         if (found.freshness == ProductFreshness.refreshFailed)
           _StaleBanner(found),

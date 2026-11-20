@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 /// Qout's look: the "Nocturne" direction (Claude Design handoff, 2026-11-18).
@@ -276,6 +277,26 @@ TextTheme _textTheme(Color text, Color muted) {
   );
 }
 
+/// The system bars over the app in [brightness]: transparent, the app's
+/// ground showing through, icons in the theme's contrast. Android's
+/// contrast scrim (a dark band behind the 3-button navigation) is off: the
+/// ground already gives the icons enough contrast.
+SystemUiOverlayStyle qoutSystemOverlayStyle(Brightness brightness) {
+  final dark = brightness == Brightness.dark;
+  final icons = dark ? Brightness.light : Brightness.dark;
+  return SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: icons,
+    // iOS: the brightness of the bar's background, not of its icons.
+    statusBarBrightness: brightness,
+    systemStatusBarContrastEnforced: false,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+    systemNavigationBarIconBrightness: icons,
+    systemNavigationBarContrastEnforced: false,
+  );
+}
+
 /// The theme for [brightness].
 ThemeData buildQoutTheme(Brightness brightness) {
   final dark = brightness == Brightness.dark;
@@ -345,6 +366,7 @@ ThemeData buildQoutTheme(Brightness brightness) {
       scrolledUnderElevation: 0,
       centerTitle: false,
       titleSpacing: 16,
+      systemOverlayStyle: qoutSystemOverlayStyle(brightness),
       titleTextStyle: text.titleLarge?.copyWith(
         fontSize: 20,
         letterSpacing: -0.2,

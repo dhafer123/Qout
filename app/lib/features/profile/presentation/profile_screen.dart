@@ -7,6 +7,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/fading_rule.dart';
+import 'package:qout/core/ui/insets.dart';
 import 'package:qout/core/ui/section_label.dart';
 import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/product/presentation/product_labels.dart'
@@ -34,7 +35,9 @@ class ProfileScreen extends ConsumerWidget {
           message: 'Try again later.',
         ),
         data: (profile) => ListView(
-          padding: const EdgeInsets.only(bottom: 24),
+          padding: const EdgeInsets.only(
+            bottom: 24,
+          ).clearOfNavigationBar(context),
           children: [
             if (profile == null) const _NoProfile() else _About(profile),
             _Needs(computeNeeds(profile)),

@@ -151,7 +151,11 @@ class HomeScreen extends ConsumerWidget {
                 : [
                     const SliverToBoxAdapter(child: SectionLabel('History')),
                     _HistoryList(entries),
-                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: 24 + MediaQuery.paddingOf(context).bottom,
+                      ),
+                    ),
                   ],
           ),
         ],

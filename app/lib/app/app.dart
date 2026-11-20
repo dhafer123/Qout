@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
@@ -18,8 +19,13 @@ class QoutApp extends ConsumerWidget {
       // The debug banner marks non-prod builds.
       debugShowCheckedModeBanner: env.flavor != AppFlavor.prod,
       routerConfig: ref.watch(routerProvider),
-      // Sends queued contributions and reports while the app runs (T30).
-      builder: (context, child) => OutboxSyncHost(child: child!),
+      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+        // The navigation bar's look on every screen (app bars set the
+        // status bar's).
+        value: qoutSystemOverlayStyle(Theme.of(context).brightness),
+        // Sends queued contributions and reports while the app runs (T30).
+        child: OutboxSyncHost(child: child!),
+      ),
     );
   }
 }

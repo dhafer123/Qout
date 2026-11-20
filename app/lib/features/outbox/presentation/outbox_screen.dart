@@ -9,6 +9,7 @@ import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/database/database.dart';
 import 'package:qout/core/database/database_provider.dart';
+import 'package:qout/core/ui/insets.dart';
 import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/outbox/data/outbox.dart';
 import 'package:qout/features/outbox/domain/queued_contribution.dart';
@@ -78,7 +79,12 @@ class OutboxScreen extends ConsumerWidget {
           message: 'Everything has been sent.',
         ),
         AsyncData(value: final rows) => ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          padding: const EdgeInsets.fromLTRB(
+            16,
+            8,
+            16,
+            24,
+          ).clearOfNavigationBar(context),
           children: [
             Text(
               'Sent automatically while the app is open and online.',

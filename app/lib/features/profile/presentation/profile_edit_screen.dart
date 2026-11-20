@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
+import 'package:qout/core/ui/insets.dart';
 import 'package:qout/core/ui/section_label.dart';
 import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/profile/data/profile_repository.dart';
@@ -113,7 +114,9 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
     final palette = QoutPalette.of(context);
     const gutter = EdgeInsets.symmetric(horizontal: 16);
     return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(
+        bottom: 24,
+      ).clearOfNavigationBar(context),
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),

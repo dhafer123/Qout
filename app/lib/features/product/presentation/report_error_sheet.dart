@@ -111,7 +111,11 @@ class _ReportErrorSheetState extends ConsumerState<ReportErrorSheet> {
       padding: EdgeInsets.only(
         left: 16,
         right: 16,
-        bottom: MediaQuery.viewInsetsOf(context).bottom + 16,
+        // The keyboard when it is open, else the navigation bar.
+        bottom:
+            MediaQuery.viewInsetsOf(context).bottom +
+            MediaQuery.paddingOf(context).bottom +
+            16,
       ),
       child: SingleChildScrollView(
         child: Column(
