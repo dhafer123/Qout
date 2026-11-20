@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qout/app/app_shell.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/env/app_env.dart';
-import 'package:qout/features/home/presentation/home_screen.dart';
+import 'package:qout/features/history/presentation/scan_history_list.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/health/profile.dart';
@@ -44,12 +45,15 @@ void main() {
     matching: find.byWidgetPredicate((widget) => widget is ButtonStyleButton),
   );
 
+  /// Above the system navigation bar, and above the app's tab bar on the
+  /// tabs (T41).
   void expectAboveNavigationBar(WidgetTester tester, Finder finder) {
     expect(finder, findsOneWidget);
-    expect(
-      tester.getRect(finder).bottom,
-      lessThanOrEqualTo(screen.height - navigationBar),
-    );
+    final tabBar = find.byType(QoutNavBar);
+    final limit = tabBar.evaluate().isEmpty
+        ? screen.height - navigationBar
+        : tester.getRect(tabBar).top;
+    expect(tester.getRect(finder).bottom, lessThanOrEqualTo(limit));
   }
 
   Profile profile() => Profile(
@@ -84,13 +88,15 @@ void main() {
     }
   });
 
-  testWidgets('home: the last scan', (tester) async {
+  testWidgets('diary: the last scan', (tester) async {
     await configure(tester);
     final history = FakeScanHistoryRepository();
     for (var i = 0; i < 10; i++) {
       history.seed('619123456789$i', at: DateTime.utc(2026, 11, 13, i));
     }
     await tester.pumpQoutApp(history: history);
+    await tester.pushRoute(AppRoutes.diary);
+    await tester.pumpAndSettle();
     await scrollToEnd(tester);
     expectAboveNavigationBar(tester, find.byType(HistoryTile).last);
   });

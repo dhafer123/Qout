@@ -1262,6 +1262,17 @@ class $LocalProfileTable extends LocalProfile
     requiredDuringInsert: false,
     defaultValue: const Constant('[]'),
   );
+  static const VerificationMeta _firstNameMeta = const VerificationMeta(
+    'firstName',
+  );
+  @override
+  late final GeneratedColumn<String> firstName = GeneratedColumn<String>(
+    'first_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1274,6 +1285,7 @@ class $LocalProfileTable extends LocalProfile
     pal,
     allergens,
     avoidedAdditives,
+    firstName,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1355,6 +1367,12 @@ class $LocalProfileTable extends LocalProfile
         ),
       );
     }
+    if (data.containsKey('first_name')) {
+      context.handle(
+        _firstNameMeta,
+        firstName.isAcceptableOrUnknown(data['first_name']!, _firstNameMeta),
+      );
+    }
     return context;
   }
 
@@ -1404,6 +1422,10 @@ class $LocalProfileTable extends LocalProfile
         DriftSqlType.string,
         data['${effectivePrefix}avoided_additives'],
       )!,
+      firstName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}first_name'],
+      ),
     );
   }
 
@@ -1435,6 +1457,9 @@ class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
 
   /// Additive codes to avoid (T40), as a JSON list.
   final String avoidedAdditives;
+
+  /// For the greeting (T41); optional, trimmed, null when not given.
+  final String? firstName;
   const LocalProfileRow({
     required this.id,
     required this.onboardingCompletedAt,
@@ -1446,6 +1471,7 @@ class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
     this.pal,
     required this.allergens,
     required this.avoidedAdditives,
+    this.firstName,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1472,6 +1498,9 @@ class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
     }
     map['allergens'] = Variable<String>(allergens);
     map['avoided_additives'] = Variable<String>(avoidedAdditives);
+    if (!nullToAbsent || firstName != null) {
+      map['first_name'] = Variable<String>(firstName);
+    }
     return map;
   }
 
@@ -1493,6 +1522,9 @@ class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
       pal: pal == null && nullToAbsent ? const Value.absent() : Value(pal),
       allergens: Value(allergens),
       avoidedAdditives: Value(avoidedAdditives),
+      firstName: firstName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firstName),
     );
   }
 
@@ -1514,6 +1546,7 @@ class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
       pal: serializer.fromJson<String?>(json['pal']),
       allergens: serializer.fromJson<String>(json['allergens']),
       avoidedAdditives: serializer.fromJson<String>(json['avoidedAdditives']),
+      firstName: serializer.fromJson<String?>(json['firstName']),
     );
   }
   @override
@@ -1532,6 +1565,7 @@ class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
       'pal': serializer.toJson<String?>(pal),
       'allergens': serializer.toJson<String>(allergens),
       'avoidedAdditives': serializer.toJson<String>(avoidedAdditives),
+      'firstName': serializer.toJson<String?>(firstName),
     };
   }
 
@@ -1546,6 +1580,7 @@ class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
     Value<String?> pal = const Value.absent(),
     String? allergens,
     String? avoidedAdditives,
+    Value<String?> firstName = const Value.absent(),
   }) => LocalProfileRow(
     id: id ?? this.id,
     onboardingCompletedAt: onboardingCompletedAt ?? this.onboardingCompletedAt,
@@ -1557,6 +1592,7 @@ class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
     pal: pal.present ? pal.value : this.pal,
     allergens: allergens ?? this.allergens,
     avoidedAdditives: avoidedAdditives ?? this.avoidedAdditives,
+    firstName: firstName.present ? firstName.value : this.firstName,
   );
   LocalProfileRow copyWithCompanion(LocalProfileCompanion data) {
     return LocalProfileRow(
@@ -1576,6 +1612,7 @@ class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
       avoidedAdditives: data.avoidedAdditives.present
           ? data.avoidedAdditives.value
           : this.avoidedAdditives,
+      firstName: data.firstName.present ? data.firstName.value : this.firstName,
     );
   }
 
@@ -1591,7 +1628,8 @@ class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
           ..write('weightKg: $weightKg, ')
           ..write('pal: $pal, ')
           ..write('allergens: $allergens, ')
-          ..write('avoidedAdditives: $avoidedAdditives')
+          ..write('avoidedAdditives: $avoidedAdditives, ')
+          ..write('firstName: $firstName')
           ..write(')'))
         .toString();
   }
@@ -1608,6 +1646,7 @@ class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
     pal,
     allergens,
     avoidedAdditives,
+    firstName,
   );
   @override
   bool operator ==(Object other) =>
@@ -1622,7 +1661,8 @@ class LocalProfileRow extends DataClass implements Insertable<LocalProfileRow> {
           other.weightKg == this.weightKg &&
           other.pal == this.pal &&
           other.allergens == this.allergens &&
-          other.avoidedAdditives == this.avoidedAdditives);
+          other.avoidedAdditives == this.avoidedAdditives &&
+          other.firstName == this.firstName);
 }
 
 class LocalProfileCompanion extends UpdateCompanion<LocalProfileRow> {
@@ -1636,6 +1676,7 @@ class LocalProfileCompanion extends UpdateCompanion<LocalProfileRow> {
   final Value<String?> pal;
   final Value<String> allergens;
   final Value<String> avoidedAdditives;
+  final Value<String?> firstName;
   const LocalProfileCompanion({
     this.id = const Value.absent(),
     this.onboardingCompletedAt = const Value.absent(),
@@ -1647,6 +1688,7 @@ class LocalProfileCompanion extends UpdateCompanion<LocalProfileRow> {
     this.pal = const Value.absent(),
     this.allergens = const Value.absent(),
     this.avoidedAdditives = const Value.absent(),
+    this.firstName = const Value.absent(),
   });
   LocalProfileCompanion.insert({
     this.id = const Value.absent(),
@@ -1659,6 +1701,7 @@ class LocalProfileCompanion extends UpdateCompanion<LocalProfileRow> {
     this.pal = const Value.absent(),
     this.allergens = const Value.absent(),
     this.avoidedAdditives = const Value.absent(),
+    this.firstName = const Value.absent(),
   }) : onboardingCompletedAt = Value(onboardingCompletedAt);
   static Insertable<LocalProfileRow> custom({
     Expression<int>? id,
@@ -1671,6 +1714,7 @@ class LocalProfileCompanion extends UpdateCompanion<LocalProfileRow> {
     Expression<String>? pal,
     Expression<String>? allergens,
     Expression<String>? avoidedAdditives,
+    Expression<String>? firstName,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1684,6 +1728,7 @@ class LocalProfileCompanion extends UpdateCompanion<LocalProfileRow> {
       if (pal != null) 'pal': pal,
       if (allergens != null) 'allergens': allergens,
       if (avoidedAdditives != null) 'avoided_additives': avoidedAdditives,
+      if (firstName != null) 'first_name': firstName,
     });
   }
 
@@ -1698,6 +1743,7 @@ class LocalProfileCompanion extends UpdateCompanion<LocalProfileRow> {
     Value<String?>? pal,
     Value<String>? allergens,
     Value<String>? avoidedAdditives,
+    Value<String?>? firstName,
   }) {
     return LocalProfileCompanion(
       id: id ?? this.id,
@@ -1711,6 +1757,7 @@ class LocalProfileCompanion extends UpdateCompanion<LocalProfileRow> {
       pal: pal ?? this.pal,
       allergens: allergens ?? this.allergens,
       avoidedAdditives: avoidedAdditives ?? this.avoidedAdditives,
+      firstName: firstName ?? this.firstName,
     );
   }
 
@@ -1749,6 +1796,9 @@ class LocalProfileCompanion extends UpdateCompanion<LocalProfileRow> {
     if (avoidedAdditives.present) {
       map['avoided_additives'] = Variable<String>(avoidedAdditives.value);
     }
+    if (firstName.present) {
+      map['first_name'] = Variable<String>(firstName.value);
+    }
     return map;
   }
 
@@ -1764,7 +1814,8 @@ class LocalProfileCompanion extends UpdateCompanion<LocalProfileRow> {
           ..write('weightKg: $weightKg, ')
           ..write('pal: $pal, ')
           ..write('allergens: $allergens, ')
-          ..write('avoidedAdditives: $avoidedAdditives')
+          ..write('avoidedAdditives: $avoidedAdditives, ')
+          ..write('firstName: $firstName')
           ..write(')'))
         .toString();
   }
@@ -2412,6 +2463,7 @@ typedef $$LocalProfileTableCreateCompanionBuilder =
       Value<String?> pal,
       Value<String> allergens,
       Value<String> avoidedAdditives,
+      Value<String?> firstName,
     });
 typedef $$LocalProfileTableUpdateCompanionBuilder =
     LocalProfileCompanion Function({
@@ -2425,6 +2477,7 @@ typedef $$LocalProfileTableUpdateCompanionBuilder =
       Value<String?> pal,
       Value<String> allergens,
       Value<String> avoidedAdditives,
+      Value<String?> firstName,
     });
 
 class $$LocalProfileTableFilterComposer
@@ -2483,6 +2536,11 @@ class $$LocalProfileTableFilterComposer
 
   ColumnFilters<String> get avoidedAdditives => $composableBuilder(
     column: $table.avoidedAdditives,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get firstName => $composableBuilder(
+    column: $table.firstName,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2545,6 +2603,11 @@ class $$LocalProfileTableOrderingComposer
     column: $table.avoidedAdditives,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get firstName => $composableBuilder(
+    column: $table.firstName,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalProfileTableAnnotationComposer
@@ -2591,6 +2654,9 @@ class $$LocalProfileTableAnnotationComposer
     column: $table.avoidedAdditives,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get firstName =>
+      $composableBuilder(column: $table.firstName, builder: (column) => column);
 }
 
 class $$LocalProfileTableTableManager
@@ -2634,6 +2700,7 @@ class $$LocalProfileTableTableManager
                 Value<String?> pal = const Value.absent(),
                 Value<String> allergens = const Value.absent(),
                 Value<String> avoidedAdditives = const Value.absent(),
+                Value<String?> firstName = const Value.absent(),
               }) => LocalProfileCompanion(
                 id: id,
                 onboardingCompletedAt: onboardingCompletedAt,
@@ -2645,6 +2712,7 @@ class $$LocalProfileTableTableManager
                 pal: pal,
                 allergens: allergens,
                 avoidedAdditives: avoidedAdditives,
+                firstName: firstName,
               ),
           createCompanionCallback:
               ({
@@ -2658,6 +2726,7 @@ class $$LocalProfileTableTableManager
                 Value<String?> pal = const Value.absent(),
                 Value<String> allergens = const Value.absent(),
                 Value<String> avoidedAdditives = const Value.absent(),
+                Value<String?> firstName = const Value.absent(),
               }) => LocalProfileCompanion.insert(
                 id: id,
                 onboardingCompletedAt: onboardingCompletedAt,
@@ -2669,6 +2738,7 @@ class $$LocalProfileTableTableManager
                 pal: pal,
                 allergens: allergens,
                 avoidedAdditives: avoidedAdditives,
+                firstName: firstName,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

@@ -336,6 +336,37 @@ Shift agreed 2026-11-19: Qout is for people who want to eat healthily. A short p
 
 ---
 
+## Phase 4c — Centred on the user's health
+Decided 2026-11-20 after manual testing: Qout is about the user's eating, not only about products. Green, light-first design from Dhafer's inspiration shots; tabs Today · Diary · (Scan) · Progress · Profile; a food diary on the phone; weekly insights. Every target is a T38 daily need (no new constants).
+
+### T41 · Green design, tabs and greeting
+- [x] Green, light-first theme (dark kept); white cards with soft shadows; filled green primary buttons; grade colours unchanged
+- [x] Bottom bar (`google_nav_bar`): Today · Diary · raised Scan · Progress · Profile; tabs keep their state (`StatefulShellRoute`); scanner, product, forms, sign in, contribution flow, queue and welcome full screen without the bar
+- [x] Optional first name in the profile (drift schema v4, migration test); Today greets "Hello, <name>" or by the time of day
+- [x] Today: greeting, "Type a barcode" field (checksum like the scanner), scan banner, recently scanned row with "See all"
+- [x] Diary tab: scans by day (until T42); Progress tab: empty state (until T43); Profile as a tab with a header
+- [ ] Product screen: photo header, green grade pill, restyled sections (moved to T42, with "I ate this"; the theme already applies)
+- Tests: **W** tabs keep state, Scan opens the scanner, detail screens without the bar, typed barcode (valid / invalid), greeting with and without a name; **D** v3 → v4 migration; layout and accessibility in both themes.
+- Done (2026-11-20): app 1229 tests. Theme: `QoutPalette` and `_scheme` values swapped (light ground `#F3F6F2`, white cards, accent `#2E7D32`, text `#17201A`; dark ground `#0F1612`, cards `#18221B`, accent `#6FCF7A`); primary buttons filled, cards with a soft green-tinted shadow (light) or a hairline (dark), 14 px radius. Bar: `lib/app/app_shell.dart` (`AppShell`, `QoutNavBar`, `AppTab`), two `GNav` halves around the raised scan button so it stays centred; labels show when the widest one fits the half (else icon-only pills, all tabs ≥ 48 px), text scaling clamped to 1.3 in the bar; the package's label is outside the tappable node, so each tab's icon carries its name for screen readers; back on another tab goes to Today. Router: `StatefulShellRoute.indexedStack` with `/`, `/diary`, `/progress`, `/profile`; every other route on the root navigator (full screen). Today: `greeting()`, `BarcodeField` (`normalizeTypedBarcode`: 13 → EAN-13, 12 → UPC-A, 8 → EAN-8 else UPC-E; recorded in the history like a scan), green scan banner, `RecentScanCard` row with "See all". History list moved to `features/history/presentation/scan_history_list.dart` (headings per day, larger cards with the photo). First name: `local_profile.first_name` (schema v4, `schema_v3.sql` fixture, migration test), `normalizeFirstName` (trimmed, spaces collapsed, ≤ 30 graphemes), saved with the form, cleared with the profile. Tests: a text field on Today checks lifecycle order, so the outbox test steps through real states; tab routes are opened with `go` in tests (`pushRoute`).
+- Follow-up: none beyond T42 and T43.
+
+### T42 · Food diary
+- [ ] "I ate this" on every product: portion (1 serving when the label gives one, 100 g / 100 mL, or an amount), meal (guessed from the time, changeable), day
+- [ ] Quick add without a barcode: name and kcal (counts toward energy only, said so)
+- [ ] Entries keep a copy of the product's values at the time (offline, unaffected by later updates); drift schema v5
+- [ ] Today: energy ring and fat, saturates, sugars and salt bars against the T38 daily needs; amber and neutral words above a reference; today's meals; "Scan to log"
+- [ ] Diary tab: week strip, entries by meal (photo, portion, kcal, grade), tap to change the portion, swipe to delete with undo; recently scanned below
+- [ ] "Delete my diary" in the profile
+- Tests: **U** portion amounts and day totals, meal guess; **D** v4 → v5 migration; **W** log from a product, quick add, edit, delete/undo, Today rings, delete diary.
+
+### T43 · Weekly insights
+- [ ] Progress tab: Monday–Sunday weeks with arrows; energy per day (bars) against the daily need (line) with `fl_chart`
+- [ ] Share of kcal by grade (A/B, C, D/E, not graded) and from NOVA 4; days above the salt and the sugars reference; top sources of sugars and of salt
+- [ ] Neutral wording, no streaks; "not medical advice" note
+- Tests: **U** week totals and shares (kcal-weighted, quick adds "not graded"), days above, top sources, week bounds; **W** empty week, a full week, week navigation; layout and accessibility.
+
+---
+
 ## Phase 5 — Delivery
 
 ### T32 · CD to staging

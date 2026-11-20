@@ -23,32 +23,40 @@ class ProfileEditScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(profileProvider);
+    final firstName = ref.watch(firstNameProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(firstRun ? 'Your profile' : 'Edit profile'),
       ),
-      body: profile.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => const StateMessage(
-          icon: PhosphorIconsRegular.warningCircle,
-          title: 'The profile could not be read',
-          message: 'Try again later.',
-        ),
-        data: (profile) => _ProfileForm(
-          initial: profile == null
-              ? ProfileFormValues.empty
-              : ProfileFormValues.of(profile),
-          firstRun: firstRun,
-        ),
-      ),
+      body: (firstName.isLoading ? const AsyncLoading<Profile?>() : profile)
+          .when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, _) => const StateMessage(
+              icon: PhosphorIconsRegular.warningCircle,
+              title: 'The profile could not be read',
+              message: 'Try again later.',
+            ),
+            data: (profile) => _ProfileForm(
+              initial: profile == null
+                  ? ProfileFormValues.empty
+                  : ProfileFormValues.of(profile),
+              firstName: firstName.valueOrNull ?? '',
+              firstRun: firstRun,
+            ),
+          ),
     );
   }
 }
 
 class _ProfileForm extends ConsumerStatefulWidget {
-  const _ProfileForm({required this.initial, required this.firstRun});
+  const _ProfileForm({
+    required this.initial,
+    required this.firstName,
+    required this.firstRun,
+  });
 
   final ProfileFormValues initial;
+  final String firstName;
   final bool firstRun;
 
   @override
@@ -56,6 +64,7 @@ class _ProfileForm extends ConsumerStatefulWidget {
 }
 
 class _ProfileFormState extends ConsumerState<_ProfileForm> {
+  late final _firstName = TextEditingController(text: widget.firstName);
   late final _age = TextEditingController(text: widget.initial.age);
   late final _height = TextEditingController(text: widget.initial.height);
   late final _weight = TextEditingController(text: widget.initial.weight);
@@ -67,6 +76,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
 
   @override
   void dispose() {
+    _firstName.dispose();
     _age.dispose();
     _height.dispose();
     _weight.dispose();
@@ -89,7 +99,9 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
     setState(() => _saving = true);
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await ref.read(profileRepositoryProvider).save(profile);
+      final repository = ref.read(profileRepositoryProvider);
+      await repository.save(profile);
+      await repository.saveFirstName(_firstName.text);
     } on Object {
       if (mounted) setState(() => _saving = false);
       messenger.showSnackBar(
@@ -127,6 +139,22 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
           ),
         ),
         const SectionLabel('About you'),
+        Padding(
+          padding: gutter,
+          child: TextField(
+            controller: _firstName,
+            textCapitalization: TextCapitalization.words,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.givenName],
+            maxLength: maxFirstNameLength,
+            decoration: const InputDecoration(
+              labelText: 'First name (optional)',
+              helperText: 'For the greeting on Today.',
+              counterText: '',
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         Padding(
           padding: gutter,
           child: _ChoiceGroup(

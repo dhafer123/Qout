@@ -51,7 +51,7 @@ void main() {
   group('profile screen', () {
     testWidgets('opened from the profile button on home', (tester) async {
       await open(tester, AppRoutes.home);
-      await tester.tap(find.byTooltip('Your profile'));
+      await tester.tap(find.byKey(const ValueKey('tab-profile')));
       await tester.pumpAndSettle();
       expect(find.byType(ProfileScreen), findsOneWidget);
       await tester.unmountQoutApp();
@@ -269,6 +269,30 @@ void main() {
       expect(find.text('60 kg'), findsOneWidget);
       expect((await repository.get())!.allergens, _profile.allergens);
       await tester.unmountQoutApp();
+    });
+
+    testWidgets('the optional first name is saved, trimmed, and shown', (
+      tester,
+    ) async {
+      await repository.save(_profile);
+      await open(tester, AppRoutes.profileEdit);
+      await tester.enterText(field('First name (optional)'), '  Dhafer ');
+      await tester.scrollUntilVisible(
+        find.text('Save'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await save(tester);
+      expect((await database.profileDao.get())!.firstName, 'Dhafer');
+      expect(await repository.get(), _profile); // the rest unchanged
+      await tester.unmountQoutApp();
+    });
+
+    testWidgets('deleting the profile forgets the name too', (tester) async {
+      await repository.save(_profile);
+      await repository.saveFirstName('Dhafer');
+      await repository.delete();
+      expect((await database.profileDao.get())!.firstName, isNull);
     });
 
     testWidgets('says advice is not tailored for pregnancy', (tester) async {

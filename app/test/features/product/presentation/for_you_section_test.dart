@@ -222,9 +222,7 @@ void main() {
     );
 
     // The profile lists it; removing it there stops avoiding it.
-    unawaited(
-      GoRouter.of(tester.element(find.text('For you'))).push(AppRoutes.profile),
-    );
+    GoRouter.of(tester.element(find.text('For you'))).go(AppRoutes.profile);
     await tester.pumpAndSettle();
     expect(find.text('Additives you avoid'), findsOneWidget);
     await tester.tap(find.bySemanticsLabel('Stop avoiding E476'));

@@ -101,7 +101,7 @@ void main() {
     final fresh = AppDatabase(NativeDatabase.memory());
     addTearDown(fresh.close);
     expect(await _schema(migrated), await _schema(fresh));
-    expect(await _userVersion(migrated), 3);
+    expect(await _userVersion(migrated), fresh.schemaVersion);
   });
 
   test('1 -> 2: client ids stay unique', () async {
@@ -152,7 +152,46 @@ void main() {
       final fresh = AppDatabase(NativeDatabase.memory());
       addTearDown(fresh.close);
       expect(await _schema(migrated), await _schema(fresh));
-      expect(await _userVersion(migrated), 3);
+      expect(await _userVersion(migrated), fresh.schemaVersion);
     },
   );
+
+  test('3 -> 4: the profile gets a first name, the rest is kept', () async {
+    final migrated = AppDatabase(
+      _atVersion(3, '''
+        INSERT INTO local_profile (id, onboarding_completed_at, sex, age,
+            age_entered_at, height_cm, weight_kg, pal, allergens,
+            avoided_additives)
+          VALUES (1, '2026-11-18T09:00:00.000Z', 'male', 23,
+            '2026-11-18T09:00:00.000Z', 178, 60, '1.6', '["milk"]',
+            '["E330"]');
+        INSERT INTO scan_history (ean, scanned_at)
+          VALUES ('619', '2026-11-19T09:31:00.000Z');
+      '''),
+    );
+    addTearDown(migrated.close);
+
+    final row = (await migrated.profileDao.get())!;
+    expect(row.firstName, isNull);
+    expect(
+      (row.sex, row.age, row.heightCm, row.weightKg, row.pal),
+      (
+        'male',
+        23,
+        178.0,
+        60.0,
+        '1.6',
+      ),
+    );
+    expect((row.allergens, row.avoidedAdditives), ('["milk"]', '["E330"]'));
+    expect(
+      (await migrated.scanHistoryDao.watchRecent().first).single.ean,
+      '619',
+    );
+
+    final fresh = AppDatabase(NativeDatabase.memory());
+    addTearDown(fresh.close);
+    expect(await _schema(migrated), await _schema(fresh));
+    expect(await _userVersion(migrated), fresh.schemaVersion);
+  });
 }

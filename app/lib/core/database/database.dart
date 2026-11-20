@@ -105,6 +105,9 @@ class LocalProfile extends Table {
   /// Additive codes to avoid (T40), as a JSON list.
   TextColumn get avoidedAdditives => text().withDefault(const Constant('[]'))();
 
+  /// For the greeting (T41); optional, trimmed, null when not given.
+  TextColumn get firstName => text().nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
@@ -167,10 +170,20 @@ class ProfileDao extends DatabaseAccessor<AppDatabase> with _$ProfileDaoMixin {
         );
       });
 
+  /// Saves the first name (null: none), finishing onboarding if needed.
+  Future<void> saveFirstName(String? name, {required DateTime now}) =>
+      transaction(() async {
+        await completeOnboarding(now);
+        await (update(localProfile)..where((t) => t.id.equals(_id))).write(
+          LocalProfileCompanion(firstName: Value(name)),
+        );
+      });
+
   /// Deletes everything personal; onboarding stays finished.
   Future<void> clearProfile() =>
       (update(localProfile)..where((t) => t.id.equals(_id))).write(
         const LocalProfileCompanion(
+          firstName: Value(null),
           sex: Value(null),
           age: Value(null),
           ageEnteredAt: Value(null),
@@ -415,7 +428,7 @@ class AppDatabase extends _$AppDatabase {
   /// old schema in `test/fixtures/database/schema_v<n>.sql` for its test
   /// (`make-migrations` needs a newer drift_dev than this SDK resolves).
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -444,6 +457,11 @@ class AppDatabase extends _$AppDatabase {
         // T39: the profile. No row yet, so people updating the app see the
         // welcome screens once too.
         await m.createTable(localProfile);
+      }
+      // A table created above already has the column.
+      if (from >= 3 && from < 4) {
+        // T41: the first name for the greeting.
+        await m.addColumn(localProfile, localProfile.firstName);
       }
     },
   );

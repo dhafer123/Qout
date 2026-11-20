@@ -64,6 +64,22 @@ String? normalizeScannedBarcode(String raw, RetailBarcodeFormat format) {
   return ean != null && hasValidCheckDigit(ean) ? ean : null;
 }
 
+/// The code to look up for a barcode typed by hand (T41): spaces and dashes
+/// ignored; 13 digits as EAN-13, 12 as UPC-A, 8 as EAN-8 (or UPC-E when not
+/// a valid EAN-8). Null when it isn't 8, 12 or 13 digits or the check digit
+/// is wrong (a typo).
+String? normalizeTypedBarcode(String raw) {
+  final code = raw.replaceAll(RegExp(r'[\s-]'), '');
+  return switch (code.length) {
+    13 => normalizeScannedBarcode(code, RetailBarcodeFormat.ean13),
+    12 => normalizeScannedBarcode(code, RetailBarcodeFormat.upcA),
+    8 =>
+      normalizeScannedBarcode(code, RetailBarcodeFormat.ean8) ??
+          normalizeScannedBarcode(code, RetailBarcodeFormat.upcE),
+    _ => null,
+  };
+}
+
 const _zero = 0x30;
 
 bool _isDigits(String s) =>

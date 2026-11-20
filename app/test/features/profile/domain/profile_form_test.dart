@@ -99,4 +99,22 @@ void main() {
       expect(SexChoiceX.of(choice.sex), choice);
     }
   });
+
+  group('normalizeFirstName (T41)', () {
+    test('trimmed, inner spaces collapsed', () {
+      expect(normalizeFirstName('  Dhafer '), 'Dhafer');
+      expect(normalizeFirstName('Anne   Marie'), 'Anne Marie');
+    });
+
+    test('empty: none', () {
+      expect(normalizeFirstName(''), isNull);
+      expect(normalizeFirstName('   '), isNull);
+    });
+
+    test('at most 30 characters, whole graphemes', () {
+      expect(normalizeFirstName('a' * 40), 'a' * 30);
+      final arabic = 'ظافر' * 10; // 40 letters
+      expect(normalizeFirstName(arabic)!.length, 30);
+    });
+  });
 }

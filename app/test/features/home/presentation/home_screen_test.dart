@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:qout/core/api/qout_api.dart';
+import 'package:qout/features/diary/presentation/diary_screen.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
-import 'package:qout/features/product/presentation/grade_badge.dart';
 import 'package:qout/features/product/presentation/product_screen.dart';
 import 'package:qout/features/scan/presentation/scan_screen.dart';
 
@@ -16,31 +14,41 @@ import '../../../helpers/fixtures.dart';
 import '../../../helpers/pump_app.dart';
 
 void main() {
-  testWidgets('shows a Scan button', (tester) async {
-    await tester.pumpQoutApp();
+  group('greeting', () {
+    test('by name, else by the time of day', () {
+      final morning = DateTime(2026, 11, 20, 8);
+      expect(greeting('Dhafer', morning), 'Hello, Dhafer');
+      expect(greeting(null, morning), 'Good morning');
+      expect(greeting(null, DateTime(2026, 11, 20, 12)), 'Good afternoon');
+      expect(greeting(null, DateTime(2026, 11, 20, 18)), 'Good evening');
+    });
 
-    expect(
-      find.ancestor(
-        of: find.text('Scan'),
-        matching: find.bySubtype<FilledButton>(),
-      ),
-      findsOneWidget,
-    );
-    expect(find.byIcon(PhosphorIconsRegular.barcode), findsOneWidget);
+    testWidgets('Today greets with the first name', (tester) async {
+      await tester.pumpQoutApp(firstName: 'Dhafer');
+      expect(find.text('Hello, Dhafer'), findsOneWidget);
+      expect(find.text('D'), findsOneWidget); // the initial
+    });
   });
 
-  testWidgets('Scan opens the scanner', (tester) async {
+  testWidgets("Scan now and the bar's scan button open the scanner", (
+    tester,
+  ) async {
     installFakeScanner();
     await tester.pumpQoutApp();
 
-    await tester.tap(find.text('Scan'));
+    await tester.tap(find.text('Scan now'));
     await tester.pumpAndSettle();
-
     expect(find.byType(ScanScreen), findsOneWidget);
     expect(find.byKey(FakeScannerPlatform.cameraKey), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('scan-button')));
+    await tester.pumpAndSettle();
+    expect(find.byType(ScanScreen), findsOneWidget);
   });
 
-  testWidgets('a scanned code opens its product; back returns home', (
+  testWidgets('a scanned code opens its product; back shows it on Today', (
     tester,
   ) async {
     final scanner = installFakeScanner();
@@ -52,7 +60,7 @@ void main() {
       history: history,
       overrides: [productRepositoryProvider.overrideWithValue(repository)],
     );
-    await tester.tap(find.text('Scan'));
+    await tester.tap(find.text('Scan now'));
     await tester.pumpAndSettle();
 
     for (var i = 0; i < 3; i++) {
@@ -62,7 +70,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ProductScreen), findsOneWidget);
-    // Loaded once when accepted (during the animation), then by the screen.
     expect(repository.requested.toSet(), {'6191234567897'});
     expect(find.text('Grade A'), findsOneWidget); // the water, loaded
     expect(find.byType(ScanScreen), findsNothing);
@@ -71,166 +78,87 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(history.entries.map((e) => e.ean), ['6191234567897']);
-    expect(find.byType(HistoryTile), findsOneWidget);
-    expect(find.textContaining('6191234567897'), findsOneWidget);
+    expect(find.byType(RecentScanCard), findsOneWidget);
   });
 
-  group('history', () {
-    late FakeScanHistoryRepository history;
-    final t0 = DateTime.utc(2026, 11, 13, 9);
-
-    setUp(() => history = FakeScanHistoryRepository());
-
-    Future<void> pumpHome(
-      WidgetTester tester, {
-      FakeProductRepository? products,
-    }) async {
-      // Tall enough for every row: the list builds only what is on screen.
-      tester.view
-        ..physicalSize = const Size(800, 1600)
-        ..devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      await tester.pumpQoutApp(
-        history: history,
-        overrides: [
-          if (products != null)
-            productRepositoryProvider.overrideWithValue(products),
-        ],
-      );
-    }
-
-    Finder tile(String text) => find.ancestor(
-      of: find.textContaining(text),
-      matching: find.byType(HistoryTile),
-    );
-
-    testWidgets('empty state', (tester) async {
-      await pumpHome(tester);
-
-      expect(find.text('No scans yet'), findsOneWidget);
-      expect(
-        find.text('Scanned products appear here, also offline.'),
-        findsOneWidget,
-      );
-      expect(find.bySemanticsLabel('Clear history'), findsNothing);
-      expect(find.byTooltip('Your profile'), findsOneWidget);
-    });
-
-    testWidgets('newest first, with grade, name and brand', (tester) async {
-      history
-        ..seed(
-          '9557062321136',
-          at: t0,
-          product: recordedProduct('product-general-graded'),
-        )
-        ..seed(
-          '6191416500452',
-          at: t0.add(const Duration(minutes: 1)),
-          product: recordedProduct('product-insufficient-data'),
-        )
-        ..seed('6191234567897', at: t0.add(const Duration(minutes: 2)));
-      await pumpHome(tester);
-
-      final tiles = tester.widgetList<HistoryTile>(find.byType(HistoryTile));
-      expect(tiles.map((t) => t.entry.ean), [
-        '6191234567897',
-        '6191416500452',
-        '9557062321136',
-      ]);
-      // Known product: grade, name, brand.
-      expect(
-        find.descendant(
-          of: tile('Mister Potato'),
-          matching: find.byWidgetPredicate(
-            (w) => w is GradeBadge && w.grade == Grade.e,
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(
-          of: tile('Mister Potato'),
-          matching: find.text('Jbs qtw'),
-        ),
-        findsOneWidget,
-      );
-      // No grade, no name: barcode instead of a brand.
-      expect(
-        find.descendant(
-          of: tile('6191416500452'),
-          matching: find.text('Unnamed product'),
-        ),
-        findsOneWidget,
-      );
-      // Never fetched: no grade.
-      expect(
-        find.descendant(
-          of: tile('6191234567897'),
-          matching: find.byWidgetPredicate(
-            (w) => w is GradeBadge && w.grade == null,
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('No scans yet'), findsNothing);
-    });
-
-    testWidgets('tap reopens the product', (tester) async {
-      history.seed('9557062321136', product: recordedProduct('product-water'));
-      final products = FakeProductRepository(
+  group('typing a barcode', () {
+    testWidgets('a valid one opens the product and is kept in the history', (
+      tester,
+    ) async {
+      final history = FakeScanHistoryRepository();
+      final repository = FakeProductRepository(
         results: [recordedFound('product-water')],
       );
-      await pumpHome(tester, products: products);
+      await tester.pumpQoutApp(
+        history: history,
+        overrides: [productRepositoryProvider.overrideWithValue(repository)],
+      );
 
-      await tester.tap(find.byType(HistoryTile));
+      await tester.enterText(find.byType(BarcodeField), '6191 2345 67897');
+      await tester.testTextInput.receiveAction(TextInputAction.search);
       await tester.pumpAndSettle();
 
       expect(find.byType(ProductScreen), findsOneWidget);
-      expect(products.requested, ['9557062321136']);
+      expect(repository.requested, ['6191234567897']);
+      expect(history.entries.map((e) => e.ean), ['6191234567897']);
     });
 
-    testWidgets('swipe removes an entry, Undo brings it back', (tester) async {
-      history
-        ..seed('111', at: t0)
-        ..seed('222', at: t0.add(const Duration(minutes: 1)));
-      await pumpHome(tester);
+    testWidgets('a typo is pointed out, nothing opens', (tester) async {
+      final history = FakeScanHistoryRepository();
+      await tester.pumpQoutApp(history: history);
 
-      await tester.drag(tile('222'), const Offset(-600, 0));
+      await tester.enterText(find.byType(BarcodeField), '6191234567890');
+      await tester.tap(find.byTooltip('Open this barcode'));
       await tester.pumpAndSettle();
 
-      expect(tile('222'), findsNothing);
-      expect(history.entries.map((e) => e.ean), ['111']);
-      expect(find.text('Removed from history'), findsOneWidget);
-
-      await tester.tap(find.text('Undo'));
-      await tester.pumpAndSettle();
-
-      expect(history.entries.map((e) => e.ean), ['222', '111']);
-      expect(tile('222'), findsOneWidget);
-    });
-
-    testWidgets('clear history asks first', (tester) async {
-      history
-        ..seed('111', at: t0)
-        ..seed('222', at: t0.add(const Duration(minutes: 1)));
-      await pumpHome(tester);
-
-      // Next to the history heading.
-      await tester.tap(find.text('Clear'));
-      await tester.pumpAndSettle();
-      expect(find.text('Clear history?'), findsOneWidget);
-
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-      expect(history.entries, hasLength(2));
-
-      await tester.tap(find.text('Clear'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
-      await tester.pumpAndSettle();
-
+      expect(find.textContaining('Check the digits'), findsOneWidget);
+      expect(find.byType(ProductScreen), findsNothing);
       expect(history.entries, isEmpty);
-      expect(find.text('No scans yet'), findsOneWidget);
+    });
+  });
+
+  group('recently scanned', () {
+    testWidgets('empty: says where scans appear, no See all', (tester) async {
+      await tester.pumpQoutApp();
+      expect(find.textContaining('No scans yet'), findsOneWidget);
+      expect(find.text('See all'), findsNothing);
+    });
+
+    testWidgets('cards with the name; See all opens the Diary tab', (
+      tester,
+    ) async {
+      final history = FakeScanHistoryRepository()
+        ..seed(
+          '9557062321136',
+          product: recordedProduct('product-general-graded'),
+        );
+      await tester.pumpQoutApp(history: history);
+
+      expect(find.byType(RecentScanCard), findsOneWidget);
+      expect(find.text('Jbs qtw'), findsOneWidget);
+
+      await tester.tap(find.text('See all'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DiaryScreen), findsOneWidget);
+    });
+
+    testWidgets('a card reopens its product', (tester) async {
+      final history = FakeScanHistoryRepository()
+        ..seed('9557062321136', product: recordedProduct('product-water'));
+      final products = FakeProductRepository(
+        results: [recordedFound('product-water')],
+      );
+      await tester.pumpQoutApp(
+        history: history,
+        overrides: [productRepositoryProvider.overrideWithValue(products)],
+      );
+
+      await tester.ensureVisible(find.byType(RecentScanCard));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(RecentScanCard));
+      await tester.pumpAndSettle();
+      expect(find.byType(ProductScreen), findsOneWidget);
+      expect(products.requested, ['9557062321136']);
     });
   });
 }

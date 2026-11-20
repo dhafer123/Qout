@@ -9,8 +9,8 @@ void main() {
   setUp(() => database = AppDatabase(NativeDatabase.memory()));
   tearDown(() => database.close());
 
-  test('schema version 3', () {
-    expect(database.schemaVersion, 3);
+  test('schema version 4', () {
+    expect(database.schemaVersion, 4);
   });
 
   group('product cache', () {

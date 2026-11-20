@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/qout_api.dart' hide Allergen;
 import 'package:qout/core/database/database.dart';
+import 'package:qout/features/history/presentation/scan_history_list.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
@@ -55,7 +56,23 @@ void main() {
             overrides: [memoryProductImages()],
           );
           await tester.pumpAndSettle();
+          // Today: the recently scanned row.
+          await tester.scrollUntilVisible(
+            find.text('See all'),
+            200,
+            scrollable: find.byType(Scrollable).first,
+          );
+          await tester.drag(
+            find.byType(Scrollable).first,
+            const Offset(0, -300),
+          );
+          await tester.pumpAndSettle();
+          expect(find.byType(RecentScanCard), findsWidgets);
+          expect(tester.takeException(), isNull);
 
+          // Diary: the scans by day.
+          await tester.pushRoute(AppRoutes.diary);
+          await tester.pumpAndSettle();
           await tester.scrollUntilVisible(
             find.byType(ProductThumbnail),
             200,

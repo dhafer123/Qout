@@ -2,11 +2,14 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qout/app/app_shell.dart';
 import 'package:qout/core/env/app_env.dart';
 import 'package:qout/features/auth/presentation/sign_in_screen.dart';
 import 'package:qout/features/contribute/presentation/contribute_screen.dart';
+import 'package:qout/features/diary/presentation/diary_screen.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
+import 'package:qout/features/insights/presentation/progress_screen.dart';
 import 'package:qout/features/label_eval/presentation/label_eval_screen.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
@@ -20,6 +23,8 @@ import 'package:qout/features/scan/presentation/scan_screen.dart';
 /// Route paths, in one place.
 abstract final class AppRoutes {
   static const home = '/';
+  static const diary = '/diary';
+  static const progress = '/progress';
   static const scan = '/scan';
   static const productPattern = '/product/:ean';
   static const signIn = '/sign-in';
@@ -50,9 +55,44 @@ final routerProvider = Provider<GoRouter>((ref) {
         ? firstRunEdit
         : null,
     routes: [
-      GoRoute(
-        path: AppRoutes.home,
-        builder: (context, state) => const HomeScreen(),
+      // The tabs (T41): each keeps its own navigation state. Every other
+      // route opens full screen above them, without the bar.
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, shell) => AppShell(shell: shell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.home,
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.diary,
+                builder: (context, state) => const DiaryScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.progress,
+                builder: (context, state) => const ProgressScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.profile,
+                builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.scan,
@@ -102,10 +142,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.welcome,
         builder: (context, state) => const WelcomeScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.profile,
-        builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
         path: AppRoutes.profileEdit,

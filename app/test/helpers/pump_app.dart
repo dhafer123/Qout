@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qout/app/app.dart';
+import 'package:qout/app/router.dart';
 import 'package:qout/core/database/database.dart';
 import 'package:qout/core/database/database_provider.dart';
 import 'package:qout/core/env/app_env.dart';
@@ -49,6 +50,7 @@ extension PumpQoutApp on WidgetTester {
     StartScreen start = StartScreen.home,
     Profile? profile,
     Set<String> avoidedAdditives = const {},
+    String? firstName,
     bool liveProfile = false,
     List<Override> overrides = const [],
   }) async {
@@ -67,6 +69,7 @@ extension PumpQoutApp on WidgetTester {
             avoidedAdditivesProvider.overrideWith(
               (ref) => Stream.value(avoidedAdditives),
             ),
+            firstNameProvider.overrideWith((ref) => Stream.value(firstName)),
           ],
           scanHistoryRepositoryProvider.overrideWithValue(
             history ?? FakeScanHistoryRepository(),
@@ -104,9 +107,21 @@ extension PumpQoutApp on WidgetTester {
     await pump(Duration.zero);
   }
 
-  /// Opens [location] on top of the home screen, as navigating would.
+  /// Opens [location] as navigating would: a tab (T41) is switched to, any
+  /// other screen opens on top of Today.
   Future<void> pushRoute(String location) async {
-    unawaited(GoRouter.of(element(find.byType(HomeScreen))).push(location));
+    final router = GoRouter.of(element(find.byType(HomeScreen)));
+    const tabs = {
+      AppRoutes.home,
+      AppRoutes.diary,
+      AppRoutes.progress,
+      AppRoutes.profile,
+    };
+    if (tabs.contains(location)) {
+      router.go(location);
+    } else {
+      unawaited(router.push(location));
+    }
     await pump();
     await pump(const Duration(milliseconds: 500)); // page transition
   }

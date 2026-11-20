@@ -181,4 +181,29 @@ void main() {
       }
     });
   });
+
+  group('normalizeTypedBarcode (T41)', () {
+    test('13 digits: EAN-13, spaces and dashes ignored', () {
+      expect(normalizeTypedBarcode('6191234567897'), '6191234567897');
+      expect(normalizeTypedBarcode(' 6191 2345-67897 '), '6191234567897');
+    });
+
+    test('12 digits: UPC-A as EAN-13', () {
+      expect(normalizeTypedBarcode('036000291452'), '0036000291452');
+    });
+
+    test('8 digits: EAN-8, else UPC-E', () {
+      expect(normalizeTypedBarcode('96385074'), '96385074');
+      // Not a valid EAN-8 check digit, a valid UPC-E one.
+      expect(normalizeTypedBarcode('04252614'), '0042100005264');
+    });
+
+    test('a wrong check digit or length: null', () {
+      expect(normalizeTypedBarcode('6191234567890'), isNull);
+      expect(normalizeTypedBarcode('619123456789'), isNull); // bad UPC-A
+      expect(normalizeTypedBarcode('12345'), isNull);
+      expect(normalizeTypedBarcode(''), isNull);
+      expect(normalizeTypedBarcode('61912345678971'), isNull);
+    });
+  });
 }

@@ -302,8 +302,16 @@ void main() {
       await open(tester);
       expect(trigger.syncs, 1);
 
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      // The states a phone goes through (a text field on Today checks
+      // the order).
+      const [
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+        AppLifecycleState.paused,
+        AppLifecycleState.hidden,
+        AppLifecycleState.inactive,
+        AppLifecycleState.resumed,
+      ].forEach(tester.binding.handleAppLifecycleStateChanged);
       await tester.pump();
       expect(trigger.syncs, 2);
       await tester.unmountQoutApp();
@@ -318,7 +326,7 @@ void main() {
       );
       expect(trigger.signIns, 0); // starting signed out isn't signing in
 
-      await tester.tap(find.byTooltip('Your profile'));
+      await tester.tap(find.byKey(const ValueKey('tab-profile')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sign in'));
       await tester.pumpAndSettle();

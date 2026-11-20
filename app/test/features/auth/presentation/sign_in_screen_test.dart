@@ -229,7 +229,7 @@ void main() {
     ) async {
       await tester.pumpQoutApp(tokens: tokens);
 
-      await tester.tap(find.byTooltip('Your profile'));
+      await tester.tap(find.byKey(const ValueKey('tab-profile')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sign in'));
       await tester.pumpAndSettle();
@@ -245,9 +245,7 @@ void main() {
         overrides: [authApiProvider.overrideWithValue(api)],
       );
 
-      // The profile button shows the account's initial.
-      expect(find.text('A'), findsOneWidget);
-      await tester.tap(find.byTooltip('Your profile'));
+      await tester.tap(find.byKey(const ValueKey('tab-profile')));
       await tester.pumpAndSettle();
       expect(find.text('a@example.tn'), findsOneWidget);
 

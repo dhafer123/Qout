@@ -15,7 +15,7 @@ import '../../../helpers/pump_app.dart';
 
 void main() {
   Future<void> openProfile(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('Your profile'));
+    await tester.tap(find.byKey(const ValueKey('tab-profile')));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Label OCR (dev)'),
@@ -49,7 +49,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpQoutApp(flavor: flavor);
-      await tester.tap(find.byTooltip('Your profile'));
+      await tester.tap(find.byKey(const ValueKey('tab-profile')));
       await tester.pumpAndSettle();
       await tester.fling(
         find.byType(Scrollable).first,
@@ -60,7 +60,7 @@ void main() {
 
       expect(find.text('Developer'), findsNothing);
       expect(find.text('Label OCR (dev)'), findsNothing);
-      await tester.pageBack();
+      await tester.tap(find.byKey(const ValueKey('tab-today')));
       await tester.pumpAndSettle();
 
       unawaited(

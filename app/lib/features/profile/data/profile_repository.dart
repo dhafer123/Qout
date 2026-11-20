@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qout/core/database/database.dart';
 import 'package:qout/core/database/database_provider.dart';
+import 'package:qout/features/profile/domain/profile_form.dart'
+    show normalizeFirstName;
 import 'package:qout/health/needs.dart';
 import 'package:qout/health/profile.dart';
 
@@ -55,6 +57,13 @@ class ProfileRepository {
 
   /// Deletes everything personal; the welcome screens don't come back.
   Future<void> delete() => _dao.clearProfile();
+
+  /// The first name for the greeting (T41), live; null when not given.
+  Stream<String?> watchFirstName() => _dao.watch().map((row) => row?.firstName);
+
+  /// Saves the first name as typed ([normalizeFirstName]; empty: none).
+  Future<void> saveFirstName(String text) =>
+      _dao.saveFirstName(normalizeFirstName(text), now: _clock());
 
   /// The additive codes the user chose to avoid (T40), live.
   Stream<Set<String>> watchAvoidedAdditives() =>
@@ -146,6 +155,11 @@ final startScreenProvider = Provider<StartScreen>(
 /// The profile, live.
 final profileProvider = StreamProvider<Profile?>(
   (ref) => ref.watch(profileRepositoryProvider).watch(),
+);
+
+/// The first name for the greeting, live (T41).
+final firstNameProvider = StreamProvider<String?>(
+  (ref) => ref.watch(profileRepositoryProvider).watchFirstName(),
 );
 
 /// The additive codes to avoid, live.

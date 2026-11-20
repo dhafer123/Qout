@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart' show StringCharacters;
 import 'package:qout/features/contribute/domain/draft_values.dart'
     show parseAmount;
 import 'package:qout/health/profile.dart';
@@ -123,4 +124,18 @@ class ProfileFormValues {
     ),
     problems: const {},
   );
+}
+
+/// Longest first name kept (the form stops typing there).
+const maxFirstNameLength = 30;
+
+/// The first name as stored (T41): trimmed, inner spaces collapsed, at most
+/// [maxFirstNameLength] characters; null when empty.
+String? normalizeFirstName(String text) {
+  final name = text.trim().replaceAll(RegExp(r'\s+'), ' ');
+  if (name.isEmpty) return null;
+  final characters = name.characters;
+  return characters.length <= maxFirstNameLength
+      ? name
+      : characters.take(maxFirstNameLength).toString().trimRight();
 }

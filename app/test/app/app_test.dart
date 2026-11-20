@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qout/app/app_shell.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/database/database.dart';
 import 'package:qout/core/env/app_env.dart';
@@ -9,11 +10,17 @@ import 'package:qout/features/home/presentation/home_screen.dart';
 import '../helpers/pump_app.dart';
 
 void main() {
-  testWidgets('boots and shows the home screen', (tester) async {
+  testWidgets('boots on Today, with the tabs and the scan button', (
+    tester,
+  ) async {
     await tester.pumpQoutApp();
 
     expect(find.byType(HomeScreen), findsOneWidget);
-    expect(find.widgetWithText(AppBar, 'Qout'), findsOneWidget);
+    expect(find.byType(QoutNavBar), findsOneWidget);
+    for (final tab in AppTab.values) {
+      expect(find.byKey(ValueKey('tab-${tab.name}')), findsOneWidget);
+    }
+    expect(find.byKey(const ValueKey('scan-button')), findsOneWidget);
   });
 
   testWidgets('uses the light theme when the platform is light', (

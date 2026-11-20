@@ -35,7 +35,7 @@ class ProfileScreen extends ConsumerWidget {
     final profile = ref.watch(profileProvider);
     final dev = ref.watch(appEnvProvider).flavor == AppFlavor.dev;
     return Scaffold(
-      appBar: AppBar(title: const Text('Your profile')),
+      appBar: AppBar(title: const Text('Profile')),
       body: profile.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => const StateMessage(
@@ -51,6 +51,7 @@ class ProfileScreen extends ConsumerWidget {
             ).clearOfNavigationBar(context),
             children: [
               for (final (i, section) in [
+                _Header(profile),
                 const _Account(),
                 if (profile == null) const _NoProfile(),
                 _Needs(computeNeeds(profile)),
@@ -60,6 +61,104 @@ class ProfileScreen extends ConsumerWidget {
                 if (dev) const _Developer(),
               ].indexed)
                 Entrance(index: i, child: section),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The user's initial, name and a summary on a green banner.
+class _Header extends ConsumerWidget {
+  const _Header(this.profile);
+
+  final Profile? profile;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final palette = QoutPalette.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    final name = ref.watch(firstNameProvider).valueOrNull;
+    final profile = this.profile;
+    final colors = dark
+        ? [
+            palette.tag,
+            Color.lerp(palette.tag, theme.colorScheme.surface, 0.5)!,
+          ]
+        : [palette.accent, Color.lerp(palette.accent, Colors.black, 0.3)!];
+    final onBanner = dark ? palette.onTag : Colors.white;
+    final summary = profile == null
+        ? 'Add your details below.'
+        : [
+            '${profile.age} years',
+            sexChoiceLabel(SexChoiceX.of(profile.sex)),
+            activityTitle(profile.activity),
+          ].join(' · ');
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: colors,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              ExcludeSemantics(
+                child: SizedBox.square(
+                  dimension: 56,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: onBanner.withValues(alpha: 0.18),
+                      border: Border.all(
+                        color: onBanner.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    child: Center(
+                      child: name == null
+                          ? Icon(PhosphorIconsRegular.user, color: onBanner)
+                          : Text(
+                              name.characters.first.toUpperCase(),
+                              style: TextStyle(
+                                color: onBanner,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                                height: 1,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        name ?? 'Your profile',
+                        style: textTheme.titleLarge?.copyWith(color: onBanner),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      summary,
+                      style: textTheme.bodyMedium?.copyWith(color: onBanner),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
