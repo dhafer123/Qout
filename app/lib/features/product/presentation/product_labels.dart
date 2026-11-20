@@ -3,6 +3,8 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:qout/core/api/qout_api.dart';
+import 'package:qout/health/energy.dart';
+export 'package:qout/health/energy.dart' show kjPerKcalForDisplay;
 
 /// Score components (breakdown keys).
 String componentLabel(String name) => switch (name) {
@@ -72,10 +74,6 @@ String formatAmount(double value, {int decimals = 2}) {
   if (!fixed.contains('.')) return fixed;
   return fixed.replaceFirst(RegExp(r'\.?0+$'), '');
 }
-
-/// kJ per kcal for showing energy (docs/specs/README.md, "Display only");
-/// never used for scoring.
-const kjPerKcalForDisplay = 4.184;
 
 /// Energy as declared in kJ, with kcal next to it: `2056 kJ / 491 kcal`.
 String formatEnergy(double kj) =>

@@ -64,6 +64,18 @@ class OutboxDaoManager {
       );
 }
 
+mixin _$DiaryDaoMixin on DatabaseAccessor<AppDatabase> {
+  $DiaryEntriesTable get diaryEntries => attachedDatabase.diaryEntries;
+  DiaryDaoManager get managers => DiaryDaoManager(this);
+}
+
+class DiaryDaoManager {
+  final _$DiaryDaoMixin _db;
+  DiaryDaoManager(this._db);
+  $$DiaryEntriesTableTableManager get diaryEntries =>
+      $$DiaryEntriesTableTableManager(_db.attachedDatabase, _db.diaryEntries);
+}
+
 class $CachedProductsTable extends CachedProducts
     with TableInfo<$CachedProductsTable, CachedProductRow> {
   @override
@@ -1821,6 +1833,958 @@ class LocalProfileCompanion extends UpdateCompanion<LocalProfileRow> {
   }
 }
 
+class $DiaryEntriesTable extends DiaryEntries
+    with TableInfo<$DiaryEntriesTable, DiaryRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DiaryEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _eatenAtMeta = const VerificationMeta(
+    'eatenAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> eatenAt = GeneratedColumn<DateTime>(
+    'eaten_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<DiaryMeal, String> meal =
+      GeneratedColumn<String>(
+        'meal',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<DiaryMeal>($DiaryEntriesTable.$convertermeal);
+  static const VerificationMeta _eanMeta = const VerificationMeta('ean');
+  @override
+  late final GeneratedColumn<String> ean = GeneratedColumn<String>(
+    'ean',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _brandMeta = const VerificationMeta('brand');
+  @override
+  late final GeneratedColumn<String> brand = GeneratedColumn<String>(
+    'brand',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _imageUrlMeta = const VerificationMeta(
+    'imageUrl',
+  );
+  @override
+  late final GeneratedColumn<String> imageUrl = GeneratedColumn<String>(
+    'image_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _gradeMeta = const VerificationMeta('grade');
+  @override
+  late final GeneratedColumn<String> grade = GeneratedColumn<String>(
+    'grade',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _novaGroupMeta = const VerificationMeta(
+    'novaGroup',
+  );
+  @override
+  late final GeneratedColumn<int> novaGroup = GeneratedColumn<int>(
+    'nova_group',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+    'unit',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
+    'amount',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _servingQuantityMeta = const VerificationMeta(
+    'servingQuantity',
+  );
+  @override
+  late final GeneratedColumn<double> servingQuantity = GeneratedColumn<double>(
+    'serving_quantity',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _energyKjMeta = const VerificationMeta(
+    'energyKj',
+  );
+  @override
+  late final GeneratedColumn<double> energyKj = GeneratedColumn<double>(
+    'energy_kj',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fatGMeta = const VerificationMeta('fatG');
+  @override
+  late final GeneratedColumn<double> fatG = GeneratedColumn<double>(
+    'fat_g',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _saturatesGMeta = const VerificationMeta(
+    'saturatesG',
+  );
+  @override
+  late final GeneratedColumn<double> saturatesG = GeneratedColumn<double>(
+    'saturates_g',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sugarsGMeta = const VerificationMeta(
+    'sugarsG',
+  );
+  @override
+  late final GeneratedColumn<double> sugarsG = GeneratedColumn<double>(
+    'sugars_g',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _saltGMeta = const VerificationMeta('saltG');
+  @override
+  late final GeneratedColumn<double> saltG = GeneratedColumn<double>(
+    'salt_g',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    eatenAt,
+    meal,
+    ean,
+    name,
+    brand,
+    imageUrl,
+    grade,
+    novaGroup,
+    unit,
+    amount,
+    servingQuantity,
+    energyKj,
+    fatG,
+    saturatesG,
+    sugarsG,
+    saltG,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'diary_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DiaryRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('eaten_at')) {
+      context.handle(
+        _eatenAtMeta,
+        eatenAt.isAcceptableOrUnknown(data['eaten_at']!, _eatenAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_eatenAtMeta);
+    }
+    if (data.containsKey('ean')) {
+      context.handle(
+        _eanMeta,
+        ean.isAcceptableOrUnknown(data['ean']!, _eanMeta),
+      );
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    }
+    if (data.containsKey('brand')) {
+      context.handle(
+        _brandMeta,
+        brand.isAcceptableOrUnknown(data['brand']!, _brandMeta),
+      );
+    }
+    if (data.containsKey('image_url')) {
+      context.handle(
+        _imageUrlMeta,
+        imageUrl.isAcceptableOrUnknown(data['image_url']!, _imageUrlMeta),
+      );
+    }
+    if (data.containsKey('grade')) {
+      context.handle(
+        _gradeMeta,
+        grade.isAcceptableOrUnknown(data['grade']!, _gradeMeta),
+      );
+    }
+    if (data.containsKey('nova_group')) {
+      context.handle(
+        _novaGroupMeta,
+        novaGroup.isAcceptableOrUnknown(data['nova_group']!, _novaGroupMeta),
+      );
+    }
+    if (data.containsKey('unit')) {
+      context.handle(
+        _unitMeta,
+        unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
+      );
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    }
+    if (data.containsKey('serving_quantity')) {
+      context.handle(
+        _servingQuantityMeta,
+        servingQuantity.isAcceptableOrUnknown(
+          data['serving_quantity']!,
+          _servingQuantityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('energy_kj')) {
+      context.handle(
+        _energyKjMeta,
+        energyKj.isAcceptableOrUnknown(data['energy_kj']!, _energyKjMeta),
+      );
+    }
+    if (data.containsKey('fat_g')) {
+      context.handle(
+        _fatGMeta,
+        fatG.isAcceptableOrUnknown(data['fat_g']!, _fatGMeta),
+      );
+    }
+    if (data.containsKey('saturates_g')) {
+      context.handle(
+        _saturatesGMeta,
+        saturatesG.isAcceptableOrUnknown(data['saturates_g']!, _saturatesGMeta),
+      );
+    }
+    if (data.containsKey('sugars_g')) {
+      context.handle(
+        _sugarsGMeta,
+        sugarsG.isAcceptableOrUnknown(data['sugars_g']!, _sugarsGMeta),
+      );
+    }
+    if (data.containsKey('salt_g')) {
+      context.handle(
+        _saltGMeta,
+        saltG.isAcceptableOrUnknown(data['salt_g']!, _saltGMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DiaryRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DiaryRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      eatenAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}eaten_at'],
+      )!,
+      meal: $DiaryEntriesTable.$convertermeal.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}meal'],
+        )!,
+      ),
+      ean: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ean'],
+      ),
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      ),
+      brand: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}brand'],
+      ),
+      imageUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_url'],
+      ),
+      grade: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}grade'],
+      ),
+      novaGroup: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}nova_group'],
+      ),
+      unit: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit'],
+      ),
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}amount'],
+      ),
+      servingQuantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}serving_quantity'],
+      ),
+      energyKj: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}energy_kj'],
+      ),
+      fatG: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}fat_g'],
+      ),
+      saturatesG: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}saturates_g'],
+      ),
+      sugarsG: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}sugars_g'],
+      ),
+      saltG: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}salt_g'],
+      ),
+    );
+  }
+
+  @override
+  $DiaryEntriesTable createAlias(String alias) {
+    return $DiaryEntriesTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<DiaryMeal, String, String> $convertermeal =
+      const EnumNameConverter<DiaryMeal>(DiaryMeal.values);
+}
+
+class DiaryRow extends DataClass implements Insertable<DiaryRow> {
+  final int id;
+
+  /// The day (and time) it counts for, in UTC.
+  final DateTime eatenAt;
+  final DiaryMeal meal;
+
+  /// Null for a quick add.
+  final String? ean;
+  final String? name;
+  final String? brand;
+  final String? imageUrl;
+
+  /// Grade letter when logged (`A`..`E`); null: not graded or quick add.
+  final String? grade;
+  final int? novaGroup;
+
+  /// `g` or `ml`; null for a quick add.
+  final String? unit;
+
+  /// Amount eaten in [unit]; null for a quick add.
+  final double? amount;
+
+  /// The label's serving in [unit], if it has one.
+  final double? servingQuantity;
+
+  /// Product: per 100 g/mL. Quick add: [energyKj] is what was eaten.
+  final double? energyKj;
+  final double? fatG;
+  final double? saturatesG;
+  final double? sugarsG;
+  final double? saltG;
+  const DiaryRow({
+    required this.id,
+    required this.eatenAt,
+    required this.meal,
+    this.ean,
+    this.name,
+    this.brand,
+    this.imageUrl,
+    this.grade,
+    this.novaGroup,
+    this.unit,
+    this.amount,
+    this.servingQuantity,
+    this.energyKj,
+    this.fatG,
+    this.saturatesG,
+    this.sugarsG,
+    this.saltG,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['eaten_at'] = Variable<DateTime>(eatenAt);
+    {
+      map['meal'] = Variable<String>(
+        $DiaryEntriesTable.$convertermeal.toSql(meal),
+      );
+    }
+    if (!nullToAbsent || ean != null) {
+      map['ean'] = Variable<String>(ean);
+    }
+    if (!nullToAbsent || name != null) {
+      map['name'] = Variable<String>(name);
+    }
+    if (!nullToAbsent || brand != null) {
+      map['brand'] = Variable<String>(brand);
+    }
+    if (!nullToAbsent || imageUrl != null) {
+      map['image_url'] = Variable<String>(imageUrl);
+    }
+    if (!nullToAbsent || grade != null) {
+      map['grade'] = Variable<String>(grade);
+    }
+    if (!nullToAbsent || novaGroup != null) {
+      map['nova_group'] = Variable<int>(novaGroup);
+    }
+    if (!nullToAbsent || unit != null) {
+      map['unit'] = Variable<String>(unit);
+    }
+    if (!nullToAbsent || amount != null) {
+      map['amount'] = Variable<double>(amount);
+    }
+    if (!nullToAbsent || servingQuantity != null) {
+      map['serving_quantity'] = Variable<double>(servingQuantity);
+    }
+    if (!nullToAbsent || energyKj != null) {
+      map['energy_kj'] = Variable<double>(energyKj);
+    }
+    if (!nullToAbsent || fatG != null) {
+      map['fat_g'] = Variable<double>(fatG);
+    }
+    if (!nullToAbsent || saturatesG != null) {
+      map['saturates_g'] = Variable<double>(saturatesG);
+    }
+    if (!nullToAbsent || sugarsG != null) {
+      map['sugars_g'] = Variable<double>(sugarsG);
+    }
+    if (!nullToAbsent || saltG != null) {
+      map['salt_g'] = Variable<double>(saltG);
+    }
+    return map;
+  }
+
+  DiaryEntriesCompanion toCompanion(bool nullToAbsent) {
+    return DiaryEntriesCompanion(
+      id: Value(id),
+      eatenAt: Value(eatenAt),
+      meal: Value(meal),
+      ean: ean == null && nullToAbsent ? const Value.absent() : Value(ean),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      brand: brand == null && nullToAbsent
+          ? const Value.absent()
+          : Value(brand),
+      imageUrl: imageUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imageUrl),
+      grade: grade == null && nullToAbsent
+          ? const Value.absent()
+          : Value(grade),
+      novaGroup: novaGroup == null && nullToAbsent
+          ? const Value.absent()
+          : Value(novaGroup),
+      unit: unit == null && nullToAbsent ? const Value.absent() : Value(unit),
+      amount: amount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(amount),
+      servingQuantity: servingQuantity == null && nullToAbsent
+          ? const Value.absent()
+          : Value(servingQuantity),
+      energyKj: energyKj == null && nullToAbsent
+          ? const Value.absent()
+          : Value(energyKj),
+      fatG: fatG == null && nullToAbsent ? const Value.absent() : Value(fatG),
+      saturatesG: saturatesG == null && nullToAbsent
+          ? const Value.absent()
+          : Value(saturatesG),
+      sugarsG: sugarsG == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sugarsG),
+      saltG: saltG == null && nullToAbsent
+          ? const Value.absent()
+          : Value(saltG),
+    );
+  }
+
+  factory DiaryRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DiaryRow(
+      id: serializer.fromJson<int>(json['id']),
+      eatenAt: serializer.fromJson<DateTime>(json['eatenAt']),
+      meal: $DiaryEntriesTable.$convertermeal.fromJson(
+        serializer.fromJson<String>(json['meal']),
+      ),
+      ean: serializer.fromJson<String?>(json['ean']),
+      name: serializer.fromJson<String?>(json['name']),
+      brand: serializer.fromJson<String?>(json['brand']),
+      imageUrl: serializer.fromJson<String?>(json['imageUrl']),
+      grade: serializer.fromJson<String?>(json['grade']),
+      novaGroup: serializer.fromJson<int?>(json['novaGroup']),
+      unit: serializer.fromJson<String?>(json['unit']),
+      amount: serializer.fromJson<double?>(json['amount']),
+      servingQuantity: serializer.fromJson<double?>(json['servingQuantity']),
+      energyKj: serializer.fromJson<double?>(json['energyKj']),
+      fatG: serializer.fromJson<double?>(json['fatG']),
+      saturatesG: serializer.fromJson<double?>(json['saturatesG']),
+      sugarsG: serializer.fromJson<double?>(json['sugarsG']),
+      saltG: serializer.fromJson<double?>(json['saltG']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'eatenAt': serializer.toJson<DateTime>(eatenAt),
+      'meal': serializer.toJson<String>(
+        $DiaryEntriesTable.$convertermeal.toJson(meal),
+      ),
+      'ean': serializer.toJson<String?>(ean),
+      'name': serializer.toJson<String?>(name),
+      'brand': serializer.toJson<String?>(brand),
+      'imageUrl': serializer.toJson<String?>(imageUrl),
+      'grade': serializer.toJson<String?>(grade),
+      'novaGroup': serializer.toJson<int?>(novaGroup),
+      'unit': serializer.toJson<String?>(unit),
+      'amount': serializer.toJson<double?>(amount),
+      'servingQuantity': serializer.toJson<double?>(servingQuantity),
+      'energyKj': serializer.toJson<double?>(energyKj),
+      'fatG': serializer.toJson<double?>(fatG),
+      'saturatesG': serializer.toJson<double?>(saturatesG),
+      'sugarsG': serializer.toJson<double?>(sugarsG),
+      'saltG': serializer.toJson<double?>(saltG),
+    };
+  }
+
+  DiaryRow copyWith({
+    int? id,
+    DateTime? eatenAt,
+    DiaryMeal? meal,
+    Value<String?> ean = const Value.absent(),
+    Value<String?> name = const Value.absent(),
+    Value<String?> brand = const Value.absent(),
+    Value<String?> imageUrl = const Value.absent(),
+    Value<String?> grade = const Value.absent(),
+    Value<int?> novaGroup = const Value.absent(),
+    Value<String?> unit = const Value.absent(),
+    Value<double?> amount = const Value.absent(),
+    Value<double?> servingQuantity = const Value.absent(),
+    Value<double?> energyKj = const Value.absent(),
+    Value<double?> fatG = const Value.absent(),
+    Value<double?> saturatesG = const Value.absent(),
+    Value<double?> sugarsG = const Value.absent(),
+    Value<double?> saltG = const Value.absent(),
+  }) => DiaryRow(
+    id: id ?? this.id,
+    eatenAt: eatenAt ?? this.eatenAt,
+    meal: meal ?? this.meal,
+    ean: ean.present ? ean.value : this.ean,
+    name: name.present ? name.value : this.name,
+    brand: brand.present ? brand.value : this.brand,
+    imageUrl: imageUrl.present ? imageUrl.value : this.imageUrl,
+    grade: grade.present ? grade.value : this.grade,
+    novaGroup: novaGroup.present ? novaGroup.value : this.novaGroup,
+    unit: unit.present ? unit.value : this.unit,
+    amount: amount.present ? amount.value : this.amount,
+    servingQuantity: servingQuantity.present
+        ? servingQuantity.value
+        : this.servingQuantity,
+    energyKj: energyKj.present ? energyKj.value : this.energyKj,
+    fatG: fatG.present ? fatG.value : this.fatG,
+    saturatesG: saturatesG.present ? saturatesG.value : this.saturatesG,
+    sugarsG: sugarsG.present ? sugarsG.value : this.sugarsG,
+    saltG: saltG.present ? saltG.value : this.saltG,
+  );
+  DiaryRow copyWithCompanion(DiaryEntriesCompanion data) {
+    return DiaryRow(
+      id: data.id.present ? data.id.value : this.id,
+      eatenAt: data.eatenAt.present ? data.eatenAt.value : this.eatenAt,
+      meal: data.meal.present ? data.meal.value : this.meal,
+      ean: data.ean.present ? data.ean.value : this.ean,
+      name: data.name.present ? data.name.value : this.name,
+      brand: data.brand.present ? data.brand.value : this.brand,
+      imageUrl: data.imageUrl.present ? data.imageUrl.value : this.imageUrl,
+      grade: data.grade.present ? data.grade.value : this.grade,
+      novaGroup: data.novaGroup.present ? data.novaGroup.value : this.novaGroup,
+      unit: data.unit.present ? data.unit.value : this.unit,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      servingQuantity: data.servingQuantity.present
+          ? data.servingQuantity.value
+          : this.servingQuantity,
+      energyKj: data.energyKj.present ? data.energyKj.value : this.energyKj,
+      fatG: data.fatG.present ? data.fatG.value : this.fatG,
+      saturatesG: data.saturatesG.present
+          ? data.saturatesG.value
+          : this.saturatesG,
+      sugarsG: data.sugarsG.present ? data.sugarsG.value : this.sugarsG,
+      saltG: data.saltG.present ? data.saltG.value : this.saltG,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DiaryRow(')
+          ..write('id: $id, ')
+          ..write('eatenAt: $eatenAt, ')
+          ..write('meal: $meal, ')
+          ..write('ean: $ean, ')
+          ..write('name: $name, ')
+          ..write('brand: $brand, ')
+          ..write('imageUrl: $imageUrl, ')
+          ..write('grade: $grade, ')
+          ..write('novaGroup: $novaGroup, ')
+          ..write('unit: $unit, ')
+          ..write('amount: $amount, ')
+          ..write('servingQuantity: $servingQuantity, ')
+          ..write('energyKj: $energyKj, ')
+          ..write('fatG: $fatG, ')
+          ..write('saturatesG: $saturatesG, ')
+          ..write('sugarsG: $sugarsG, ')
+          ..write('saltG: $saltG')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    eatenAt,
+    meal,
+    ean,
+    name,
+    brand,
+    imageUrl,
+    grade,
+    novaGroup,
+    unit,
+    amount,
+    servingQuantity,
+    energyKj,
+    fatG,
+    saturatesG,
+    sugarsG,
+    saltG,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DiaryRow &&
+          other.id == this.id &&
+          other.eatenAt == this.eatenAt &&
+          other.meal == this.meal &&
+          other.ean == this.ean &&
+          other.name == this.name &&
+          other.brand == this.brand &&
+          other.imageUrl == this.imageUrl &&
+          other.grade == this.grade &&
+          other.novaGroup == this.novaGroup &&
+          other.unit == this.unit &&
+          other.amount == this.amount &&
+          other.servingQuantity == this.servingQuantity &&
+          other.energyKj == this.energyKj &&
+          other.fatG == this.fatG &&
+          other.saturatesG == this.saturatesG &&
+          other.sugarsG == this.sugarsG &&
+          other.saltG == this.saltG);
+}
+
+class DiaryEntriesCompanion extends UpdateCompanion<DiaryRow> {
+  final Value<int> id;
+  final Value<DateTime> eatenAt;
+  final Value<DiaryMeal> meal;
+  final Value<String?> ean;
+  final Value<String?> name;
+  final Value<String?> brand;
+  final Value<String?> imageUrl;
+  final Value<String?> grade;
+  final Value<int?> novaGroup;
+  final Value<String?> unit;
+  final Value<double?> amount;
+  final Value<double?> servingQuantity;
+  final Value<double?> energyKj;
+  final Value<double?> fatG;
+  final Value<double?> saturatesG;
+  final Value<double?> sugarsG;
+  final Value<double?> saltG;
+  const DiaryEntriesCompanion({
+    this.id = const Value.absent(),
+    this.eatenAt = const Value.absent(),
+    this.meal = const Value.absent(),
+    this.ean = const Value.absent(),
+    this.name = const Value.absent(),
+    this.brand = const Value.absent(),
+    this.imageUrl = const Value.absent(),
+    this.grade = const Value.absent(),
+    this.novaGroup = const Value.absent(),
+    this.unit = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.servingQuantity = const Value.absent(),
+    this.energyKj = const Value.absent(),
+    this.fatG = const Value.absent(),
+    this.saturatesG = const Value.absent(),
+    this.sugarsG = const Value.absent(),
+    this.saltG = const Value.absent(),
+  });
+  DiaryEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required DateTime eatenAt,
+    required DiaryMeal meal,
+    this.ean = const Value.absent(),
+    this.name = const Value.absent(),
+    this.brand = const Value.absent(),
+    this.imageUrl = const Value.absent(),
+    this.grade = const Value.absent(),
+    this.novaGroup = const Value.absent(),
+    this.unit = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.servingQuantity = const Value.absent(),
+    this.energyKj = const Value.absent(),
+    this.fatG = const Value.absent(),
+    this.saturatesG = const Value.absent(),
+    this.sugarsG = const Value.absent(),
+    this.saltG = const Value.absent(),
+  }) : eatenAt = Value(eatenAt),
+       meal = Value(meal);
+  static Insertable<DiaryRow> custom({
+    Expression<int>? id,
+    Expression<DateTime>? eatenAt,
+    Expression<String>? meal,
+    Expression<String>? ean,
+    Expression<String>? name,
+    Expression<String>? brand,
+    Expression<String>? imageUrl,
+    Expression<String>? grade,
+    Expression<int>? novaGroup,
+    Expression<String>? unit,
+    Expression<double>? amount,
+    Expression<double>? servingQuantity,
+    Expression<double>? energyKj,
+    Expression<double>? fatG,
+    Expression<double>? saturatesG,
+    Expression<double>? sugarsG,
+    Expression<double>? saltG,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (eatenAt != null) 'eaten_at': eatenAt,
+      if (meal != null) 'meal': meal,
+      if (ean != null) 'ean': ean,
+      if (name != null) 'name': name,
+      if (brand != null) 'brand': brand,
+      if (imageUrl != null) 'image_url': imageUrl,
+      if (grade != null) 'grade': grade,
+      if (novaGroup != null) 'nova_group': novaGroup,
+      if (unit != null) 'unit': unit,
+      if (amount != null) 'amount': amount,
+      if (servingQuantity != null) 'serving_quantity': servingQuantity,
+      if (energyKj != null) 'energy_kj': energyKj,
+      if (fatG != null) 'fat_g': fatG,
+      if (saturatesG != null) 'saturates_g': saturatesG,
+      if (sugarsG != null) 'sugars_g': sugarsG,
+      if (saltG != null) 'salt_g': saltG,
+    });
+  }
+
+  DiaryEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<DateTime>? eatenAt,
+    Value<DiaryMeal>? meal,
+    Value<String?>? ean,
+    Value<String?>? name,
+    Value<String?>? brand,
+    Value<String?>? imageUrl,
+    Value<String?>? grade,
+    Value<int?>? novaGroup,
+    Value<String?>? unit,
+    Value<double?>? amount,
+    Value<double?>? servingQuantity,
+    Value<double?>? energyKj,
+    Value<double?>? fatG,
+    Value<double?>? saturatesG,
+    Value<double?>? sugarsG,
+    Value<double?>? saltG,
+  }) {
+    return DiaryEntriesCompanion(
+      id: id ?? this.id,
+      eatenAt: eatenAt ?? this.eatenAt,
+      meal: meal ?? this.meal,
+      ean: ean ?? this.ean,
+      name: name ?? this.name,
+      brand: brand ?? this.brand,
+      imageUrl: imageUrl ?? this.imageUrl,
+      grade: grade ?? this.grade,
+      novaGroup: novaGroup ?? this.novaGroup,
+      unit: unit ?? this.unit,
+      amount: amount ?? this.amount,
+      servingQuantity: servingQuantity ?? this.servingQuantity,
+      energyKj: energyKj ?? this.energyKj,
+      fatG: fatG ?? this.fatG,
+      saturatesG: saturatesG ?? this.saturatesG,
+      sugarsG: sugarsG ?? this.sugarsG,
+      saltG: saltG ?? this.saltG,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (eatenAt.present) {
+      map['eaten_at'] = Variable<DateTime>(eatenAt.value);
+    }
+    if (meal.present) {
+      map['meal'] = Variable<String>(
+        $DiaryEntriesTable.$convertermeal.toSql(meal.value),
+      );
+    }
+    if (ean.present) {
+      map['ean'] = Variable<String>(ean.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (brand.present) {
+      map['brand'] = Variable<String>(brand.value);
+    }
+    if (imageUrl.present) {
+      map['image_url'] = Variable<String>(imageUrl.value);
+    }
+    if (grade.present) {
+      map['grade'] = Variable<String>(grade.value);
+    }
+    if (novaGroup.present) {
+      map['nova_group'] = Variable<int>(novaGroup.value);
+    }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<double>(amount.value);
+    }
+    if (servingQuantity.present) {
+      map['serving_quantity'] = Variable<double>(servingQuantity.value);
+    }
+    if (energyKj.present) {
+      map['energy_kj'] = Variable<double>(energyKj.value);
+    }
+    if (fatG.present) {
+      map['fat_g'] = Variable<double>(fatG.value);
+    }
+    if (saturatesG.present) {
+      map['saturates_g'] = Variable<double>(saturatesG.value);
+    }
+    if (sugarsG.present) {
+      map['sugars_g'] = Variable<double>(sugarsG.value);
+    }
+    if (saltG.present) {
+      map['salt_g'] = Variable<double>(saltG.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DiaryEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('eatenAt: $eatenAt, ')
+          ..write('meal: $meal, ')
+          ..write('ean: $ean, ')
+          ..write('name: $name, ')
+          ..write('brand: $brand, ')
+          ..write('imageUrl: $imageUrl, ')
+          ..write('grade: $grade, ')
+          ..write('novaGroup: $novaGroup, ')
+          ..write('unit: $unit, ')
+          ..write('amount: $amount, ')
+          ..write('servingQuantity: $servingQuantity, ')
+          ..write('energyKj: $energyKj, ')
+          ..write('fatG: $fatG, ')
+          ..write('saturatesG: $saturatesG, ')
+          ..write('sugarsG: $sugarsG, ')
+          ..write('saltG: $saltG')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1829,6 +2793,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ContributionOutboxTable contributionOutbox =
       $ContributionOutboxTable(this);
   late final $LocalProfileTable localProfile = $LocalProfileTable(this);
+  late final $DiaryEntriesTable diaryEntries = $DiaryEntriesTable(this);
   late final ProductCacheDao productCacheDao = ProductCacheDao(
     this as AppDatabase,
   );
@@ -1837,6 +2802,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final OutboxDao outboxDao = OutboxDao(this as AppDatabase);
   late final ProfileDao profileDao = ProfileDao(this as AppDatabase);
+  late final DiaryDao diaryDao = DiaryDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1846,6 +2812,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     scanHistory,
     contributionOutbox,
     localProfile,
+    diaryEntries,
   ];
   @override
   DriftDatabaseOptions get options =>
@@ -2765,6 +3732,430 @@ typedef $$LocalProfileTableProcessedTableManager =
       LocalProfileRow,
       PrefetchHooks Function()
     >;
+typedef $$DiaryEntriesTableCreateCompanionBuilder =
+    DiaryEntriesCompanion Function({
+      Value<int> id,
+      required DateTime eatenAt,
+      required DiaryMeal meal,
+      Value<String?> ean,
+      Value<String?> name,
+      Value<String?> brand,
+      Value<String?> imageUrl,
+      Value<String?> grade,
+      Value<int?> novaGroup,
+      Value<String?> unit,
+      Value<double?> amount,
+      Value<double?> servingQuantity,
+      Value<double?> energyKj,
+      Value<double?> fatG,
+      Value<double?> saturatesG,
+      Value<double?> sugarsG,
+      Value<double?> saltG,
+    });
+typedef $$DiaryEntriesTableUpdateCompanionBuilder =
+    DiaryEntriesCompanion Function({
+      Value<int> id,
+      Value<DateTime> eatenAt,
+      Value<DiaryMeal> meal,
+      Value<String?> ean,
+      Value<String?> name,
+      Value<String?> brand,
+      Value<String?> imageUrl,
+      Value<String?> grade,
+      Value<int?> novaGroup,
+      Value<String?> unit,
+      Value<double?> amount,
+      Value<double?> servingQuantity,
+      Value<double?> energyKj,
+      Value<double?> fatG,
+      Value<double?> saturatesG,
+      Value<double?> sugarsG,
+      Value<double?> saltG,
+    });
+
+class $$DiaryEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $DiaryEntriesTable> {
+  $$DiaryEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get eatenAt => $composableBuilder(
+    column: $table.eatenAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<DiaryMeal, DiaryMeal, String> get meal =>
+      $composableBuilder(
+        column: $table.meal,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<String> get ean => $composableBuilder(
+    column: $table.ean,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get brand => $composableBuilder(
+    column: $table.brand,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get imageUrl => $composableBuilder(
+    column: $table.imageUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get grade => $composableBuilder(
+    column: $table.grade,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get novaGroup => $composableBuilder(
+    column: $table.novaGroup,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get servingQuantity => $composableBuilder(
+    column: $table.servingQuantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get energyKj => $composableBuilder(
+    column: $table.energyKj,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get fatG => $composableBuilder(
+    column: $table.fatG,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get saturatesG => $composableBuilder(
+    column: $table.saturatesG,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get sugarsG => $composableBuilder(
+    column: $table.sugarsG,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get saltG => $composableBuilder(
+    column: $table.saltG,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DiaryEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $DiaryEntriesTable> {
+  $$DiaryEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get eatenAt => $composableBuilder(
+    column: $table.eatenAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get meal => $composableBuilder(
+    column: $table.meal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ean => $composableBuilder(
+    column: $table.ean,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get brand => $composableBuilder(
+    column: $table.brand,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get imageUrl => $composableBuilder(
+    column: $table.imageUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get grade => $composableBuilder(
+    column: $table.grade,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get novaGroup => $composableBuilder(
+    column: $table.novaGroup,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get servingQuantity => $composableBuilder(
+    column: $table.servingQuantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get energyKj => $composableBuilder(
+    column: $table.energyKj,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get fatG => $composableBuilder(
+    column: $table.fatG,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get saturatesG => $composableBuilder(
+    column: $table.saturatesG,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get sugarsG => $composableBuilder(
+    column: $table.sugarsG,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get saltG => $composableBuilder(
+    column: $table.saltG,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DiaryEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DiaryEntriesTable> {
+  $$DiaryEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get eatenAt =>
+      $composableBuilder(column: $table.eatenAt, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<DiaryMeal, String> get meal =>
+      $composableBuilder(column: $table.meal, builder: (column) => column);
+
+  GeneratedColumn<String> get ean =>
+      $composableBuilder(column: $table.ean, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get brand =>
+      $composableBuilder(column: $table.brand, builder: (column) => column);
+
+  GeneratedColumn<String> get imageUrl =>
+      $composableBuilder(column: $table.imageUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get grade =>
+      $composableBuilder(column: $table.grade, builder: (column) => column);
+
+  GeneratedColumn<int> get novaGroup =>
+      $composableBuilder(column: $table.novaGroup, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<double> get servingQuantity => $composableBuilder(
+    column: $table.servingQuantity,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get energyKj =>
+      $composableBuilder(column: $table.energyKj, builder: (column) => column);
+
+  GeneratedColumn<double> get fatG =>
+      $composableBuilder(column: $table.fatG, builder: (column) => column);
+
+  GeneratedColumn<double> get saturatesG => $composableBuilder(
+    column: $table.saturatesG,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get sugarsG =>
+      $composableBuilder(column: $table.sugarsG, builder: (column) => column);
+
+  GeneratedColumn<double> get saltG =>
+      $composableBuilder(column: $table.saltG, builder: (column) => column);
+}
+
+class $$DiaryEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DiaryEntriesTable,
+          DiaryRow,
+          $$DiaryEntriesTableFilterComposer,
+          $$DiaryEntriesTableOrderingComposer,
+          $$DiaryEntriesTableAnnotationComposer,
+          $$DiaryEntriesTableCreateCompanionBuilder,
+          $$DiaryEntriesTableUpdateCompanionBuilder,
+          (
+            DiaryRow,
+            BaseReferences<_$AppDatabase, $DiaryEntriesTable, DiaryRow>,
+          ),
+          DiaryRow,
+          PrefetchHooks Function()
+        > {
+  $$DiaryEntriesTableTableManager(_$AppDatabase db, $DiaryEntriesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DiaryEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DiaryEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DiaryEntriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<DateTime> eatenAt = const Value.absent(),
+                Value<DiaryMeal> meal = const Value.absent(),
+                Value<String?> ean = const Value.absent(),
+                Value<String?> name = const Value.absent(),
+                Value<String?> brand = const Value.absent(),
+                Value<String?> imageUrl = const Value.absent(),
+                Value<String?> grade = const Value.absent(),
+                Value<int?> novaGroup = const Value.absent(),
+                Value<String?> unit = const Value.absent(),
+                Value<double?> amount = const Value.absent(),
+                Value<double?> servingQuantity = const Value.absent(),
+                Value<double?> energyKj = const Value.absent(),
+                Value<double?> fatG = const Value.absent(),
+                Value<double?> saturatesG = const Value.absent(),
+                Value<double?> sugarsG = const Value.absent(),
+                Value<double?> saltG = const Value.absent(),
+              }) => DiaryEntriesCompanion(
+                id: id,
+                eatenAt: eatenAt,
+                meal: meal,
+                ean: ean,
+                name: name,
+                brand: brand,
+                imageUrl: imageUrl,
+                grade: grade,
+                novaGroup: novaGroup,
+                unit: unit,
+                amount: amount,
+                servingQuantity: servingQuantity,
+                energyKj: energyKj,
+                fatG: fatG,
+                saturatesG: saturatesG,
+                sugarsG: sugarsG,
+                saltG: saltG,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required DateTime eatenAt,
+                required DiaryMeal meal,
+                Value<String?> ean = const Value.absent(),
+                Value<String?> name = const Value.absent(),
+                Value<String?> brand = const Value.absent(),
+                Value<String?> imageUrl = const Value.absent(),
+                Value<String?> grade = const Value.absent(),
+                Value<int?> novaGroup = const Value.absent(),
+                Value<String?> unit = const Value.absent(),
+                Value<double?> amount = const Value.absent(),
+                Value<double?> servingQuantity = const Value.absent(),
+                Value<double?> energyKj = const Value.absent(),
+                Value<double?> fatG = const Value.absent(),
+                Value<double?> saturatesG = const Value.absent(),
+                Value<double?> sugarsG = const Value.absent(),
+                Value<double?> saltG = const Value.absent(),
+              }) => DiaryEntriesCompanion.insert(
+                id: id,
+                eatenAt: eatenAt,
+                meal: meal,
+                ean: ean,
+                name: name,
+                brand: brand,
+                imageUrl: imageUrl,
+                grade: grade,
+                novaGroup: novaGroup,
+                unit: unit,
+                amount: amount,
+                servingQuantity: servingQuantity,
+                energyKj: energyKj,
+                fatG: fatG,
+                saturatesG: saturatesG,
+                sugarsG: sugarsG,
+                saltG: saltG,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DiaryEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DiaryEntriesTable,
+      DiaryRow,
+      $$DiaryEntriesTableFilterComposer,
+      $$DiaryEntriesTableOrderingComposer,
+      $$DiaryEntriesTableAnnotationComposer,
+      $$DiaryEntriesTableCreateCompanionBuilder,
+      $$DiaryEntriesTableUpdateCompanionBuilder,
+      (DiaryRow, BaseReferences<_$AppDatabase, $DiaryEntriesTable, DiaryRow>),
+      DiaryRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2777,4 +4168,6 @@ class $AppDatabaseManager {
       $$ContributionOutboxTableTableManager(_db, _db.contributionOutbox);
   $$LocalProfileTableTableManager get localProfile =>
       $$LocalProfileTableTableManager(_db, _db.localProfile);
+  $$DiaryEntriesTableTableManager get diaryEntries =>
+      $$DiaryEntriesTableTableManager(_db, _db.diaryEntries);
 }

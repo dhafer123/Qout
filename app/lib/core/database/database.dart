@@ -414,9 +414,101 @@ class OutboxDao extends DatabaseAccessor<AppDatabase> with _$OutboxDaoMixin {
       (delete(contributionOutbox)..where((t) => t.id.equals(id))).go();
 }
 
+/// The meals of the food diary (T42), as stored.
+enum DiaryMeal { breakfast, lunch, snack, dinner }
+
+/// The food diary (T42): one row per thing eaten, on the phone only. A
+/// product keeps a copy of its label's values per 100 g/mL and the amount
+/// eaten; a quick add has no barcode or amount, only its energy.
+@DataClassName('DiaryRow')
+class DiaryEntries extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// The day (and time) it counts for, in UTC.
+  DateTimeColumn get eatenAt => dateTime()();
+
+  TextColumn get meal => textEnum<DiaryMeal>()();
+
+  /// Null for a quick add.
+  TextColumn get ean => text().nullable()();
+  TextColumn get name => text().nullable()();
+  TextColumn get brand => text().nullable()();
+  TextColumn get imageUrl => text().nullable()();
+
+  /// Grade letter when logged (`A`..`E`); null: not graded or quick add.
+  TextColumn get grade => text().nullable()();
+  IntColumn get novaGroup => integer().nullable()();
+
+  /// `g` or `ml`; null for a quick add.
+  TextColumn get unit => text().nullable()();
+
+  /// Amount eaten in [unit]; null for a quick add.
+  RealColumn get amount => real().nullable()();
+
+  /// The label's serving in [unit], if it has one.
+  RealColumn get servingQuantity => real().nullable()();
+
+  /// Product: per 100 g/mL. Quick add: [energyKj] is what was eaten.
+  RealColumn get energyKj => real().nullable()();
+  RealColumn get fatG => real().nullable()();
+  RealColumn get saturatesG => real().nullable()();
+  RealColumn get sugarsG => real().nullable()();
+  RealColumn get saltG => real().nullable()();
+}
+
+@DriftAccessor(tables: [DiaryEntries])
+class DiaryDao extends DatabaseAccessor<AppDatabase> with _$DiaryDaoMixin {
+  DiaryDao(super.attachedDatabase);
+
+  Future<int> add(DiaryEntriesCompanion entry) =>
+      into(diaryEntries).insert(entry);
+
+  /// Puts a removed row back with its id.
+  Future<void> restore(DiaryRow row) =>
+      into(diaryEntries).insert(row, mode: InsertMode.insertOrReplace);
+
+  Future<void> change(
+    int id, {
+    required DateTime eatenAt,
+    required DiaryMeal meal,
+    required double? amount,
+  }) => (update(diaryEntries)..where((t) => t.id.equals(id))).write(
+    DiaryEntriesCompanion(
+      eatenAt: Value(eatenAt.toUtc()),
+      meal: Value(meal),
+      amount: Value(amount),
+    ),
+  );
+
+  Future<void> remove(int id) =>
+      (delete(diaryEntries)..where((t) => t.id.equals(id))).go();
+
+  Future<void> clear() => delete(diaryEntries).go();
+
+  /// Rows with [from] <= eatenAt < [to], in the order they were logged.
+  Stream<List<DiaryRow>> watchBetween(DateTime from, DateTime to) =>
+      (select(diaryEntries)
+            ..where(
+              (t) =>
+                  t.eatenAt.isBiggerOrEqualValue(from.toUtc()) &
+                  t.eatenAt.isSmallerThanValue(to.toUtc()),
+            )
+            ..orderBy([(t) => OrderingTerm.asc(t.eatenAt)]))
+          .watch();
+
+  Future<List<DiaryRow>> between(DateTime from, DateTime to) =>
+      watchBetween(from, to).first;
+}
+
 @DriftDatabase(
-  tables: [CachedProducts, ScanHistory, ContributionOutbox, LocalProfile],
-  daos: [ProductCacheDao, ScanHistoryDao, OutboxDao, ProfileDao],
+  tables: [
+    CachedProducts,
+    ScanHistory,
+    ContributionOutbox,
+    LocalProfile,
+    DiaryEntries,
+  ],
+  daos: [ProductCacheDao, ScanHistoryDao, OutboxDao, ProfileDao, DiaryDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
@@ -428,7 +520,7 @@ class AppDatabase extends _$AppDatabase {
   /// old schema in `test/fixtures/database/schema_v<n>.sql` for its test
   /// (`make-migrations` needs a newer drift_dev than this SDK resolves).
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -462,6 +554,10 @@ class AppDatabase extends _$AppDatabase {
       if (from >= 3 && from < 4) {
         // T41: the first name for the greeting.
         await m.addColumn(localProfile, localProfile.firstName);
+      }
+      if (from < 5) {
+        // T42: the food diary.
+        await m.createTable(diaryEntries);
       }
     },
   );

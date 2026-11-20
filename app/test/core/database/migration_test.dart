@@ -194,4 +194,33 @@ void main() {
     expect(await _schema(migrated), await _schema(fresh));
     expect(await _userVersion(migrated), fresh.schemaVersion);
   });
+
+  test('4 -> 5: an empty diary, the rest kept', () async {
+    final migrated = AppDatabase(
+      _atVersion(4, '''
+        INSERT INTO local_profile (id, onboarding_completed_at, sex, age,
+            age_entered_at, height_cm, weight_kg, pal, first_name)
+          VALUES (1, '2026-11-18T09:00:00.000Z', 'male', 23,
+            '2026-11-18T09:00:00.000Z', 178, 60, '1.6', 'Dhafer');
+        INSERT INTO scan_history (ean, scanned_at)
+          VALUES ('619', '2026-11-19T09:31:00.000Z');
+      '''),
+    );
+    addTearDown(migrated.close);
+
+    expect(
+      await migrated.diaryDao.between(DateTime(2000), DateTime(2100)),
+      isEmpty,
+    );
+    expect((await migrated.profileDao.get())!.firstName, 'Dhafer');
+    expect(
+      (await migrated.scanHistoryDao.watchRecent().first).single.ean,
+      '619',
+    );
+
+    final fresh = AppDatabase(NativeDatabase.memory());
+    addTearDown(fresh.close);
+    expect(await _schema(migrated), await _schema(fresh));
+    expect(await _userVersion(migrated), fresh.schemaVersion);
+  });
 }
