@@ -7,6 +7,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/env/app_env.dart';
+import 'package:qout/core/ui/entrance.dart';
 import 'package:qout/core/ui/fading_rule.dart';
 import 'package:qout/core/ui/insets.dart';
 import 'package:qout/core/ui/section_card.dart';
@@ -41,20 +42,25 @@ class ProfileScreen extends ConsumerWidget {
           title: 'The profile could not be read',
           message: 'Try again later.',
         ),
-        data: (profile) => ListView(
-          padding: const EdgeInsets.only(
-            top: 4,
-            bottom: 24,
-          ).clearOfNavigationBar(context),
-          children: [
-            const _Account(),
-            if (profile == null) const _NoProfile(),
-            _Needs(computeNeeds(profile)),
-            if (profile != null) _About(profile),
-            const _AvoidedAdditives(),
-            if (profile != null) const _DeleteProfile(),
-            if (dev) const _Developer(),
-          ],
+        data: (profile) => EntranceScope(
+          child: ListView(
+            padding: const EdgeInsets.only(
+              top: 4,
+              bottom: 24,
+            ).clearOfNavigationBar(context),
+            children: [
+              for (final (i, section) in [
+                const _Account(),
+                if (profile == null) const _NoProfile(),
+                _Needs(computeNeeds(profile)),
+                if (profile != null) _About(profile),
+                const _AvoidedAdditives(),
+                if (profile != null) const _DeleteProfile(),
+                if (dev) const _Developer(),
+              ].indexed)
+                Entrance(index: i, child: section),
+            ],
+          ),
         ),
       ),
     );

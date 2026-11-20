@@ -7,6 +7,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart';
+import 'package:qout/core/ui/entrance.dart';
 import 'package:qout/core/ui/insets.dart';
 import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
@@ -163,50 +164,56 @@ class _ProductView extends StatelessWidget {
   Widget build(BuildContext context) {
     final product = found.product;
     final explanation = explainScore(product);
-    return ListView(
-      padding: const EdgeInsets.only(
-        bottom: 24,
-      ).clearOfNavigationBar(context),
-      children: [
-        if (found.freshness == ProductFreshness.refreshFailed)
-          _StaleBanner(found),
-        if (product.imageUrl case final url? when url.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(QoutRadius.lg),
-              child: ProductPhoto(imageUrl: url, name: product.name),
-            ),
-          ),
-        ProductHeader(product: product),
-        GradeCard(explanation: explanation),
-        ForYouSection(product: product),
-        ScoreSection(explanation: explanation, nutrition: product.nutrition),
-        if (canCompleteValues(explanation)) _CompleteValues(ean: product.ean),
-        AlternativesSection(
-          ean: product.ean,
-          grade: explanation.displayGrade,
-        ),
-        NutritionSection(nutrition: product.nutrition),
-        ProcessingSection(novaGroup: product.novaGroup),
-        AdditivesSection(additives: product.additives),
-        SourceSection(product: product),
+    final children = <Widget>[
+      if (found.freshness == ProductFreshness.refreshFailed)
+        _StaleBanner(found),
+      if (product.imageUrl case final url? when url.isNotEmpty)
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              OutlinedButton.icon(
-                onPressed: () => _report(context, product),
-                icon: const Icon(PhosphorIconsRegular.flag, size: 20),
-                label: const Text('Report an error'),
-              ),
-              const SizedBox(height: 8),
-              const _ScanAgainButton(),
-            ],
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(QoutRadius.lg),
+            child: ProductPhoto(imageUrl: url, name: product.name),
           ),
         ),
-      ],
+      ProductHeader(product: product),
+      GradeCard(explanation: explanation),
+      ForYouSection(product: product),
+      ScoreSection(explanation: explanation, nutrition: product.nutrition),
+      if (canCompleteValues(explanation)) _CompleteValues(ean: product.ean),
+      AlternativesSection(
+        ean: product.ean,
+        grade: explanation.displayGrade,
+      ),
+      NutritionSection(nutrition: product.nutrition),
+      ProcessingSection(novaGroup: product.novaGroup),
+      AdditivesSection(additives: product.additives),
+      SourceSection(product: product),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            OutlinedButton.icon(
+              onPressed: () => _report(context, product),
+              icon: const Icon(PhosphorIconsRegular.flag, size: 20),
+              label: const Text('Report an error'),
+            ),
+            const SizedBox(height: 8),
+            const _ScanAgainButton(),
+          ],
+        ),
+      ),
+    ];
+    return EntranceScope(
+      child: ListView(
+        padding: const EdgeInsets.only(
+          bottom: 24,
+        ).clearOfNavigationBar(context),
+        children: [
+          for (final (i, child) in children.indexed)
+            Entrance(index: i, child: child),
+        ],
+      ),
     );
   }
 }

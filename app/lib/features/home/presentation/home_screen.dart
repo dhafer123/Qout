@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
+import 'package:qout/core/ui/entrance.dart';
 import 'package:qout/core/ui/section_label.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
@@ -43,66 +44,72 @@ class HomeScreen extends ConsumerWidget {
         ),
         actions: const [ProfileButton(), SizedBox(width: 8)],
       ),
-      body: CustomScrollView(
-        slivers: [
-          const SliverToBoxAdapter(child: _ScanCard()),
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
-              child: OutboxCard(),
+      body: EntranceScope(
+        child: CustomScrollView(
+          slivers: [
+            const SliverToBoxAdapter(child: Entrance(child: _ScanCard())),
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+                child: OutboxCard(),
+              ),
             ),
-          ),
-          ...history.when(
-            loading: () => const [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            ],
-            error: (_, _) => const [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: _HistoryMessage(
-                  icon: PhosphorIconsRegular.warningCircle,
-                  title: 'The history could not be read.',
+            ...history.when(
+              loading: () => const [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: CircularProgressIndicator()),
                 ),
-              ),
-            ],
-            data: (entries) => entries.isEmpty
-                ? const [
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: _HistoryMessage(
-                        icon: PhosphorIconsRegular.clockCounterClockwise,
-                        title: 'No scans yet',
-                        message: 'Scanned products appear here, also offline.',
+              ],
+              error: (_, _) => const [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _HistoryMessage(
+                    icon: PhosphorIconsRegular.warningCircle,
+                    title: 'The history could not be read.',
+                  ),
+                ),
+              ],
+              data: (entries) => entries.isEmpty
+                  ? const [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: _HistoryMessage(
+                          icon: PhosphorIconsRegular.clockCounterClockwise,
+                          title: 'No scans yet',
+                          message:
+                              'Scanned products appear here, also offline.',
+                        ),
                       ),
-                    ),
-                  ]
-                : [
-                    SliverToBoxAdapter(
-                      child: SectionLabel(
-                        'History',
-                        padding: const EdgeInsets.fromLTRB(16, 8, 4, 2),
-                        action: TextButton(
-                          onPressed: () =>
-                              unawaited(_confirmClear(context, ref)),
-                          child: const Text(
-                            'Clear',
-                            semanticsLabel: 'Clear history',
+                    ]
+                  : [
+                      SliverToBoxAdapter(
+                        child: Entrance(
+                          index: 1,
+                          child: SectionLabel(
+                            'History',
+                            padding: const EdgeInsets.fromLTRB(16, 8, 4, 2),
+                            action: TextButton(
+                              onPressed: () =>
+                                  unawaited(_confirmClear(context, ref)),
+                              child: const Text(
+                                'Clear',
+                                semanticsLabel: 'Clear history',
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    _HistoryList(entries),
-                    SliverToBoxAdapter(
-                      child: SizedBox(
-                        height: 16 + MediaQuery.paddingOf(context).bottom,
+                      _HistoryList(entries),
+                      SliverToBoxAdapter(
+                        child: SizedBox(
+                          height: 16 + MediaQuery.paddingOf(context).bottom,
+                        ),
                       ),
-                    ),
-                  ],
-          ),
-        ],
+                    ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -354,28 +361,32 @@ class _HistoryListState extends ConsumerState<_HistoryList> {
       itemBuilder: (context, index) {
         final entry = entries[index];
         final scheme = Theme.of(context).colorScheme;
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Card(
-            clipBehavior: Clip.antiAlias,
-            child: Dismissible(
-              key: ValueKey(entry.id),
-              direction: DismissDirection.endToStart,
-              background: ColoredBox(
-                color: scheme.errorContainer,
-                child: Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Icon(
-                      PhosphorIconsRegular.trash,
-                      color: scheme.onErrorContainer,
+        return Entrance(
+          key: ValueKey(entry.id),
+          index: 2 + index,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              child: Dismissible(
+                key: ValueKey(entry.id),
+                direction: DismissDirection.endToStart,
+                background: ColoredBox(
+                  color: scheme.errorContainer,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Icon(
+                        PhosphorIconsRegular.trash,
+                        color: scheme.onErrorContainer,
+                      ),
                     ),
                   ),
                 ),
+                onDismissed: (_) => _remove(entry),
+                child: HistoryTile(entry: entry),
               ),
-              onDismissed: (_) => _remove(entry),
-              child: HistoryTile(entry: entry),
             ),
           ),
         );
