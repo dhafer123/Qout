@@ -14,6 +14,7 @@ import 'package:qout/core/ui/section_card.dart';
 import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
+import 'package:qout/features/diary/data/diary_repository.dart';
 import 'package:qout/features/product/presentation/product_labels.dart'
     show formatAmount, kjPerKcalForDisplay;
 import 'package:qout/features/profile/data/profile_repository.dart';
@@ -57,6 +58,7 @@ class ProfileScreen extends ConsumerWidget {
                 _Needs(computeNeeds(profile)),
                 if (profile != null) _About(profile),
                 const _AvoidedAdditives(),
+                const _DeleteDiary(),
                 if (profile != null) const _DeleteProfile(),
                 if (dev) const _Developer(),
               ].indexed)
@@ -604,6 +606,55 @@ class _AvoidedAdditives extends ConsumerWidget {
   }
 }
 
+/// Deletes everything logged in the diary (T42), after asking.
+class _DeleteDiary extends ConsumerWidget {
+  const _DeleteDiary();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final error = Theme.of(context).colorScheme.error;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: error,
+          side: BorderSide(color: error.withValues(alpha: 0.5)),
+        ),
+        onPressed: () => unawaited(_confirm(context, ref)),
+        icon: const Icon(PhosphorIconsRegular.notebook, size: 20),
+        label: const Text('Delete my diary'),
+      ),
+    );
+  }
+
+  Future<void> _confirm(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final delete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete your diary?'),
+        content: const Text(
+          'Everything you logged is removed from this phone. Your scans and '
+          'your profile stay.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (!(delete ?? false)) return;
+    await ref.read(diaryRepositoryProvider).clear();
+    messenger.showSnackBar(const SnackBar(content: Text('Diary deleted')));
+  }
+}
+
 class _DeleteProfile extends ConsumerWidget {
   const _DeleteProfile();
 
@@ -611,7 +662,7 @@ class _DeleteProfile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final error = Theme.of(context).colorScheme.error;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
       child: OutlinedButton.icon(
         style: OutlinedButton.styleFrom(
           foregroundColor: error,

@@ -351,13 +351,16 @@ Decided 2026-11-20 after manual testing: Qout is about the user's eating, not on
 - Follow-up: none beyond T42 and T43.
 
 ### T42 · Food diary
-- [ ] "I ate this" on every product: portion (1 serving when the label gives one, 100 g / 100 mL, or an amount), meal (guessed from the time, changeable), day
-- [ ] Quick add without a barcode: name and kcal (counts toward energy only, said so)
-- [ ] Entries keep a copy of the product's values at the time (offline, unaffected by later updates); drift schema v5
-- [ ] Today: energy ring and fat, saturates, sugars and salt bars against the T38 daily needs; amber and neutral words above a reference; today's meals; "Scan to log"
-- [ ] Diary tab: week strip, entries by meal (photo, portion, kcal, grade), tap to change the portion, swipe to delete with undo; recently scanned below
-- [ ] "Delete my diary" in the profile
+- [x] "I ate this" on every product: portion (1 serving when the label gives one, 100 g / 100 mL, or an amount), meal (guessed from the time, changeable), day
+- [x] Quick add without a barcode: name and kcal (counts toward energy only, said so)
+- [x] Entries keep a copy of the product's values at the time (offline, unaffected by later updates); drift schema v5
+- [x] Today: energy ring and fat, saturates, sugars and salt bars against the T38 daily needs; amber and neutral words above a reference; today's meals; "Scan to log"
+- [x] Diary tab: week strip, entries by meal (photo, portion, kcal, grade), tap to change the portion, swipe to delete with undo; recently scanned below
+- [x] "Delete my diary" in the profile
 - Tests: **U** portion amounts and day totals, meal guess; **D** v4 → v5 migration; **W** log from a product, quick add, edit, delete/undo, Today rings, delete diary.
+- Done (2026-11-20): app 1272 tests. Domain `lib/health/diary.dart` (pure): `Meal`, `guessMeal` (before 10:30 / 15:00 / 18:00), `dayOf`, `DiaryEntry` (`eaten` = per 100 × amount / 100; quick add: its energy), `totalsOf` (sums, and per nutrient how many entries lacked it), `dailyAmount`, `shareOfDay`, `aboveReference` (never for energy: a need, not a limit). Storage `diary_entries` (schema v5, `schema_v4.sql` fixture, migration test): eaten-at in UTC, meal, the product's EAN, name, brand, photo, grade letter and NOVA group, unit, amount, label serving, and the label's values per 100 g/mL (quick add: energy only). `DiaryRepository` (`logProduct`, `quickAdd`, `change`, `remove`/`restore`, `clear`, `watchDay`, `watchBetween`) with the pure builders `diaryEntryOf`, `quickAddEntry`, `eatenAtFor` shared with the test fake. The display kJ/kcal factor moved to `lib/health/energy.dart` (quick add typed in kcal, stored in kJ, shown in kcal again; the engine keeps its own conversion). UI: "I ate this" bar on the product screen and `showLogFoodSheet` (1 serving when the label's serving matches the basis, 100 g/mL, or another amount up to 5000; meal; today / yesterday / another day of the last year; ≈ kcal preview), `showEditEntrySheet` (same sheet, Save / Remove), `showQuickAddSheet` (name optional, kcal up to 10 000; typing limits, not nutrition values). Today: `DaySummaryCard` (energy ring, bars for fat, saturates, sugars, salt with "up to" / "reference" / "under" as in the profile; amber "Above your daily reference"; how many items lack an energy value; personal needs or EU reference intakes; not medical advice), "Scan to log" / "Quick add", "Today's meals"; the T41 scan banner gave way to them. Diary tab: `WeekStrip` (Monday–Sunday, no future), the day's entries by meal with kcal, `DiaryEntryTile` (tap to edit, swipe to remove with Undo), quick add in the app bar for the day shown, recently scanned below. Profile: "Delete my diary" (asks first).
+- Follow-ups: the T41 product header (big photo, grade pill) is still open; entries can't be logged from "Recently scanned" without opening the product.
+
 
 ### T43 · Weekly insights
 - [ ] Progress tab: Monday–Sunday weeks with arrows; energy per day (bars) against the daily need (line) with `fl_chart`

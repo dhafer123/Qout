@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/features/diary/presentation/diary_screen.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
@@ -13,6 +14,24 @@ import '../../../helpers/fake_scanner_platform.dart';
 import '../../../helpers/fixtures.dart';
 import '../../../helpers/pump_app.dart';
 
+/// Today on a tall screen: everything on it is built and tappable.
+Future<void> pumpToday(
+  WidgetTester tester, {
+  FakeScanHistoryRepository? history,
+  String? firstName,
+  List<Override> overrides = const [],
+}) async {
+  tester.view
+    ..physicalSize = const Size(800, 2000)
+    ..devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+  await tester.pumpQoutApp(
+    history: history,
+    firstName: firstName,
+    overrides: overrides,
+  );
+}
+
 void main() {
   group('greeting', () {
     test('by name, else by the time of day', () {
@@ -24,19 +43,21 @@ void main() {
     });
 
     testWidgets('Today greets with the first name', (tester) async {
-      await tester.pumpQoutApp(firstName: 'Dhafer');
+      await pumpToday(tester, firstName: 'Dhafer');
       expect(find.text('Hello, Dhafer'), findsOneWidget);
       expect(find.text('D'), findsOneWidget); // the initial
     });
   });
 
-  testWidgets("Scan now and the bar's scan button open the scanner", (
+  testWidgets("Scan to log and the bar's scan button open the scanner", (
     tester,
   ) async {
     installFakeScanner();
-    await tester.pumpQoutApp();
+    await pumpToday(
+      tester,
+    );
 
-    await tester.tap(find.text('Scan now'));
+    await tester.tap(find.text('Scan to log'));
     await tester.pumpAndSettle();
     expect(find.byType(ScanScreen), findsOneWidget);
     expect(find.byKey(FakeScannerPlatform.cameraKey), findsOneWidget);
@@ -56,11 +77,12 @@ void main() {
     final repository = FakeProductRepository(
       results: [recordedFound('product-water')],
     );
-    await tester.pumpQoutApp(
+    await pumpToday(
+      tester,
       history: history,
       overrides: [productRepositoryProvider.overrideWithValue(repository)],
     );
-    await tester.tap(find.text('Scan now'));
+    await tester.tap(find.text('Scan to log'));
     await tester.pumpAndSettle();
 
     for (var i = 0; i < 3; i++) {
@@ -89,7 +111,8 @@ void main() {
       final repository = FakeProductRepository(
         results: [recordedFound('product-water')],
       );
-      await tester.pumpQoutApp(
+      await pumpToday(
+        tester,
         history: history,
         overrides: [productRepositoryProvider.overrideWithValue(repository)],
       );
@@ -105,7 +128,7 @@ void main() {
 
     testWidgets('a typo is pointed out, nothing opens', (tester) async {
       final history = FakeScanHistoryRepository();
-      await tester.pumpQoutApp(history: history);
+      await pumpToday(tester, history: history);
 
       await tester.enterText(find.byType(BarcodeField), '6191234567890');
       await tester.tap(find.byTooltip('Open this barcode'));
@@ -119,7 +142,9 @@ void main() {
 
   group('recently scanned', () {
     testWidgets('empty: says where scans appear, no See all', (tester) async {
-      await tester.pumpQoutApp();
+      await pumpToday(
+        tester,
+      );
       expect(find.textContaining('No scans yet'), findsOneWidget);
       expect(find.text('See all'), findsNothing);
     });
@@ -132,7 +157,7 @@ void main() {
           '9557062321136',
           product: recordedProduct('product-general-graded'),
         );
-      await tester.pumpQoutApp(history: history);
+      await pumpToday(tester, history: history);
 
       expect(find.byType(RecentScanCard), findsOneWidget);
       expect(find.text('Jbs qtw'), findsOneWidget);
@@ -148,7 +173,8 @@ void main() {
       final products = FakeProductRepository(
         results: [recordedFound('product-water')],
       );
-      await tester.pumpQoutApp(
+      await pumpToday(
+        tester,
         history: history,
         overrides: [productRepositoryProvider.overrideWithValue(products)],
       );

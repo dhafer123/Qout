@@ -12,6 +12,7 @@ import 'package:qout/core/ui/insets.dart';
 import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
+import 'package:qout/features/diary/presentation/diary_sheets.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
 import 'package:qout/features/product/presentation/for_you_section.dart';
@@ -100,6 +101,10 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
               )
             : null,
       ),
+      // The diary (T42): log what was eaten, from any product.
+      bottomNavigationBar: found == null
+          ? null
+          : _AteThisBar(product: found.product),
       body: NotificationListener<ScrollNotification>(
         onNotification: (notification) =>
             _onScroll(notification, found?.product),
@@ -142,6 +147,50 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
               ],
             ),
           },
+        ),
+      ),
+    );
+  }
+}
+
+/// "I ate this", kept at the bottom of the product.
+class _AteThisBar extends StatelessWidget {
+  const _AteThisBar({required this.product});
+
+  final ProductDetail product;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainer,
+        border: dark
+            ? Border(top: BorderSide(color: QoutPalette.of(context).edge))
+            : null,
+        boxShadow: dark
+            ? null
+            : const [
+                BoxShadow(
+                  color: Color(0x1F17401C),
+                  blurRadius: 16,
+                  offset: Offset(0, -4),
+                ),
+              ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          child: FilledButton.icon(
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
+            ),
+            onPressed: () => showLogFoodSheet(context, product),
+            icon: const Icon(PhosphorIconsRegular.forkKnife, size: 20),
+            label: const Text('I ate this'),
+          ),
         ),
       ),
     );

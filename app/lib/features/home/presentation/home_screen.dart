@@ -8,6 +8,11 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/entrance.dart';
+import 'package:qout/features/diary/data/diary_repository.dart';
+import 'package:qout/features/diary/presentation/day_summary.dart';
+import 'package:qout/features/diary/presentation/diary_format.dart';
+import 'package:qout/features/diary/presentation/diary_screen.dart';
+import 'package:qout/features/diary/presentation/diary_sheets.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/history/domain/history_entry.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
@@ -16,6 +21,8 @@ import 'package:qout/features/product/presentation/grade_badge.dart';
 import 'package:qout/features/product/presentation/product_photo.dart';
 import 'package:qout/features/profile/data/profile_repository.dart';
 import 'package:qout/features/scan/domain/barcode.dart';
+import 'package:qout/health/advice.dart' show Nutrient;
+import 'package:qout/health/diary.dart';
 
 /// "Hello, Dhafer", or a greeting for the time of day without a name.
 String greeting(String? firstName, DateTime now) {
@@ -27,8 +34,8 @@ String greeting(String? firstName, DateTime now) {
   };
 }
 
-/// The Today tab: the greeting, a barcode to type, the scan banner and what
-/// was scanned lately (works offline).
+/// The Today tab: the greeting, the day so far against the daily needs
+/// (T42), ways to log food, a barcode to type and what was scanned lately.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -45,10 +52,16 @@ class HomeScreen extends ConsumerWidget {
                 child: Entrance(child: _Greeting(firstName: firstName)),
               ),
               const SliverToBoxAdapter(
-                child: Entrance(index: 1, child: BarcodeField()),
+                child: Entrance(index: 1, child: _TodaySummary()),
               ),
               const SliverToBoxAdapter(
-                child: Entrance(index: 2, child: _ScanBanner()),
+                child: Entrance(index: 2, child: _LogActions()),
+              ),
+              const SliverToBoxAdapter(
+                child: Entrance(index: 3, child: _TodayMeals()),
+              ),
+              const SliverToBoxAdapter(
+                child: Entrance(index: 4, child: BarcodeField()),
               ),
               const SliverToBoxAdapter(
                 child: Padding(
@@ -57,7 +70,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
               const SliverToBoxAdapter(
-                child: Entrance(index: 3, child: _RecentScans()),
+                child: Entrance(index: 5, child: _RecentScans()),
               ),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
@@ -220,83 +233,133 @@ class _BarcodeFieldState extends ConsumerState<BarcodeField> {
   }
 }
 
-/// The scan prompt as a green banner.
-class _ScanBanner extends StatelessWidget {
-  const _ScanBanner();
+/// Today's totals against the daily needs.
+class _TodaySummary extends ConsumerWidget {
+  const _TodaySummary();
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-    final scheme = theme.colorScheme;
-    final palette = QoutPalette.of(context);
-    final dark = theme.brightness == Brightness.dark;
-    // Light: white on the green. Dark: the pale green on a deep green.
-    final colors = dark
-        ? [palette.tag, Color.lerp(palette.tag, scheme.surface, 0.5)!]
-        : [palette.accent, Color.lerp(palette.accent, Colors.black, 0.3)!];
-    final onBanner = dark ? palette.onTag : Colors.white;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final entries =
+        ref.watch(diaryDayProvider(dayOf(DateTime.now()))).valueOrNull ??
+        const <DiaryEntry>[];
+    final needs = ref.watch(dailyNeedsProvider).valueOrNull;
+    if (needs == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: colors,
+      child: DaySummaryCard(totals: totalsOf(entries), needs: needs),
+    );
+  }
+}
+
+/// Scan to log (the main way), or quick add.
+class _LogActions extends StatelessWidget {
+  const _LogActions();
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+    child: Row(
+      children: [
+        Expanded(
+          child: FilledButton.icon(
+            onPressed: () => context.push(AppRoutes.scan),
+            icon: const Icon(PhosphorIconsBold.barcode, size: 20),
+            label: const Text('Scan to log'),
           ),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            children: [
-              PositionedDirectional(
-                end: -18,
-                bottom: -22,
-                child: ExcludeSemantics(
-                  child: Icon(
-                    PhosphorIconsLight.barcode,
-                    size: 132,
-                    color: onBanner.withValues(alpha: 0.12),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(width: 10),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () => showQuickAddSheet(context),
+            icon: const Icon(PhosphorIconsRegular.plusCircle, size: 20),
+            label: const Text('Quick add'),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// What was logged today, per meal; opens the Diary on today.
+class _TodayMeals extends ConsumerWidget {
+  const _TodayMeals();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final today = dayOf(DateTime.now());
+    final entries =
+        ref.watch(diaryDayProvider(today)).valueOrNull ?? const <DiaryEntry>[];
+    final textTheme = Theme.of(context).textTheme;
+    final palette = QoutPalette.of(context);
+    void openDiary() {
+      ref.read(selectedDiaryDayProvider.notifier).state = today;
+      context.go(AppRoutes.diary);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: openDiary,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      'Scan what you eat',
-                      style: textTheme.titleLarge?.copyWith(color: onBanner),
-                    ),
-                    const SizedBox(height: 6),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 260),
-                      child: Text(
-                        'See its grade and what it means for your day. No '
-                        'account needed.',
-                        style: textTheme.bodyMedium?.copyWith(color: onBanner),
+                    Expanded(
+                      child: Semantics(
+                        header: true,
+                        child: Text(
+                          "Today's meals",
+                          style: textTheme.titleMedium,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: dark ? scheme.primary : Colors.white,
-                        foregroundColor: dark
-                            ? scheme.onPrimary
-                            : palette.accentText,
-                        iconColor: dark ? scheme.onPrimary : palette.accentText,
-                      ),
-                      onPressed: () => context.push(AppRoutes.scan),
-                      icon: const Icon(PhosphorIconsBold.barcode, size: 20),
-                      label: const Text('Scan now'),
+                    Icon(
+                      PhosphorIconsRegular.caretRight,
+                      size: 18,
+                      color: palette.muted,
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 6),
+                if (entries.isEmpty)
+                  Text(
+                    'Nothing logged yet. Scan a product and tap "I ate '
+                    'this", or quick add.',
+                    style: textTheme.bodySmall,
+                  )
+                else
+                  for (final meal in Meal.values)
+                    if (entries.where((e) => e.meal == meal).toList()
+                        case final ofMeal when ofMeal.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '${meal.label} · ${ofMeal.length} '
+                                '${ofMeal.length == 1 ? 'item' : 'items'}',
+                              ),
+                            ),
+                            Text(
+                              '${kcalOf(totalsOf(ofMeal).of(Nutrient.energy))}'
+                              ' kcal',
+                              style: textTheme.bodyMedium?.copyWith(
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+              ],
+            ),
           ),
         ),
       ),

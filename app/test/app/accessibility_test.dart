@@ -3,11 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/qout_api.dart' hide Allergen;
 import 'package:qout/core/env/app_env.dart';
+import 'package:qout/features/diary/data/diary_repository.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/features/profile/data/profile_repository.dart';
+import 'package:qout/health/diary.dart';
 import 'package:qout/health/profile.dart';
 
+import '../helpers/fake_diary_repository.dart';
 import '../helpers/fake_product_repository.dart';
 import '../helpers/fake_scan_history_repository.dart';
 import '../helpers/fixtures.dart';
@@ -51,6 +54,28 @@ void main() {
         await tester.pumpQoutApp(flavor: AppFlavor.prod, history: history);
         await tester.pumpAndSettle();
 
+        await checkGuidelines(tester);
+        handle.dispose();
+      });
+
+      testWidgets('today with a logged day', (tester) async {
+        await configure(tester);
+        final handle = tester.ensureSemantics();
+        await tester.pumpQoutApp(
+          flavor: AppFlavor.prod,
+          diary: _loggedDay(),
+          firstName: 'Dhafer',
+        );
+        await checkGuidelines(tester);
+        handle.dispose();
+      });
+
+      testWidgets('diary with entries', (tester) async {
+        await configure(tester);
+        final handle = tester.ensureSemantics();
+        await tester.pumpQoutApp(flavor: AppFlavor.prod, diary: _loggedDay());
+        await tester.pushRoute(AppRoutes.diary);
+        await tester.pumpAndSettle();
         await checkGuidelines(tester);
         handle.dispose();
       });
@@ -169,4 +194,29 @@ void main() {
       });
     });
   }
+}
+
+/// A day with breakfast from a product (above the salt reference) and a
+/// quick add, logged now.
+FakeDiaryRepository _loggedDay() {
+  final diary = FakeDiaryRepository();
+  final now = DateTime.now();
+  diary
+    ..seed(
+      diaryEntryOf(
+        recordedProduct('product-general-graded'),
+        amount: 450,
+        meal: Meal.breakfast,
+        eatenAt: now,
+      ),
+    )
+    ..seed(
+      quickAddEntry(
+        kcal: 350,
+        meal: Meal.dinner,
+        name: 'Couscous with vegetables',
+        eatenAt: now,
+      ),
+    );
+  return diary;
 }

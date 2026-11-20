@@ -11,6 +11,7 @@ import 'package:qout/core/database/database.dart';
 import 'package:qout/core/database/database_provider.dart';
 import 'package:qout/core/env/app_env.dart';
 import 'package:qout/features/auth/data/token_store.dart';
+import 'package:qout/features/diary/data/diary_repository.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/outbox/data/outbox_files.dart';
@@ -21,6 +22,7 @@ import 'package:qout/features/profile/data/profile_repository.dart';
 import 'package:qout/health/profile.dart';
 
 import 'fake_alternatives_repository.dart';
+import 'fake_diary_repository.dart';
 import 'fake_outbox.dart';
 import 'fake_scan_history_repository.dart';
 import 'in_memory_token_store.dart';
@@ -42,6 +44,7 @@ extension PumpQoutApp on WidgetTester {
     AppFlavor flavor = AppFlavor.dev,
     AppDatabase? database,
     FakeScanHistoryRepository? history,
+    FakeDiaryRepository? diary,
     FakeAlternativesRepository? alternatives,
     InMemoryTokenStore? tokens,
     FakeOutboxFiles? outboxFiles,
@@ -73,6 +76,9 @@ extension PumpQoutApp on WidgetTester {
           ],
           scanHistoryRepositoryProvider.overrideWithValue(
             history ?? FakeScanHistoryRepository(),
+          ),
+          diaryRepositoryProvider.overrideWithValue(
+            diary ?? FakeDiaryRepository(),
           ),
           // No platform secure storage in tests: signed out unless given.
           tokenStoreProvider.overrideWithValue(tokens ?? InMemoryTokenStore()),

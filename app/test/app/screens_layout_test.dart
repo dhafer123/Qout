@@ -4,15 +4,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/qout_api.dart' hide Allergen;
 import 'package:qout/core/database/database.dart';
+import 'package:qout/features/diary/data/diary_repository.dart';
 import 'package:qout/features/history/presentation/scan_history_list.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
 import 'package:qout/features/product/presentation/product_photo.dart';
 import 'package:qout/features/profile/data/profile_repository.dart';
+import 'package:qout/health/diary.dart';
 import 'package:qout/health/profile.dart';
 
 import '../helpers/fake_contribution.dart';
+import '../helpers/fake_diary_repository.dart';
 import '../helpers/fake_product_repository.dart';
 import '../helpers/fake_scan_history_repository.dart';
 import '../helpers/fixtures.dart';
@@ -137,6 +140,85 @@ void main() {
           });
         }
 
+        testWidgets('today and the diary with a logged day', (tester) async {
+          await configure(tester);
+          await tester.pumpQoutApp(
+            diary: _loggedDay(),
+            firstName: 'Dhafer',
+            profile: Profile(
+              sex: Sex.female,
+              age: 22,
+              heightCm: 165,
+              weightKg: 58,
+              activity: ActivityLevel.active,
+            ),
+          );
+          await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(
+            find.text('Recently scanned'),
+            200,
+            scrollable: find
+                .descendant(
+                  of: find.byType(CustomScrollView),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          );
+          expect(tester.takeException(), isNull);
+
+          await tester.pushRoute(AppRoutes.diary);
+          await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(
+            find.text('RECENTLY SCANNED'),
+            200,
+            scrollable: find
+                .descendant(
+                  of: find.byType(CustomScrollView).last,
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          );
+          expect(tester.takeException(), isNull);
+        });
+
+        testWidgets('the log sheet and quick add', (tester) async {
+          await configure(tester);
+          await tester.pumpQoutApp(
+            overrides: [
+              productRepositoryProvider.overrideWithValue(
+                FakeProductRepository(
+                  results: [
+                    ProductResult.found(
+                      product: recordedProduct('product-serving-allergens'),
+                      fetchedAt: DateTime.utc(2026, 11, 13),
+                      freshness: ProductFreshness.fresh,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+          await tester.pushRoute(AppRoutes.product('6194002510064'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('I ate this'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Other amount'));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+          Navigator.of(tester.element(find.text('Add to diary'))).pop();
+          await tester.pumpAndSettle();
+          await tester.pageBack();
+          await tester.pumpAndSettle();
+
+          await tester.ensureVisible(
+            find.text('Quick add', skipOffstage: false),
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Quick add'));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+        });
+
         testWidgets('sign in', (tester) async {
           await configure(tester);
           await tester.pumpQoutApp();
@@ -253,4 +335,29 @@ void main() {
       });
     }
   }
+}
+
+/// A day with breakfast from a product (above the salt reference) and a
+/// quick add, logged now.
+FakeDiaryRepository _loggedDay() {
+  final diary = FakeDiaryRepository();
+  final now = DateTime.now();
+  diary
+    ..seed(
+      diaryEntryOf(
+        recordedProduct('product-general-graded'),
+        amount: 450,
+        meal: Meal.breakfast,
+        eatenAt: now,
+      ),
+    )
+    ..seed(
+      quickAddEntry(
+        kcal: 350,
+        meal: Meal.dinner,
+        name: 'Couscous with vegetables',
+        eatenAt: now,
+      ),
+    );
+  return diary;
 }
