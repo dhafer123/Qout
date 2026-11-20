@@ -183,6 +183,18 @@ SELECT kind, source, status, checkpoint_line, inserted, updated, unchanged, skip
 FROM import_runs ORDER BY created_at DESC LIMIT 20;
 ```
 
+#### The app: your day, not only products
+
+The app opens on **Today**: the day's energy against the user's daily need and fat,
+saturated fat, sugars and salt against their references (the T38 needs, worked out on the
+phone from the profile asked for on first open), today's meals, and the latest scans. The
+bottom bar has Today, **Diary** (what was eaten, day by day, and the scan history),
+a raised **Scan** button, **Progress** (the week: energy per day, the share of energy by
+Nutri-Score grade and from ultra-processed food, days above the salt and sugars references,
+top sources) and **Profile**. "I ate this" on a product logs a serving, 100 g/mL or another
+amount; a quick add logs food without a barcode by its kcal. The profile, the diary and the
+first name stay on the phone (drift); nothing of it is sent to the backend.
+
 #### Contributions, error reports and moderation
 
 Unknown products are added by contributors (signed in): the app uploads the photos

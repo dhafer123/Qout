@@ -80,6 +80,16 @@ void main() {
         handle.dispose();
       });
 
+      testWidgets('progress with a logged week', (tester) async {
+        await configure(tester);
+        final handle = tester.ensureSemantics();
+        await tester.pumpQoutApp(flavor: AppFlavor.prod, diary: _loggedDay());
+        await tester.pushRoute(AppRoutes.progress);
+        await tester.pumpAndSettle();
+        await checkGuidelines(tester);
+        handle.dispose();
+      });
+
       testWidgets('product result', (tester) async {
         await configure(tester);
         final handle = tester.ensureSemantics();

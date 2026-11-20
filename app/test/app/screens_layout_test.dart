@@ -181,6 +181,24 @@ void main() {
           expect(tester.takeException(), isNull);
         });
 
+        testWidgets('progress with a logged week', (tester) async {
+          await configure(tester);
+          await tester.pumpQoutApp(diary: _loggedDay());
+          await tester.pushRoute(AppRoutes.progress);
+          await tester.pumpAndSettle();
+          await tester.scrollUntilVisible(
+            find.textContaining('not medical advice'),
+            300,
+            scrollable: find
+                .descendant(
+                  of: find.byType(ListView),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          );
+          expect(tester.takeException(), isNull);
+        });
+
         testWidgets('the log sheet and quick add', (tester) async {
           await configure(tester);
           await tester.pumpQoutApp(

@@ -363,10 +363,13 @@ Decided 2026-11-20 after manual testing: Qout is about the user's eating, not on
 
 
 ### T43 · Weekly insights
-- [ ] Progress tab: Monday–Sunday weeks with arrows; energy per day (bars) against the daily need (line) with `fl_chart`
-- [ ] Share of kcal by grade (A/B, C, D/E, not graded) and from NOVA 4; days above the salt and the sugars reference; top sources of sugars and of salt
-- [ ] Neutral wording, no streaks; "not medical advice" note
+- [x] Progress tab: Monday–Sunday weeks with arrows; energy per day (bars) against the daily need (line) with `fl_chart`
+- [x] Share of kcal by grade (A/B, C, D/E, not graded) and from NOVA 4; days above the salt and the sugars reference; top sources of sugars and of salt
+- [x] Neutral wording, no streaks; "not medical advice" note
 - Tests: **U** week totals and shares (kcal-weighted, quick adds "not graded"), days above, top sources, week bounds; **W** empty week, a full week, week navigation; layout and accessibility.
+- Done (2026-11-20): app 1289 tests. `lib/health/insights.dart` (pure): `mondayOf`, `GradeGroup` (A or B, C, D or E, not graded), `weekInsights` → `WeekInsights` (energy per day Monday–Sunday, days logged and their average, energy share by grade group and from NOVA 4 / NOVA unknown, logged days above the salt and the sugars reference with the T38 amounts, top three sources of sugars and of salt summed per product, ties by logging order). Progress tab: week selector ("This week", or the dates; no future weeks), `fl_chart` bar chart of kcal per day with the daily need as a dashed line, a stacked bar of the week by grade (Nutri-Score colours), the ultra-processed share and what isn't known, days above each reference, top sources, and "not medical advice"; an empty week says what will appear. `README.md` describes the tabs, the diary and the insights.
+- Follow-ups: weight log and water (offered, not chosen this time); insights compare with the current needs (past days aren't recomputed after a profile change).
+
 
 ---
 

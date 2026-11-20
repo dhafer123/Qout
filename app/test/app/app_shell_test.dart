@@ -32,7 +32,7 @@ void main() {
     expect(find.byType(DiaryScreen), findsOneWidget);
     await openTab(tester, AppTab.progress);
     expect(find.byType(ProgressScreen), findsOneWidget);
-    expect(find.text('Your week will show here'), findsOneWidget);
+    expect(find.text('Nothing logged this week'), findsOneWidget);
     await openTab(tester, AppTab.profile);
     expect(find.byType(ProfileScreen), findsOneWidget);
     await openTab(tester, AppTab.today);
