@@ -5,6 +5,14 @@ Definition of Done in `CLAUDE.md` always applies. Tick boxes when done.
 
 Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E2E** = end-to-end.
 
+## Where to start next (updated 2026-11-20)
+
+- Done and pushed: T31d (UI fixes, navigation bar), T31e (profile required on first open), and Phase 4c (T41 green design + tab bar, T42 food diary, T43 weekly insights). App: 1289 tests green; local database at schema v5.
+- In progress: Dhafer's end-to-end test on his phone of the new app (fresh install: welcome → profile → scan / I ate this → Diary → Progress → new account → contribution). **Start the next session by asking for his feedback** from that test and fixing what he found.
+- Open in Phase 4c: the product screen's large photo header and green grade pill (T41 item, still unticked below).
+- Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
+- To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
+
 ---
 
 ## Phase 0 — Foundations
