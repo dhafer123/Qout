@@ -191,7 +191,8 @@ phone from the profile asked for on first open), today's meals, and the latest s
 bottom bar has Today, **Diary** (what was eaten, day by day, and the scan history),
 a raised **Scan** button, **Progress** (the week: energy per day, the share of energy by
 Nutri-Score grade and from ultra-processed food, days above the salt and sugars references,
-top sources) and **Profile**. "I ate this" on a product logs a serving, 100 g/mL or another
+top sources) and **Profile** (also where the app is set to follow the phone's dark mode, or to
+stay light or dark). "I ate this" on a product logs a serving, 100 g/mL or another
 amount; a quick add logs food without a barcode by its kcal. The profile, the diary and the
 first name stay on the phone (drift); nothing of it is sent to the backend.
 

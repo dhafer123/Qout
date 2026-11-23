@@ -11,7 +11,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - In progress: Dhafer's end-to-end test on his phone of the new app (fresh install: welcome → profile → scan / I ate this → Diary → Progress → new account → contribution). **Start the next session by asking for his feedback** from that test and fixing what he found.
 - Open in Phase 4c: the product screen's large photo header and green grade pill (T41 item, still unticked below).
 - Done 2026-11-23 from Dhafer's phone test: dark theme without the neon green fills, new animated welcome screens, vegetable stickers and a warmer theme in both modes (notes under T41). Waiting for the rest of his feedback.
-- Planned 2026-11-23: T43b (appearance toggle: system, light or dark).
+- Done 2026-11-23: T43b (appearance: system, light or dark, on the Profile tab).
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
 
@@ -385,11 +385,13 @@ Decided 2026-11-20 after manual testing: Qout is about the user's eating, not on
 
 ### T43b · Appearance: system, light or dark
 Asked for after phone testing (2026-11-23): the app only follows the phone's dark mode; there is no way to choose in the app.
-- [ ] "Appearance" card on the Profile tab: System · Light · Dark (segmented button, System by default)
-- [ ] The choice is saved on the phone (drift, schema v6, own `app_settings` table) and applied at once, without a restart
-- [ ] Read before the first frame (like the start screen), so the app never flashes the wrong theme after the splash
-- [ ] An app preference, not personal data: signing out, deleting the profile or the diary keeps it
+- [x] "Appearance" card on the Profile tab: System · Light · Dark (segmented button, System by default)
+- [x] The choice is saved on the phone (drift, schema v6, own `app_settings` table) and applied at once, without a restart
+- [x] Read before the first frame (like the start screen), so the app never flashes the wrong theme after the splash
+- [x] An app preference, not personal data: signing out, deleting the profile or the diary keeps it
 - Tests: **U** settings repository (round trip, unknown or unreadable value → System), theme notifier (change applies, a failed save reverts and reports); **D** v5 → v6 migration (data kept, System by default); **W** the card shows the current choice, choosing Dark/Light switches the app's theme, the choice is used on the next start, deleting the profile keeps it; layout and accessibility in both themes.
+- Done (2026-11-23): app 1327 tests. `AppSettings` table (one row, id 1, `theme_mode` as plain text so an unknown value reads as System) and `SettingsDao`; schema v6 with `schema_v5.sql` fixture and migration test. `features/settings/`: `SettingsRepository` (`parseThemeMode`; a read failure gives System), `initialThemeModeProvider` (read in `main()`, System in tests), `themeModeProvider` (`ThemeModeController.choose`: applies at once, saves, brings the previous mode back on a failed save unless another choice was made meanwhile; the card then shows "The appearance could not be saved"), `AppearanceCard` after "Additives you avoid". `MaterialApp.themeMode` follows it; the system bars already follow the app's theme. The label OCR test centres its row before tapping (the card pushed it under the navigation bar). Checked on Dhafer's phone: Light on a dark phone switches at once.
+- Follow-up: the Android splash screen is drawn before Flutter starts, so it still follows the phone's mode (with the phone dark and the app on Light, a dark splash shows for a moment). Fixing it needs native code (e.g. saving the choice where `MainActivity` can read it and calling `AppCompatDelegate.setDefaultNightMode`).
 
 
 ---
