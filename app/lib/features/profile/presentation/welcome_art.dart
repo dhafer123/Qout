@@ -140,7 +140,7 @@ class GradeScaleArt extends StatelessWidget {
               borderRadius: BorderRadius.circular(QoutRadius.lg),
               boxShadow: const [
                 BoxShadow(
-                  color: Color(0x2E17401C),
+                  color: Color(0x2E3A2A14),
                   blurRadius: 18,
                   offset: Offset(0, 6),
                 ),

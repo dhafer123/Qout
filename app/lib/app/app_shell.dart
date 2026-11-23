@@ -161,7 +161,7 @@ class QoutNavBar extends StatelessWidget {
               ? null
               : const [
                   BoxShadow(
-                    color: Color(0x1F17401C),
+                    color: Color(0x1F3A2A14),
                     blurRadius: 18,
                     offset: Offset(0, -4),
                   ),

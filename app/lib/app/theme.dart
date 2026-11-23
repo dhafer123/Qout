@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-/// Qout's look (T41, from Dhafer's inspiration shots, 2026-11-20): a fresh
-/// green on a light grey-green ground, white cards with a soft shadow, Inter
-/// at medium weight, and filled green primary actions. Dark mode keeps the
-/// same deep green for filled actions (white on it) and a muted sage for
-/// lines and green text on a near-black green-grey, so nothing glows. Dark
-/// and light follow the phone's setting. Every text colour passes WCAG AA on
-/// the surfaces it is used on.
+/// Qout's look (T41, warmed 2026-11-23 to match the vegetable stickers):
+/// leafy greens on warm paper (light) or garden soil (dark), white or
+/// soil-brown cards with a soft warm shadow, Inter at medium weight, and
+/// filled actions in the deep brand green with white on it in both modes.
+/// Dark and light follow the phone's setting. Every text colour passes WCAG
+/// AA on the surfaces it is used on.
 
 /// Font family bundled in `assets/fonts/inter` (SIL Open Font License).
 const String qoutFontFamily = 'Inter';
@@ -79,36 +78,36 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
   final Color doubt;
 
   static const QoutPalette dark = QoutPalette(
-    muted: Color(0xFF9DAAA0),
-    edge: Color(0xFF2A362D),
-    divider: Color(0x29E7EEE8),
-    track: Color(0xFF26322A),
-    accent: Color(0xFF5BAA69),
-    accentText: Color(0xFF9CCFA4),
-    accentTint: Color(0x1F5BAA69),
-    tag: Color(0xFF1F3A24),
-    onTag: Color(0xFFD8F5DB),
-    against: Color(0xFFF47D67),
-    inFavour: Color(0xFF72D48A),
-    photoStripeA: Color(0xFF18221B),
-    photoStripeB: Color(0xFF26322A),
+    muted: Color(0xFFB3AA9A),
+    edge: Color(0xFF39332A),
+    divider: Color(0x29F2EBDD),
+    track: Color(0xFF302A22),
+    accent: Color(0xFF7DB069),
+    accentText: Color(0xFFAED39A),
+    accentTint: Color(0x1F7DB069),
+    tag: Color(0xFF2D3A22),
+    onTag: Color(0xFFDDEFCC),
+    against: Color(0xFFF07A62),
+    inFavour: Color(0xFF8BC77A),
+    photoStripeA: Color(0xFF241F19),
+    photoStripeB: Color(0xFF302A22),
     doubt: Color(0xFFF6A14F),
   );
 
   static const QoutPalette light = QoutPalette(
-    muted: Color(0xFF5B665E),
-    edge: Color(0xFFE2E8E1),
-    divider: Color(0x2417201A),
-    track: Color(0xFFE6ECE5),
-    accent: Color(0xFF2E7D32),
-    accentText: Color(0xFF1F6A27),
-    accentTint: Color(0x142E7D32),
-    tag: Color(0xFFE3F1E3),
-    onTag: Color(0xFF1B4D20),
-    against: Color(0xFFE05C45),
-    inFavour: Color(0xFF2E8B47),
+    muted: Color(0xFF6A6155),
+    edge: Color(0xFFEAE2D3),
+    divider: Color(0x242C261E),
+    track: Color(0xFFEDE6D8),
+    accent: Color(0xFF3B8A3A),
+    accentText: Color(0xFF2E6A22),
+    accentTint: Color(0x143B8A3A),
+    tag: Color(0xFFE5EFD6),
+    onTag: Color(0xFF2B5420),
+    against: Color(0xFFD9472F),
+    inFavour: Color(0xFF3B8A3A),
     photoStripeA: Color(0xFFFFFFFF),
-    photoStripeB: Color(0xFFE6ECE5),
+    photoStripeB: Color(0xFFEDE6D8),
     doubt: Color(0xFF9A5400),
   );
 
@@ -204,6 +203,12 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
   }
 }
 
+/// The app's ground: warm paper (light) and garden soil (dark), the
+/// colours of the vegetable stickers' sheet. Also the Android window and
+/// splash background (`android/app/src/main/res/values*/colors.xml`).
+const Color qoutGroundLight = Color(0xFFF6F1E7);
+const Color qoutGroundDark = Color(0xFF191611);
+
 /// The green filled actions use in both modes (primary buttons, the selected
 /// tab, the Scan button), with white on it.
 const Color qoutBrandGreen = Color(0xFF2E7D32);
@@ -211,9 +216,9 @@ const Color qoutBrandGreen = Color(0xFF2E7D32);
 ColorScheme _scheme(Brightness brightness) {
   final dark = brightness == Brightness.dark;
   final p = dark ? QoutPalette.dark : QoutPalette.light;
-  final ground = dark ? const Color(0xFF0F1612) : const Color(0xFFF3F6F2);
-  final surface = dark ? const Color(0xFF18221B) : const Color(0xFFFFFFFF);
-  final text = dark ? const Color(0xFFE7EEE8) : const Color(0xFF17201A);
+  final ground = dark ? qoutGroundDark : qoutGroundLight;
+  final surface = dark ? const Color(0xFF241F19) : const Color(0xFFFFFFFF);
+  final text = dark ? const Color(0xFFF2EBDD) : const Color(0xFF2C261E);
   return ColorScheme(
     brightness: brightness,
     primary: qoutBrandGreen,
@@ -227,7 +232,7 @@ ColorScheme _scheme(Brightness brightness) {
     tertiary: qoutBrandGreen,
     onTertiary: const Color(0xFFFFFFFF),
     error: dark ? const Color(0xFFF47D67) : const Color(0xFFB4372A),
-    onError: dark ? const Color(0xFF0F1612) : const Color(0xFFFFFFFF),
+    onError: dark ? qoutGroundDark : const Color(0xFFFFFFFF),
     errorContainer: dark ? const Color(0xFF4A2621) : const Color(0xFFFBE3DF),
     onErrorContainer: dark ? const Color(0xFFFFDAD3) : const Color(0xFF5C1A12),
     surface: ground,
@@ -450,7 +455,7 @@ ThemeData buildQoutTheme(Brightness brightness) {
       color: scheme.surfaceContainer,
       surfaceTintColor: Colors.transparent,
       elevation: dark ? 0 : 2,
-      shadowColor: const Color(0x2E17401C),
+      shadowColor: const Color(0x2E3A2A14),
       margin: EdgeInsets.zero,
       shape: cardShape,
     ),

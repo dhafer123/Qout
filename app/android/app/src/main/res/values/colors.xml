@@ -3,5 +3,5 @@
     <!-- The logo's navy, behind the launcher icon and the splash icon. -->
     <color name="ic_launcher_background">#061F49</color>
     <!-- The app's ground (Nocturne light), shown while the app starts. -->
-    <color name="splash_background">#F3F5FE</color>
+    <color name="splash_background">#F6F1E7</color>
 </resources>
