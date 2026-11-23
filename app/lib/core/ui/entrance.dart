@@ -8,9 +8,14 @@ import 'package:flutter/widgets.dart';
 /// nothing plays twice. Also remembers which numbers have run
 /// ([Entrance.firstShow]) for as long as the screen lives.
 class EntranceScope extends StatefulWidget {
-  const EntranceScope({required this.child, super.key});
+  const EntranceScope({required this.child, this.replay, super.key});
 
   final Widget child;
+
+  /// When this changes, the numbers below run again from 0
+  /// ([Entrance.firstShow] forgets what has run), e.g. each time Today
+  /// comes back into view (T43h). Fades in only once.
+  final Object? replay;
 
   @override
   State<EntranceScope> createState() => _EntranceScopeState();
@@ -19,24 +24,43 @@ class EntranceScope extends StatefulWidget {
 class _EntranceScopeState extends State<EntranceScope> {
   final Stopwatch _clock = Stopwatch()..start();
   final Set<Object> _shown = {};
+  int _round = 0;
 
   @override
-  Widget build(BuildContext context) =>
-      _EntranceClock(clock: _clock, shown: _shown, child: widget.child);
+  void didUpdateWidget(EntranceScope oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.replay != oldWidget.replay) {
+      _shown.clear();
+      _round++;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => _EntranceClock(
+    clock: _clock,
+    shown: _shown,
+    round: _round,
+    child: widget.child,
+  );
 }
 
 class _EntranceClock extends InheritedWidget {
   const _EntranceClock({
     required this.clock,
     required this.shown,
+    required this.round,
     required super.child,
   });
 
   final Stopwatch clock;
   final Set<Object> shown;
 
+  /// Counts the replays.
+  final int round;
+
   @override
-  bool updateShouldNotify(_EntranceClock oldWidget) => clock != oldWidget.clock;
+  bool updateShouldNotify(_EntranceClock oldWidget) =>
+      clock != oldWidget.clock || round != oldWidget.round;
 }
 
 /// [child] fading in and rising 14 px when its screen opens, after the
@@ -63,13 +87,17 @@ class Entrance extends StatelessWidget {
   /// it is built again (scrolled back into view).
   static bool firstShow(BuildContext context, Object id) {
     final shown = context
-        .getInheritedWidgetOfExactType<_EntranceClock>()
+        .dependOnInheritedWidgetOfExactType<_EntranceClock>()
         ?.shown;
     if (shown == null || MediaQuery.disableAnimationsOf(context)) {
       return false;
     }
     return shown.add(id);
   }
+
+  /// The scope's replay round (see [EntranceScope.replay]); 0 outside one.
+  static int round(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_EntranceClock>()?.round ?? 0;
 
   @override
   Widget build(BuildContext context) {

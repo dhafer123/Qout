@@ -12,7 +12,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Open in Phase 4c: the product screen's large photo header and green grade pill (T41 item, still unticked below).
 - Done 2026-11-23 from Dhafer's phone test: dark theme without the neon green fills, new animated welcome screens, vegetable stickers and a warmer theme in both modes (notes under T41). Waiting for the rest of his feedback.
 - Done 2026-11-23: T43b (appearance: system, light or dark, on the Profile tab).
-- Done 2026-11-23: T43c (profile photo, on the phone only), T43d (Profile tab order), T43e (meal pictures), T43f (Today UI fixes from Dhafer's review), T43g (animated Today summary).
+- Done 2026-11-23: T43c (profile photo, on the phone only), T43d (Profile tab order), T43e (meal pictures), T43f (Today UI fixes from Dhafer's review), T43g (animated Today summary), T43h (replayed on each visit).
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
 
@@ -442,6 +442,12 @@ Asked for on 2026-11-23: animate the bars and the ring on Today (a count-up).
 - Tests: **W** `AnimatedValue` (from 0 on opening, after its delay; old → new on change; at once outside an opening screen and with reduced motion); the ring mid-way and settled; the salt bar amber on its way to red; spoken labels final from the start; reduced motion.
 - Done (2026-11-23): app 1394 tests. `core/ui/animated_value.dart` (`AnimatedValue`, a `TweenAnimationBuilder` that starts from 0 the first time its `id` shows on the screen, `Entrance.firstShow`); `EnergyRing.duration` / `delay`, `NutrientBar.index` / `stagger`. The "Above your daily reference" line uses the final value so the card's height never jumps.
 - Fixed after recording the phone's screen (2026-11-23): the first version only counted up within the screen's 0.7 s opening window, but on the phone the card appears only once the database has answered, later than that, so nothing moved. Now each number runs the first time it shows on its screen, whenever its data arrives; the screen's `EntranceScope` remembers what has run, so nothing replays when a card scrolls back. Regression test: data arriving 3 s late still counts up. In a debug build the first second after a start stutters, so only the end of the count-up may be seen; release builds don't.
+
+### T43h · Replay Today's animation on each visit
+Asked for on 2026-11-23: the count-up plays every time Today comes back into view.
+- [x] Replays when switching back to the Today tab and when coming back from a screen on top (product, scanner); not while staying on Today; the card fade-ins still play once; scroll position kept
+- Tests: **W** a screen replay runs a number from 0 again (and nothing moves without one); on Today: back from the Diary tab and back from a product both start from "0 eaten" and settle on the real value; staying on Today doesn't replay.
+- Done (2026-11-23): app 1398 tests. `todayVisitsProvider` (`today_visits.dart`) listens to the router and counts each return to `/` (the route on top, so pushed screens count); `EntranceScope.replay` clears what has run and starts a new round, which `AnimatedValue` picks up (`Entrance.round`). Checked on the phone by recording a Diary → Today switch. Not included: coming back to the app from the background (offered as an option).
 
 
 ---

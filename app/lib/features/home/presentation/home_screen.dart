@@ -19,6 +19,7 @@ import 'package:qout/features/diary/presentation/diary_sheets.dart';
 import 'package:qout/features/diary/presentation/meal_art.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/history/domain/history_entry.dart';
+import 'package:qout/features/home/presentation/today_visits.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
@@ -50,7 +51,9 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         bottom: false,
+        // The numbers run again each time Today comes back into view.
         child: EntranceScope(
+          replay: ref.watch(todayVisitsProvider),
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(

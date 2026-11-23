@@ -3,7 +3,8 @@ import 'package:qout/core/ui/entrance.dart';
 
 /// [builder] with a number running to [value] (T43g): from 0 the first time
 /// [id] shows on its screen ([Entrance.firstShow]: when its data arrives,
-/// however long that takes), from the previous value when it changes
+/// however long that takes) and again on each replay of the screen
+/// ([EntranceScope.replay]), from the previous value when it changes
 /// (something logged), and shown at once when built again (scrolled back
 /// into view), outside an [EntranceScope] or when the phone asks for reduced
 /// motion. Readers of the screen get the final values from the caller's
@@ -32,13 +33,18 @@ class AnimatedValue extends StatefulWidget {
 }
 
 class _AnimatedValueState extends State<AnimatedValue> {
-  /// Where the number starts, decided once.
+  /// Where the number starts, decided once per round of its screen.
   double? _begin;
+  int? _round;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _begin ??= Entrance.firstShow(context, widget.id) ? 0 : widget.value;
+    final round = Entrance.round(context);
+    if (round == _round) return;
+    // First build, or the screen asked for a replay (T43h).
+    _round = round;
+    _begin = Entrance.firstShow(context, widget.id) ? 0 : widget.value;
   }
 
   @override
@@ -48,8 +54,10 @@ class _AnimatedValueState extends State<AnimatedValue> {
     }
     final total = widget.delay + widget.duration;
     return TweenAnimationBuilder<double>(
-      // The begin only counts on the first build; later values run from
+      // A new round starts a new animation from its begin; otherwise the
+      // begin only counts on the first build and later values run from
       // wherever the number is.
+      key: ValueKey(_round),
       tween: Tween(begin: _begin, end: widget.value),
       duration: total,
       curve: Interval(

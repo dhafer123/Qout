@@ -18,11 +18,16 @@ Widget _number(double value) => AnimatedValue(
 
 /// [child] on a screen: inside an [EntranceScope] (with a key, so the scope
 /// lives on while its content changes).
-Widget _screen(Widget child, {bool scope = true}) => MaterialApp(
-  home: scope
-      ? EntranceScope(key: const ValueKey('scope'), child: child)
-      : child,
-);
+Widget _screen(Widget child, {bool scope = true, Object? replay}) =>
+    MaterialApp(
+      home: scope
+          ? EntranceScope(
+              key: const ValueKey('scope'),
+              replay: replay,
+              child: child,
+            )
+          : child,
+    );
 
 void main() {
   testWidgets('counts up from 0 the first time it shows', (tester) async {
@@ -79,6 +84,26 @@ void main() {
     expect(_shown(tester), allOf(greaterThan(100), lessThan(200)));
     await tester.pumpAndSettle();
     expect(_shown(tester), 200);
+  });
+
+  testWidgets('a replay of the screen runs it from 0 again (T43h)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_screen(_number(100), replay: 0));
+    await tester.pumpAndSettle();
+    expect(_shown(tester), 100);
+
+    // Same value, same widget: only the screen's replay changed.
+    await tester.pumpWidget(_screen(_number(100), replay: 1));
+    expect(_shown(tester), 0);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(_shown(tester), allOf(greaterThan(0), lessThan(100)));
+    await tester.pumpAndSettle();
+    expect(_shown(tester), 100);
+
+    // No replay asked: nothing moves.
+    await tester.pumpWidget(_screen(_number(100), replay: 1));
+    expect(_shown(tester), 100);
   });
 
   testWidgets('shown at once outside a screen scope', (tester) async {
