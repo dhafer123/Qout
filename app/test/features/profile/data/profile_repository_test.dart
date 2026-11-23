@@ -1,20 +1,30 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:qout/core/database/database.dart';
 import 'package:qout/features/profile/data/profile_repository.dart';
 import 'package:qout/health/profile.dart';
 
+import '../../../helpers/fake_profile_photo_store.dart';
+
+class _MockProfileDao extends Mock implements ProfileDao {}
+
 void main() {
+  setUpAll(() => registerFallbackValue(DateTime(2026)));
+
   late AppDatabase database;
   late DateTime now;
   late ProfileRepository repository;
+  late FakeProfilePhotoStore photos;
 
   setUp(() {
     database = AppDatabase(NativeDatabase.memory());
     now = DateTime.utc(2026, 11, 19, 12);
+    photos = FakeProfilePhotoStore();
     repository = ProfileRepository(
       dao: database.profileDao,
+      photos: photos,
       clock: () => now,
     );
   });
@@ -168,6 +178,78 @@ void main() {
         const LocalProfileCompanion(allergens: Value('["milk", "kiwi", 3]')),
       );
       expect((await repository.get())!.allergens, {Allergen.milk});
+    });
+  });
+
+  group('photo', () {
+    test('none at first', () async {
+      expect(await repository.watchPhoto().first, isNull);
+    });
+
+    test('set: kept and shown, finishing onboarding if needed', () async {
+      await repository.setPhoto('/tmp/picked.jpg');
+      expect(photos.files, {'photo-1.jpg': '/tmp/picked.jpg'});
+      expect(
+        (await repository.watchPhoto().first)!.path,
+        endsWith('photo-1.jpg'),
+      );
+      expect(await repository.onboardingCompleted(), isTrue);
+    });
+
+    test('replacing deletes the previous file', () async {
+      await repository.setPhoto('/tmp/a.jpg');
+      await repository.setPhoto('/tmp/b.jpg');
+      expect(photos.files.keys, ['photo-2.jpg']);
+      expect(
+        (await repository.watchPhoto().first)!.path,
+        endsWith('photo-2.jpg'),
+      );
+    });
+
+    test('remove: the file and the name go', () async {
+      await repository.setPhoto('/tmp/a.jpg');
+      await repository.removePhoto();
+      expect(photos.files, isEmpty);
+      expect(await repository.watchPhoto().first, isNull);
+      // Nothing to remove: fine.
+      await repository.removePhoto();
+    });
+
+    test('a file gone missing reads as no photo', () async {
+      await repository.setPhoto('/tmp/a.jpg');
+      photos.files.clear();
+      expect(await repository.watchPhoto().first, isNull);
+    });
+
+    test('deleting the profile deletes the photo', () async {
+      await repository.save(profile);
+      await repository.setPhoto('/tmp/a.jpg');
+      await repository.delete();
+      expect(photos.files, isEmpty);
+      expect(await repository.watchPhoto().first, isNull);
+    });
+
+    test('a failed save removes the copy, keeps the previous photo', () async {
+      final dao = _MockProfileDao();
+      when(dao.get).thenAnswer(
+        (_) async => LocalProfileRow(
+          id: 1,
+          onboardingCompletedAt: now,
+          allergens: '[]',
+          avoidedAdditives: '[]',
+          photoFile: 'photo-0.jpg',
+        ),
+      );
+      when(
+        () => dao.savePhotoFile(any(), now: any(named: 'now')),
+      ).thenThrow(StateError('disk full'));
+      photos.files['photo-0.jpg'] = '/tmp/old.jpg';
+
+      await expectLater(
+        ProfileRepository(dao: dao, photos: photos).setPhoto('/tmp/new.jpg'),
+        throwsStateError,
+      );
+      expect(photos.files.keys, ['photo-0.jpg']);
     });
   });
 }

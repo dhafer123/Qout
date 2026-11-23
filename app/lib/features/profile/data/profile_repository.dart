@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qout/core/database/database.dart';
 import 'package:qout/core/database/database_provider.dart';
+import 'package:qout/features/profile/data/profile_photo_store.dart';
 import 'package:qout/features/profile/domain/profile_form.dart'
     show normalizeFirstName;
 import 'package:qout/health/needs.dart';
@@ -11,11 +13,16 @@ import 'package:qout/health/profile.dart';
 /// The user's profile and whether onboarding is finished, on the phone only
 /// (never sent to the backend).
 class ProfileRepository {
-  ProfileRepository({required ProfileDao dao, DateTime Function()? clock})
-    : _dao = dao,
-      _clock = clock ?? DateTime.now;
+  ProfileRepository({
+    required ProfileDao dao,
+    ProfilePhotoStore? photos,
+    DateTime Function()? clock,
+  }) : _dao = dao,
+       _photos = photos ?? FolderProfilePhotoStore.documents(),
+       _clock = clock ?? DateTime.now;
 
   final ProfileDao _dao;
+  final ProfilePhotoStore _photos;
   final DateTime Function() _clock;
 
   /// Whether the welcome screens were finished (skipped or not).
@@ -55,8 +62,43 @@ class ProfileRepository {
     );
   }
 
-  /// Deletes everything personal; the welcome screens don't come back.
-  Future<void> delete() => _dao.clearProfile();
+  /// Deletes everything personal, the photo included; the welcome screens
+  /// don't come back.
+  Future<void> delete() async {
+    final photo = (await _dao.get())?.photoFile;
+    await _dao.clearProfile();
+    if (photo != null) await _photos.remove(photo);
+  }
+
+  /// The profile photo (T43c), live; null when none is set or its file is
+  /// gone.
+  Stream<File?> watchPhoto() => _dao
+      .watch()
+      .map((row) => row?.photoFile)
+      .distinct()
+      .asyncMap((name) async => name == null ? null : _photos.find(name));
+
+  /// Keeps a copy of the photo at [path] as the profile photo, replacing
+  /// (and deleting) any previous one.
+  Future<void> setPhoto(String path) async {
+    final previous = (await _dao.get())?.photoFile;
+    final name = await _photos.add(path);
+    try {
+      await _dao.savePhotoFile(name, now: _clock());
+    } on Object {
+      await _photos.remove(name);
+      rethrow;
+    }
+    if (previous != null) await _photos.remove(previous);
+  }
+
+  /// Removes the profile photo; the initial shows again.
+  Future<void> removePhoto() async {
+    final previous = (await _dao.get())?.photoFile;
+    if (previous == null) return;
+    await _dao.savePhotoFile(null, now: _clock());
+    await _photos.remove(previous);
+  }
 
   /// The first name for the greeting (T41), live; null when not given.
   Stream<String?> watchFirstName() => _dao.watch().map((row) => row?.firstName);
@@ -131,7 +173,10 @@ class ProfileRepository {
 }
 
 final profileRepositoryProvider = Provider<ProfileRepository>(
-  (ref) => ProfileRepository(dao: ref.watch(appDatabaseProvider).profileDao),
+  (ref) => ProfileRepository(
+    dao: ref.watch(appDatabaseProvider).profileDao,
+    photos: ref.watch(profilePhotoStoreProvider),
+  ),
 );
 
 /// Where the app opens.
@@ -160,6 +205,11 @@ final profileProvider = StreamProvider<Profile?>(
 /// The first name for the greeting, live (T41).
 final firstNameProvider = StreamProvider<String?>(
   (ref) => ref.watch(profileRepositoryProvider).watchFirstName(),
+);
+
+/// The profile photo, live (T43c).
+final profilePhotoProvider = StreamProvider<File?>(
+  (ref) => ref.watch(profileRepositoryProvider).watchPhoto(),
 );
 
 /// The additive codes to avoid, live.
