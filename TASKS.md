@@ -12,7 +12,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Open in Phase 4c: the product screen's large photo header and green grade pill (T41 item, still unticked below).
 - Done 2026-11-23 from Dhafer's phone test: dark theme without the neon green fills, new animated welcome screens, vegetable stickers and a warmer theme in both modes (notes under T41). Waiting for the rest of his feedback.
 - Done 2026-11-23: T43b (appearance: system, light or dark, on the Profile tab).
-- Planned 2026-11-23: T43c (profile photo).
+- Done 2026-11-23: T43c (profile photo, on the phone only).
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
 
@@ -396,11 +396,13 @@ Asked for after phone testing (2026-11-23): the app only follows the phone's dar
 
 ### T43c · Profile photo
 Asked for on 2026-11-23: the avatar only shows the first letter of the name.
-- [ ] Tap the avatar on the Profile tab: take a photo, choose one from the gallery, or remove it
-- [ ] The photo replaces the initial on the Profile header and the Today greeting; the initial (or the person icon) stays the fallback
-- [ ] Stays on the phone: a reduced copy (512 px, JPEG) in the app's documents folder, its file name in the profile (drift, schema v7); never uploaded
-- [ ] Personal data: deleting the profile deletes the photo too
+- [x] Tap the avatar on the Profile tab: take a photo, choose one from the gallery, or remove it
+- [x] The photo replaces the initial on the Profile header and the Today greeting; the initial (or the person icon) stays the fallback
+- [x] Stays on the phone: a reduced copy (512 px, JPEG) in the app's documents folder, its file name in the profile (drift, schema v7); never uploaded
+- [x] Personal data: deleting the profile deletes the photo too
 - Tests: **U** photo store (copy, replace removes the old file, remove), repository (save, remove, delete profile removes the file); **D** v6 → v7 migration; **W** pick from gallery/camera shows the photo on Profile and Today, cancel changes nothing, remove brings the initial back, a missing file falls back to the initial; layout and accessibility in both themes.
+- Done (2026-11-23): app 1353 tests. `local_profile.photo_file` (a file name, not a path: the app's folder can move between launches), `ProfileDao.savePhotoFile`, cleared by `clearProfile`; schema v7 with `schema_v6.sql` fixture and migration tests (6 → 7, and 2 → 7 creating the column once). `ProfilePhotoStore` / `FolderProfilePhotoStore` (`profile_photo/` in the documents folder, a new `profile-<µs>.jpg` name per photo so a replaced one never shows from the image cache), `profilePhotoPickerProvider` (image_picker, front camera first, 512 px, JPEG 85). `ProfileRepository`: `setPhoto` (a failed save deletes the new copy and keeps the old photo), `removePhoto`, `watchPhoto` (null when the file is gone), `delete` removes the file. `ProfileAvatar` (photo or initial, initial on a decode error) replaces the two hand-drawn avatars on Today and the Profile header; `EditableProfileAvatar` adds a camera badge and a bottom sheet (take, choose, remove; "It stays on this phone."), labelled "Add a profile photo" / "Change profile photo"; failures show "The photo could not be changed". The delete-profile dialog mentions the photo. Tests draw photos from memory (`profilePhotoImageProvider`) and keep them in `FakeProfilePhotoStore` (`pumpQoutApp(photos:)`), never the documents folder.
+- Not done, by choice: no crop or zoom screen (the photo is centred and cut to the circle; `image_cropper` would be a new package). The account card's avatar keeps the email's initial (it stands for the account).
 
 
 ---
