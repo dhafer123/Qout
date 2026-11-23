@@ -57,7 +57,6 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               for (final (i, section) in [
                 _Header(profile),
-                const _Account(),
                 if (profile == null) const _NoProfile(),
                 _Needs(computeNeeds(profile)),
                 if (profile != null) _About(profile),
@@ -66,6 +65,8 @@ class ProfileScreen extends ConsumerWidget {
                 const _DeleteDiary(),
                 if (profile != null) const _DeleteProfile(),
                 if (dev) const _Developer(),
+                // Signing in or out, last (T43d).
+                const _Account(),
               ].indexed)
                 Entrance(index: i, child: section),
             ],
@@ -172,6 +173,7 @@ class _Account extends ConsumerWidget {
       _ => null,
     };
     return SectionCard(
+      margin: const EdgeInsets.fromLTRB(16, 20, 16, 0),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -349,14 +351,7 @@ class _About extends StatelessWidget {
           _Row('Activity', activityTitle(profile.activity)),
           _Row('Allergies', allergens),
           _Row('BMI', '${bmi.display}, ${bmiText(bmi)}', last: true),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 2, 16, 14),
-            child: Text(
-              'BMI does not tell muscle from fat; it is shown for '
-              'information only.',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
+          const SizedBox(height: 14),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: FilledButton.icon(

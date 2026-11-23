@@ -127,6 +127,20 @@ extension PumpQoutApp on WidgetTester {
     await pump(Duration.zero);
   }
 
+  /// Scrolls the screen's list until [finder] is in the middle of the
+  /// screen, clear of the floating navigation bar, ready to be tapped.
+  Future<void> scrollToCentre(Finder finder) async {
+    await scrollUntilVisible(
+      finder,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await runAsync(
+      () => Scrollable.ensureVisible(element(finder), alignment: 0.5),
+    );
+    await pumpAndSettle();
+  }
+
   /// Opens [location] as navigating would: a tab (T41) is switched to, any
   /// other screen opens on top of Today.
   Future<void> pushRoute(String location) async {

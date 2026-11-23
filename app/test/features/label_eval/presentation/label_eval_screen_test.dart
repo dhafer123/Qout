@@ -17,19 +17,7 @@ void main() {
   Future<void> openProfile(WidgetTester tester) async {
     await tester.tap(find.byKey(const ValueKey('tab-profile')));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('Label OCR (dev)'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    // Clear of the floating navigation bar at the bottom.
-    await tester.runAsync(
-      () => Scrollable.ensureVisible(
-        tester.element(find.text('Label OCR (dev)')),
-        alignment: 0.5,
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.scrollToCentre(find.text('Label OCR (dev)'));
   }
 
   Future<FakeLabelEval> openScreen(

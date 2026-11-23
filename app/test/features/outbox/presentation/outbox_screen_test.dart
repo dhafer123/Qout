@@ -331,6 +331,7 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('tab-profile')));
       await tester.pumpAndSettle();
+      await tester.scrollToCentre(find.text('Sign in'));
       await tester.tap(find.text('Sign in'));
       await tester.pumpAndSettle();
       await tester.enterText(

@@ -231,6 +231,8 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('tab-profile')));
       await tester.pumpAndSettle();
+      // The account card is the last one on the Profile tab (T43d).
+      await tester.scrollToCentre(find.text('Sign in'));
       await tester.tap(find.text('Sign in'));
       await tester.pumpAndSettle();
 
@@ -247,6 +249,9 @@ void main() {
 
       await tester.tap(find.byKey(const ValueKey('tab-profile')));
       await tester.pumpAndSettle();
+      await tester.scrollToCentre(
+        find.widgetWithText(OutlinedButton, 'Sign out'),
+      );
       expect(find.text('a@example.tn'), findsOneWidget);
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Sign out'));

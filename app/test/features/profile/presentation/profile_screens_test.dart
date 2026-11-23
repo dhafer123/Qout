@@ -112,6 +112,36 @@ void main() {
       await tester.unmountQoutApp();
     });
 
+    testWidgets('order: needs under the name, the account last; no BMI '
+        'note', (tester) async {
+      await repository.save(_profile);
+      await open(tester, AppRoutes.profile);
+      // Tall enough for every card to be built.
+      tester.view.physicalSize = const Size(500, 5000);
+      await tester.pumpAndSettle();
+
+      double top(String text) => tester.getTopLeft(find.text(text)).dy;
+      final order = [
+        'Your profile',
+        'Your daily needs',
+        'About you',
+        'Appearance',
+        'Delete my diary',
+        'Delete my profile',
+        'Developer',
+        'Not signed in',
+      ].map(top).toList();
+      expect(order, [...order]..sort());
+
+      expect(find.textContaining('muscle from fat'), findsNothing);
+      // The BMI itself stays.
+      expect(
+        find.text('21.3, within the WHO normal range (18.5–24.9)'),
+        findsOneWidget,
+      );
+      await tester.unmountQoutApp();
+    });
+
     testWidgets('sex not given: the reference intakes, and why', (
       tester,
     ) async {
