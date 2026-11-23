@@ -11,6 +11,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - In progress: Dhafer's end-to-end test on his phone of the new app (fresh install: welcome → profile → scan / I ate this → Diary → Progress → new account → contribution). **Start the next session by asking for his feedback** from that test and fixing what he found.
 - Open in Phase 4c: the product screen's large photo header and green grade pill (T41 item, still unticked below).
 - Done 2026-11-23 from Dhafer's phone test: dark theme without the neon green fills, new animated welcome screens, vegetable stickers and a warmer theme in both modes (notes under T41). Waiting for the rest of his feedback.
+- Planned 2026-11-23: T43b (appearance toggle: system, light or dark).
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
 
@@ -381,6 +382,14 @@ Decided 2026-11-20 after manual testing: Qout is about the user's eating, not on
 - Tests: **U** week totals and shares (kcal-weighted, quick adds "not graded"), days above, top sources, week bounds; **W** empty week, a full week, week navigation; layout and accessibility.
 - Done (2026-11-20): app 1289 tests. `lib/health/insights.dart` (pure): `mondayOf`, `GradeGroup` (A or B, C, D or E, not graded), `weekInsights` → `WeekInsights` (energy per day Monday–Sunday, days logged and their average, energy share by grade group and from NOVA 4 / NOVA unknown, logged days above the salt and the sugars reference with the T38 amounts, top three sources of sugars and of salt summed per product, ties by logging order). Progress tab: week selector ("This week", or the dates; no future weeks), `fl_chart` bar chart of kcal per day with the daily need as a dashed line, a stacked bar of the week by grade (Nutri-Score colours), the ultra-processed share and what isn't known, days above each reference, top sources, and "not medical advice"; an empty week says what will appear. `README.md` describes the tabs, the diary and the insights.
 - Follow-ups: weight log and water (offered, not chosen this time); insights compare with the current needs (past days aren't recomputed after a profile change).
+
+### T43b · Appearance: system, light or dark
+Asked for after phone testing (2026-11-23): the app only follows the phone's dark mode; there is no way to choose in the app.
+- [ ] "Appearance" card on the Profile tab: System · Light · Dark (segmented button, System by default)
+- [ ] The choice is saved on the phone (drift, schema v6, own `app_settings` table) and applied at once, without a restart
+- [ ] Read before the first frame (like the start screen), so the app never flashes the wrong theme after the splash
+- [ ] An app preference, not personal data: signing out, deleting the profile or the diary keeps it
+- Tests: **U** settings repository (round trip, unknown or unreadable value → System), theme notifier (change applies, a failed save reverts and reports); **D** v5 → v6 migration (data kept, System by default); **W** the card shows the current choice, choosing Dark/Light switches the app's theme, the choice is used on the next start, deleting the profile keeps it; layout and accessibility in both themes.
 
 
 ---
