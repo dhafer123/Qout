@@ -9,8 +9,27 @@ void main() {
   setUp(() => database = AppDatabase(NativeDatabase.memory()));
   tearDown(() => database.close());
 
-  test('schema version 6', () {
-    expect(database.schemaVersion, 6);
+  test('schema version 7', () {
+    expect(database.schemaVersion, 7);
+  });
+
+  group('profile photo', () {
+    test('saved, replaced, removed; finishes onboarding', () async {
+      final profile = database.profileDao;
+      await profile.savePhotoFile('a.jpg', now: t0);
+      expect((await profile.get())!.onboardingCompletedAt, t0);
+      expect((await profile.get())!.photoFile, 'a.jpg');
+      await profile.savePhotoFile('b.jpg', now: t0);
+      expect((await profile.get())!.photoFile, 'b.jpg');
+      await profile.savePhotoFile(null, now: t0);
+      expect((await profile.get())!.photoFile, isNull);
+    });
+
+    test('cleared with the profile', () async {
+      await database.profileDao.savePhotoFile('a.jpg', now: t0);
+      await database.profileDao.clearProfile();
+      expect((await database.profileDao.get())!.photoFile, isNull);
+    });
   });
 
   group('settings', () {

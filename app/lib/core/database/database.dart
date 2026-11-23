@@ -108,6 +108,10 @@ class LocalProfile extends Table {
   /// For the greeting (T41); optional, trimmed, null when not given.
   TextColumn get firstName => text().nullable()();
 
+  /// The profile photo's file name in the app's photo folder (T43c); null:
+  /// none. A name, not a path: the app's folder can move between launches.
+  TextColumn get photoFile => text().nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
@@ -179,11 +183,22 @@ class ProfileDao extends DatabaseAccessor<AppDatabase> with _$ProfileDaoMixin {
         );
       });
 
+  /// Saves the photo's file name (null: none), finishing onboarding if
+  /// needed.
+  Future<void> savePhotoFile(String? name, {required DateTime now}) =>
+      transaction(() async {
+        await completeOnboarding(now);
+        await (update(localProfile)..where((t) => t.id.equals(_id))).write(
+          LocalProfileCompanion(photoFile: Value(name)),
+        );
+      });
+
   /// Deletes everything personal; onboarding stays finished.
   Future<void> clearProfile() =>
       (update(localProfile)..where((t) => t.id.equals(_id))).write(
         const LocalProfileCompanion(
           firstName: Value(null),
+          photoFile: Value(null),
           sex: Value(null),
           age: Value(null),
           ageEnteredAt: Value(null),
@@ -563,7 +578,7 @@ class AppDatabase extends _$AppDatabase {
   /// old schema in `test/fixtures/database/schema_v<n>.sql` for its test
   /// (`make-migrations` needs a newer drift_dev than this SDK resolves).
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -605,6 +620,11 @@ class AppDatabase extends _$AppDatabase {
       if (from < 6) {
         // T43b: app preferences; no row, so the theme follows the phone.
         await m.createTable(appSettings);
+      }
+      // The profile table created above already has the column.
+      if (from >= 3 && from < 7) {
+        // T43c: the profile photo.
+        await m.addColumn(localProfile, localProfile.photoFile);
       }
     },
   );

@@ -255,4 +255,36 @@ void main() {
     expect(await _schema(migrated), await _schema(fresh));
     expect(await _userVersion(migrated), fresh.schemaVersion);
   });
+
+  test('6 -> 7: the profile gets a photo, none yet; the rest kept', () async {
+    final migrated = AppDatabase(
+      _atVersion(6, '''
+        INSERT INTO local_profile (id, onboarding_completed_at, sex, age,
+            age_entered_at, height_cm, weight_kg, pal, first_name)
+          VALUES (1, '2026-11-18T09:00:00.000Z', 'male', 23,
+            '2026-11-18T09:00:00.000Z', 178, 65, '1.6', 'Dhafer');
+        INSERT INTO app_settings (id, theme_mode) VALUES (1, 'dark');
+      '''),
+    );
+    addTearDown(migrated.close);
+
+    final row = (await migrated.profileDao.get())!;
+    expect(row.photoFile, isNull);
+    expect((row.firstName, row.age, row.weightKg), ('Dhafer', 23, 65.0));
+    expect(await migrated.settingsDao.themeMode(), 'dark');
+
+    final fresh = AppDatabase(NativeDatabase.memory());
+    addTearDown(fresh.close);
+    expect(await _schema(migrated), await _schema(fresh));
+    expect(await _userVersion(migrated), fresh.schemaVersion);
+  });
+
+  test('2 -> 7: a profile table created by the upgrade has the photo '
+      'column once', () async {
+    final migrated = AppDatabase(_atVersion(2, ''));
+    addTearDown(migrated.close);
+    final fresh = AppDatabase(NativeDatabase.memory());
+    addTearDown(fresh.close);
+    expect(await _schema(migrated), await _schema(fresh));
+  });
 }
