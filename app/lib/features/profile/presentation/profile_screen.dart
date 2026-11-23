@@ -22,6 +22,7 @@ import 'package:qout/features/profile/data/profile_repository.dart';
 import 'package:qout/features/profile/domain/profile_form.dart';
 import 'package:qout/features/profile/presentation/profile_labels.dart';
 import 'package:qout/features/profile/presentation/welcome_screen.dart';
+import 'package:qout/features/settings/presentation/appearance_card.dart';
 import 'package:qout/health/needs.dart';
 import 'package:qout/health/profile.dart';
 
@@ -60,6 +61,7 @@ class ProfileScreen extends ConsumerWidget {
                 _Needs(computeNeeds(profile)),
                 if (profile != null) _About(profile),
                 const _AvoidedAdditives(),
+                const AppearanceCard(),
                 const _DeleteDiary(),
                 if (profile != null) const _DeleteProfile(),
                 if (dev) const _Developer(),

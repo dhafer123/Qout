@@ -22,6 +22,14 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    // Clear of the floating navigation bar at the bottom.
+    await tester.runAsync(
+      () => Scrollable.ensureVisible(
+        tester.element(find.text('Label OCR (dev)')),
+        alignment: 0.5,
+      ),
+    );
+    await tester.pumpAndSettle();
   }
 
   Future<FakeLabelEval> openScreen(

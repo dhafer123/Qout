@@ -202,6 +202,24 @@ void main() {
         handle.dispose();
         await tester.unmountQoutApp();
       });
+
+      testWidgets('profile: the appearance card', (tester) async {
+        await configure(tester);
+        final handle = tester.ensureSemantics();
+        await tester.pumpQoutApp(flavor: AppFlavor.prod);
+        await tester.pushRoute(AppRoutes.profile);
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.text('Dark'),
+          300,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        await checkGuidelines(tester);
+        handle.dispose();
+        await tester.unmountQoutApp();
+      });
     });
   }
 }
