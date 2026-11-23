@@ -580,10 +580,17 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 7;
 
+  /// Every step checks first and is skipped when its change is already
+  /// there, so running it twice is harmless. That happens when an older
+  /// build opens a newer database (an older APK installed over a newer one,
+  /// or a stale debug build): drift writes the older version number back,
+  /// and the next newer build runs the steps again over a schema that has
+  /// them (found on Dhafer's phone, T43f).
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
-      if (from < 2) {
+      if (from < 2 &&
+          !await _hasColumn(contributionOutbox.actualTableName, 'client_id')) {
         // T30: the outbox gets its client id (from the payload, where the
         // error reports queued since T20 have it), state and retry time.
         await m.alterTable(
@@ -603,29 +610,39 @@ class AppDatabase extends _$AppDatabase {
           ),
         );
       }
-      if (from < 3) {
+      if (from < 3 && !await _hasTable(localProfile.actualTableName)) {
         // T39: the profile. No row yet, so people updating the app see the
-        // welcome screens once too.
+        // welcome screens once too. Created with every column below.
         await m.createTable(localProfile);
       }
-      // A table created above already has the column.
-      if (from >= 3 && from < 4) {
+      if (from < 4 &&
+          !await _hasColumn(localProfile.actualTableName, 'first_name')) {
         // T41: the first name for the greeting.
         await m.addColumn(localProfile, localProfile.firstName);
       }
-      if (from < 5) {
+      if (from < 5 && !await _hasTable(diaryEntries.actualTableName)) {
         // T42: the food diary.
         await m.createTable(diaryEntries);
       }
-      if (from < 6) {
+      if (from < 6 && !await _hasTable(appSettings.actualTableName)) {
         // T43b: app preferences; no row, so the theme follows the phone.
         await m.createTable(appSettings);
       }
-      // The profile table created above already has the column.
-      if (from >= 3 && from < 7) {
+      if (from < 7 &&
+          !await _hasColumn(localProfile.actualTableName, 'photo_file')) {
         // T43c: the profile photo.
         await m.addColumn(localProfile, localProfile.photoFile);
       }
     },
   );
+
+  Future<bool> _hasTable(String table) async => (await customSelect(
+    "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+    variables: [Variable.withString(table)],
+  ).get()).isNotEmpty;
+
+  Future<bool> _hasColumn(String table, String column) async {
+    final rows = await customSelect('PRAGMA table_info("$table")').get();
+    return rows.any((row) => row.read<String>('name') == column);
+  }
 }

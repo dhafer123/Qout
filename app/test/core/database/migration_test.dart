@@ -287,4 +287,76 @@ void main() {
     addTearDown(fresh.close);
     expect(await _schema(migrated), await _schema(fresh));
   });
+
+  group('regression (T43f): an older build wrote back an older version', () {
+    // Found on Dhafer's phone: a v6 build opened the v7 database and set
+    // user_version back to 6; the v7 build then added photo_file again and
+    // the database could not be opened. Every step must be harmless when
+    // its change is already there.
+    late List<String> current;
+
+    setUpAll(() async {
+      final fresh = AppDatabase(NativeDatabase.memory());
+      current = [
+        for (final row
+            in await fresh
+                .customSelect(
+                  "SELECT sql FROM sqlite_master WHERE type = 'table' "
+                  "AND name NOT LIKE 'sqlite_%'",
+                )
+                .get())
+          row.read<String>('sql'),
+      ];
+      await fresh.close();
+    });
+
+    for (var version = 1; version < 7; version++) {
+      test(
+        "today's schema marked as version $version opens, rows kept",
+        () async {
+          final reopened = AppDatabase(
+            NativeDatabase.memory(
+              setup: (raw) {
+                current.forEach(raw.execute);
+                raw
+                  ..execute('''
+                  INSERT INTO local_profile (id, onboarding_completed_at,
+                      first_name, photo_file)
+                    VALUES (1, '2026-11-18T09:00:00.000Z', 'Dhafer',
+                      'profile-1.jpg');
+                  INSERT INTO contribution_outbox (kind, client_id, payload,
+                      created_at)
+                    VALUES ('error_report', 'keep-me', '{}',
+                      '2026-11-13T10:00:00.000Z');
+                  INSERT INTO app_settings (id, theme_mode) VALUES (1, 'dark');
+                  INSERT INTO diary_entries (eaten_at, meal, energy_kj)
+                    VALUES ('2026-11-22T12:00:00.000Z', 'lunch', 2000);
+                ''')
+                  ..execute('PRAGMA user_version = $version');
+              },
+            ),
+          );
+          addTearDown(reopened.close);
+
+          final row = (await reopened.profileDao.get())!;
+          expect((row.firstName, row.photoFile), ('Dhafer', 'profile-1.jpg'));
+          // Not rebuilt: the client id stays as it was.
+          expect((await reopened.outboxDao.all()).single.clientId, 'keep-me');
+          expect(await reopened.settingsDao.themeMode(), 'dark');
+          expect(
+            (await reopened.diaryDao.between(
+              DateTime(2000),
+              DateTime(2100),
+            )).single.energyKj,
+            2000,
+          );
+
+          final fresh = AppDatabase(NativeDatabase.memory());
+          addTearDown(fresh.close);
+          expect(await _schema(reopened), await _schema(fresh));
+          expect(await _userVersion(reopened), fresh.schemaVersion);
+        },
+      );
+    }
+  });
 }
