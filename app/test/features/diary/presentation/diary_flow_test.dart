@@ -191,10 +191,10 @@ void main() {
       expect(find.text('Breakfast'), findsOneWidget);
       expect(find.text('Dinner'), findsOneWidget);
       expect(find.text('Lunch'), findsNothing);
-      // Each meal with its vegetable: corn for breakfast, broccoli for dinner.
-      expect(findVeggie(Veggie.corn), findsOneWidget);
-      expect(findVeggie(Veggie.broccoli), findsOneWidget);
-      expect(findVeggie(Veggie.tomato), findsNothing);
+      // Each meal with its picture (T43e).
+      expect(find.byKey(const ValueKey('meal-art-breakfast')), findsOneWidget);
+      expect(find.byKey(const ValueKey('meal-art-dinner')), findsOneWidget);
+      expect(find.byKey(const ValueKey('meal-art-lunch')), findsNothing);
       expect(find.byType(DiaryEntryTile), findsNWidgets(2));
       expect(find.text('100 g'), findsOneWidget);
       expect(find.text('1 serving (30 g)'), findsOneWidget);

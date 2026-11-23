@@ -14,7 +14,7 @@ import 'package:qout/features/diary/presentation/day_summary.dart';
 import 'package:qout/features/diary/presentation/diary_format.dart';
 import 'package:qout/features/diary/presentation/diary_screen.dart';
 import 'package:qout/features/diary/presentation/diary_sheets.dart';
-import 'package:qout/features/diary/presentation/meal_veggie.dart';
+import 'package:qout/features/diary/presentation/meal_art.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/history/domain/history_entry.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
@@ -330,30 +330,40 @@ class _TodayMeals extends ConsumerWidget {
                     if (entries.where((e) => e.meal == meal).toList()
                         case final ofMeal when ofMeal.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 3),
-                        child: Row(
-                          children: [
-                            VeggieArt(mealVeggie(meal), size: 28, pop: false),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                '${meal.label} · ${ofMeal.length} '
-                                '${ofMeal.length == 1 ? 'item' : 'items'}',
-                              ),
-                            ),
-                            // Wraps under large text rather than overflow.
-                            Flexible(
-                              child: Text(
-                                _kcalOf(ofMeal),
-                                textAlign: TextAlign.end,
-                                style: textTheme.bodyMedium?.copyWith(
-                                  fontFeatures: const [
-                                    FontFeature.tabularFigures(),
-                                  ],
+                        padding: const EdgeInsets.only(top: 6, right: 4),
+                        child: DecoratedBox(
+                          key: ValueKey('meal-row-${meal.name}'),
+                          decoration: BoxDecoration(
+                            color: mealTint(palette, meal),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(6, 4, 12, 4),
+                            child: Row(
+                              children: [
+                                MealArt(meal),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    '${meal.label} · ${ofMeal.length} '
+                                    '${ofMeal.length == 1 ? 'item' : 'items'}',
+                                  ),
                                 ),
-                              ),
+                                // Wraps under large text rather than overflow.
+                                Flexible(
+                                  child: Text(
+                                    _kcalOf(ofMeal),
+                                    textAlign: TextAlign.end,
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      fontFeatures: const [
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
               ],

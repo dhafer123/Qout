@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// The vegetable stickers (`assets/illustrations/veg/`, see
 /// `assets/illustrations/SOURCE.md`). Each stands for something: every
-/// state, meal and welcome page has its own ([VeggieFor], `mealVeggie`).
+/// state and welcome page has its own ([VeggieFor]).
 enum Veggie {
   asparagus,
   broccoli,

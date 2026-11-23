@@ -38,6 +38,10 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     required this.photoStripeA,
     required this.photoStripeB,
     required this.doubt,
+    required this.breakfastTint,
+    required this.lunchTint,
+    required this.snackTint,
+    required this.dinnerTint,
   });
 
   /// Secondary text: captions, barcodes, dates, section labels.
@@ -77,6 +81,14 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
   /// Values a reader is unsure of ("check this one against the photo").
   final Color doubt;
 
+  /// Behind each meal's row on Today and its heading in the Diary (T43e),
+  /// taken from its picture: butter toast, the pink bento, the chip bag, the
+  /// tomato on the dinner plate. Body and muted text stay readable on them.
+  final Color breakfastTint;
+  final Color lunchTint;
+  final Color snackTint;
+  final Color dinnerTint;
+
   static const QoutPalette dark = QoutPalette(
     muted: Color(0xFFB3AA9A),
     edge: Color(0xFF39332A),
@@ -92,6 +104,10 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     photoStripeA: Color(0xFF241F19),
     photoStripeB: Color(0xFF302A22),
     doubt: Color(0xFFF6A14F),
+    breakfastTint: Color(0xFF3A3120),
+    lunchTint: Color(0xFF3A2530),
+    snackTint: Color(0xFF3C2C1D),
+    dinnerTint: Color(0xFF3C2521),
   );
 
   static const QoutPalette light = QoutPalette(
@@ -109,6 +125,10 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     photoStripeA: Color(0xFFFFFFFF),
     photoStripeB: Color(0xFFEDE6D8),
     doubt: Color(0xFF9A5400),
+    breakfastTint: Color(0xFFFCF0CF),
+    lunchTint: Color(0xFFFBE3EA),
+    snackTint: Color(0xFFFBE6CF),
+    dinnerTint: Color(0xFFFAE0D8),
   );
 
   List<Color> get _values => [
@@ -126,6 +146,10 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     photoStripeA,
     photoStripeB,
     doubt,
+    breakfastTint,
+    lunchTint,
+    snackTint,
+    dinnerTint,
   ];
 
   @override
@@ -163,6 +187,10 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     Color? photoStripeA,
     Color? photoStripeB,
     Color? doubt,
+    Color? breakfastTint,
+    Color? lunchTint,
+    Color? snackTint,
+    Color? dinnerTint,
   }) => QoutPalette(
     muted: muted ?? this.muted,
     edge: edge ?? this.edge,
@@ -178,6 +206,10 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     photoStripeA: photoStripeA ?? this.photoStripeA,
     photoStripeB: photoStripeB ?? this.photoStripeB,
     doubt: doubt ?? this.doubt,
+    breakfastTint: breakfastTint ?? this.breakfastTint,
+    lunchTint: lunchTint ?? this.lunchTint,
+    snackTint: snackTint ?? this.snackTint,
+    dinnerTint: dinnerTint ?? this.dinnerTint,
   );
 
   @override
@@ -199,6 +231,10 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
       photoStripeA: mix(photoStripeA, other.photoStripeA),
       photoStripeB: mix(photoStripeB, other.photoStripeB),
       doubt: mix(doubt, other.doubt),
+      breakfastTint: mix(breakfastTint, other.breakfastTint),
+      lunchTint: mix(lunchTint, other.lunchTint),
+      snackTint: mix(snackTint, other.snackTint),
+      dinnerTint: mix(dinnerTint, other.dinnerTint),
     );
   }
 }

@@ -7,8 +7,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/state_message.dart';
 import 'package:qout/core/ui/veggie.dart';
-import 'package:qout/features/diary/presentation/meal_veggie.dart';
-import 'package:qout/health/diary.dart';
 
 import '../../helpers/veggie_finder.dart';
 
@@ -59,14 +57,7 @@ void main() {
     });
   });
 
-  test('every meal has its own vegetable', () {
-    final veggies = Meal.values.map(mealVeggie).toList();
-    expect(veggies.toSet(), hasLength(Meal.values.length));
-    expect(mealVeggie(Meal.breakfast), Veggie.corn);
-    expect(mealVeggie(Meal.dinner), Veggie.broccoli);
-  });
-
-  test('the welcome pages use vegetables no state or meal uses', () {
+  test('the welcome pages use vegetables no state uses', () {
     final elsewhere = {
       VeggieFor.error,
       VeggieFor.offline,
@@ -77,7 +68,6 @@ void main() {
       VeggieFor.allSent,
       VeggieFor.thanks,
       VeggieFor.noCamera,
-      ...Meal.values.map(mealVeggie),
     };
     for (final veggie in [
       VeggieFor.welcomeGrades,

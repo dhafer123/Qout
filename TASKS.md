@@ -12,7 +12,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Open in Phase 4c: the product screen's large photo header and green grade pill (T41 item, still unticked below).
 - Done 2026-11-23 from Dhafer's phone test: dark theme without the neon green fills, new animated welcome screens, vegetable stickers and a warmer theme in both modes (notes under T41). Waiting for the rest of his feedback.
 - Done 2026-11-23: T43b (appearance: system, light or dark, on the Profile tab).
-- Done 2026-11-23: T43c (profile photo, on the phone only), T43d (Profile tab order).
+- Done 2026-11-23: T43c (profile photo, on the phone only), T43d (Profile tab order), T43e (meal pictures and tints).
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
 
@@ -410,6 +410,13 @@ Asked for on 2026-11-23 after trying the photo.
 - [x] The note under the BMI ("BMI does not tell muscle from fat; it is shown for information only.") removed; the BMI row stays
 - Tests: **W** the cards' order and no BMI note; tests that sign in or out from the Profile tab scroll to the account card first (`scrollToCentre` in `pump_app.dart`, clear of the navigation bar).
 - Done (2026-11-23): app 1354 tests.
+
+### T43e · Meal pictures and tints
+Asked for on 2026-11-23, with pictures Dhafer supplied (he holds the rights).
+- [x] A picture per meal instead of the vegetables: breakfast toast and coffee, lunch a bento box, snack a bag of chips, dinner a plate (`assets/illustrations/meals/`, cut to transparent PNGs, about 240 px; `SOURCE.md`)
+- [x] Warm meal accents: the green brand and the grounds stay; each meal has a soft tint from its picture (butter, bento pink, chip orange, tomato) behind its row on Today and its heading in the Diary, light and dark; pictures at 40 dp (were 28/32)
+- Tests: **U** every meal has its picture (PNG, size, bundled, no extra file), tints distinct and body, small, title and muted text ≥ 4.5:1 on them in both themes; **W** `MealArt` size and hidden from screen readers, Today rows and Diary headings use their meal's tint and picture; layout and accessibility in both themes.
+- Done (2026-11-23): app 1363 tests. `meal_art.dart` (`mealPicture`, `mealTint`, `MealArt`) replaces `meal_veggie.dart`; `QoutPalette` gets `breakfastTint`, `lunchTint`, `snackTint`, `dinnerTint` (light `#FCF0CF` `#FBE3EA` `#FBE6CF` `#FAE0D8`, dark `#3A3120` `#3A2530` `#3C2C1D` `#3C2521`). Corn, tomato, carrot and broccoli stickers stay in the app, no longer tied to meals. Cut with a throwaway Pillow script (flood fill from the edges, outlines stop it; not in the repo).
 
 
 ---

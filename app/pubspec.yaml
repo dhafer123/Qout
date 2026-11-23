@@ -40,6 +40,7 @@ flutter:
   assets:
     - assets/animations/
     - assets/brand/
+    - assets/illustrations/meals/
     - assets/illustrations/veg/
     - assets/fonts/inter/OFL.txt
   fonts:

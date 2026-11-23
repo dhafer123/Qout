@@ -11,7 +11,7 @@ import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/diary/data/diary_repository.dart';
 import 'package:qout/features/diary/presentation/diary_format.dart';
 import 'package:qout/features/diary/presentation/diary_sheets.dart';
-import 'package:qout/features/diary/presentation/meal_veggie.dart';
+import 'package:qout/features/diary/presentation/meal_art.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/history/presentation/scan_history_list.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
@@ -237,25 +237,35 @@ class _DayEntriesState extends ConsumerState<_DayEntries> {
           return Entrance(
             index: 2 + index,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
-              child: Row(
-                children: [
-                  VeggieArt(mealVeggie(meal), size: 32, pop: false),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Semantics(
-                      header: true,
-                      child: Text(meal.label, style: textTheme.titleSmall),
-                    ),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: DecoratedBox(
+                key: ValueKey('meal-heading-${meal.name}'),
+                decoration: BoxDecoration(
+                  color: mealTint(QoutPalette.of(context), meal),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(6, 4, 14, 4),
+                  child: Row(
+                    children: [
+                      MealArt(meal),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Semantics(
+                          header: true,
+                          child: Text(meal.label, style: textTheme.titleSmall),
+                        ),
+                      ),
+                      Flexible(
+                        child: Text(
+                          '$kcal kcal',
+                          textAlign: TextAlign.end,
+                          style: textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
                   ),
-                  Flexible(
-                    child: Text(
-                      '$kcal kcal',
-                      textAlign: TextAlign.end,
-                      style: textTheme.bodySmall,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           );
