@@ -193,3 +193,29 @@ double shareOfDay(double total, int daily) => daily <= 0 ? 0 : total / daily;
 /// need, not a limit, so it is never "above" here.
 bool aboveReference(Nutrient nutrient, double total, int daily) =>
     nutrient != Nutrient.energy && total > daily;
+
+/// Where a day's total stands against its daily amount, for its bar.
+enum NutrientStatus {
+  /// Under [warnShare] of the amount.
+  ok,
+
+  /// From [warnShare] of the amount; for sugars also above it.
+  warn,
+
+  /// Above the amount (fat, saturates, salt).
+  over,
+}
+
+/// The share of a daily amount from which a bar turns amber: a display
+/// choice, not a nutrition value (decision H8 in `docs/specs/README.md`).
+const double warnShare = 0.7;
+
+/// [total]'s status against [daily] (decision H8). Sugars' 90 g is a
+/// reference intake, not a limit (H5), so sugars never go past
+/// [NutrientStatus.warn].
+NutrientStatus nutrientStatus(Nutrient nutrient, double total, int daily) {
+  final share = shareOfDay(total, daily);
+  if (share > 1 && nutrient != Nutrient.sugars) return NutrientStatus.over;
+  if (share >= warnShare) return NutrientStatus.warn;
+  return NutrientStatus.ok;
+}

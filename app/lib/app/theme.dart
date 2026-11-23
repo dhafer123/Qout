@@ -38,10 +38,6 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     required this.photoStripeA,
     required this.photoStripeB,
     required this.doubt,
-    required this.breakfastTint,
-    required this.lunchTint,
-    required this.snackTint,
-    required this.dinnerTint,
   });
 
   /// Secondary text: captions, barcodes, dates, section labels.
@@ -81,19 +77,11 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
   /// Values a reader is unsure of ("check this one against the photo").
   final Color doubt;
 
-  /// Behind each meal's row on Today and its heading in the Diary (T43e),
-  /// taken from its picture: butter toast, the pink bento, the chip bag, the
-  /// tomato on the dinner plate. Body and muted text stay readable on them.
-  final Color breakfastTint;
-  final Color lunchTint;
-  final Color snackTint;
-  final Color dinnerTint;
-
   static const QoutPalette dark = QoutPalette(
     muted: Color(0xFFB3AA9A),
     edge: Color(0xFF39332A),
     divider: Color(0x29F2EBDD),
-    track: Color(0xFF302A22),
+    track: Color(0xFF433B30),
     accent: Color(0xFF7DB069),
     accentText: Color(0xFFAED39A),
     accentTint: Color(0x1F7DB069),
@@ -104,17 +92,13 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     photoStripeA: Color(0xFF241F19),
     photoStripeB: Color(0xFF302A22),
     doubt: Color(0xFFF6A14F),
-    breakfastTint: Color(0xFF3A3120),
-    lunchTint: Color(0xFF3A2530),
-    snackTint: Color(0xFF3C2C1D),
-    dinnerTint: Color(0xFF3C2521),
   );
 
   static const QoutPalette light = QoutPalette(
     muted: Color(0xFF6A6155),
     edge: Color(0xFFEAE2D3),
     divider: Color(0x242C261E),
-    track: Color(0xFFEDE6D8),
+    track: Color(0xFFE6DDCC),
     accent: Color(0xFF3B8A3A),
     accentText: Color(0xFF2E6A22),
     accentTint: Color(0x143B8A3A),
@@ -125,10 +109,6 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     photoStripeA: Color(0xFFFFFFFF),
     photoStripeB: Color(0xFFEDE6D8),
     doubt: Color(0xFF9A5400),
-    breakfastTint: Color(0xFFFCF0CF),
-    lunchTint: Color(0xFFFBE3EA),
-    snackTint: Color(0xFFFBE6CF),
-    dinnerTint: Color(0xFFFAE0D8),
   );
 
   List<Color> get _values => [
@@ -146,10 +126,6 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     photoStripeA,
     photoStripeB,
     doubt,
-    breakfastTint,
-    lunchTint,
-    snackTint,
-    dinnerTint,
   ];
 
   @override
@@ -187,10 +163,6 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     Color? photoStripeA,
     Color? photoStripeB,
     Color? doubt,
-    Color? breakfastTint,
-    Color? lunchTint,
-    Color? snackTint,
-    Color? dinnerTint,
   }) => QoutPalette(
     muted: muted ?? this.muted,
     edge: edge ?? this.edge,
@@ -206,10 +178,6 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     photoStripeA: photoStripeA ?? this.photoStripeA,
     photoStripeB: photoStripeB ?? this.photoStripeB,
     doubt: doubt ?? this.doubt,
-    breakfastTint: breakfastTint ?? this.breakfastTint,
-    lunchTint: lunchTint ?? this.lunchTint,
-    snackTint: snackTint ?? this.snackTint,
-    dinnerTint: dinnerTint ?? this.dinnerTint,
   );
 
   @override
@@ -231,12 +199,67 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
       photoStripeA: mix(photoStripeA, other.photoStripeA),
       photoStripeB: mix(photoStripeB, other.photoStripeB),
       doubt: mix(doubt, other.doubt),
-      breakfastTint: mix(breakfastTint, other.breakfastTint),
-      lunchTint: mix(lunchTint, other.lunchTint),
-      snackTint: mix(snackTint, other.snackTint),
-      dinnerTint: mix(dinnerTint, other.dinnerTint),
     );
   }
+}
+
+/// How much of a daily amount a day has used, as colours for its bar
+/// (T43f, decision H8 in `docs/specs/README.md`): [ok] under 70 %, [warn]
+/// from 70 %, [over] above 100 %. Bar colours (graphics, 3:1 against the
+/// card); text next to them keeps the body colour.
+@immutable
+class StatusColors extends ThemeExtension<StatusColors> {
+  const StatusColors({
+    required this.ok,
+    required this.warn,
+    required this.over,
+  });
+
+  final Color ok;
+  final Color warn;
+  final Color over;
+
+  static const StatusColors light = StatusColors(
+    ok: Color(0xFF3B8A3A),
+    warn: Color(0xFFC77700),
+    over: Color(0xFFC8412B),
+  );
+
+  static const StatusColors dark = StatusColors(
+    ok: Color(0xFF7BC47F),
+    warn: Color(0xFFE0A84F),
+    over: Color(0xFFE06A5A),
+  );
+
+  static StatusColors of(BuildContext context) =>
+      Theme.of(context).extension<StatusColors>() ??
+      (Theme.of(context).brightness == Brightness.dark ? dark : light);
+
+  @override
+  StatusColors copyWith({Color? ok, Color? warn, Color? over}) => StatusColors(
+    ok: ok ?? this.ok,
+    warn: warn ?? this.warn,
+    over: over ?? this.over,
+  );
+
+  @override
+  StatusColors lerp(StatusColors? other, double t) => other == null
+      ? this
+      : StatusColors(
+          ok: Color.lerp(ok, other.ok, t)!,
+          warn: Color.lerp(warn, other.warn, t)!,
+          over: Color.lerp(over, other.over, t)!,
+        );
+
+  @override
+  bool operator ==(Object other) =>
+      other is StatusColors &&
+      other.ok == ok &&
+      other.warn == warn &&
+      other.over == over;
+
+  @override
+  int get hashCode => Object.hash(ok, warn, over);
 }
 
 /// The app's ground: warm paper (light) and garden soil (dark), the
@@ -254,6 +277,8 @@ ColorScheme _scheme(Brightness brightness) {
   final p = dark ? QoutPalette.dark : QoutPalette.light;
   final ground = dark ? qoutGroundDark : qoutGroundLight;
   final surface = dark ? const Color(0xFF241F19) : const Color(0xFFFFFFFF);
+  // Rows and chips inside a card (T43f).
+  final raised = dark ? const Color(0xFF2E2820) : const Color(0xFFFAF6EE);
   final text = dark ? const Color(0xFFF2EBDD) : const Color(0xFF2C261E);
   return ColorScheme(
     brightness: brightness,
@@ -277,7 +302,7 @@ ColorScheme _scheme(Brightness brightness) {
     surfaceContainerLowest: ground,
     surfaceContainerLow: surface,
     surfaceContainer: surface,
-    surfaceContainerHigh: surface,
+    surfaceContainerHigh: raised,
     surfaceContainerHighest: p.track,
     outline: p.edge,
     outlineVariant: p.divider,
@@ -407,7 +432,7 @@ ThemeData buildQoutTheme(Brightness brightness) {
     canvasColor: scheme.surface,
     dividerColor: p.divider,
     splashFactory: InkSparkle.splashFactory,
-    extensions: [p],
+    extensions: [p, if (dark) StatusColors.dark else StatusColors.light],
     iconTheme: IconThemeData(color: scheme.onSurface, size: 24),
     actionIconTheme: ActionIconThemeData(
       backButtonIconBuilder: (context) =>

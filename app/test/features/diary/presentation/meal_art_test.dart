@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
-import 'package:qout/app/theme.dart';
 import 'package:qout/features/diary/presentation/meal_art.dart';
 import 'package:qout/health/advice.dart' show Nutrient;
 import 'package:qout/health/diary.dart';
@@ -17,12 +16,6 @@ import '../../../helpers/pump_app.dart';
 (int, int) _pngSize(Uint8List bytes) {
   final data = ByteData.sublistView(bytes);
   return (data.getUint32(16), data.getUint32(20));
-}
-
-/// WCAG contrast ratio of two opaque colours.
-double _contrast(Color a, Color b) {
-  final (la, lb) = (a.computeLuminance(), b.computeLuminance());
-  return (max(la, lb) + 0.05) / (min(la, lb) + 0.05);
 }
 
 void main() {
@@ -78,47 +71,16 @@ void main() {
     handle.dispose();
   });
 
-  for (final brightness in Brightness.values) {
-    group('tints, ${brightness.name}', () {
-      final theme = buildQoutTheme(brightness);
-      final palette = theme.extension<QoutPalette>()!;
-      final tints = Meal.values.map((m) => mealTint(palette, m)).toList();
-
-      test('one per meal', () {
-        expect(tints.toSet(), hasLength(Meal.values.length));
-      });
-
-      test('the text drawn on them stays readable (4.5:1)', () {
-        final text = theme.textTheme;
-        final colors = {
-          'body': text.bodyMedium!.color!,
-          'small': text.bodySmall!.color!,
-          'title': text.titleSmall!.color!,
-          'muted': palette.muted,
-        };
-        for (final (i, tint) in tints.indexed) {
-          for (final MapEntry(:key, :value) in colors.entries) {
-            expect(
-              _contrast(value, tint),
-              greaterThanOrEqualTo(4.5),
-              reason: '$key on ${Meal.values[i].name}',
-            );
-          }
-        }
-      });
-    });
-  }
-
   group('on the screens', () {
     FakeDiaryRepository logged() {
       final diary = FakeDiaryRepository();
-      for (final meal in [Meal.breakfast, Meal.snack]) {
+      for (final meal in [Meal.breakfast, Meal.breakfast, Meal.snack]) {
         diary.seed(
           DiaryEntry(
             id: 0,
             eatenAt: DateTime.now(),
             meal: meal,
-            name: meal.label,
+            name: 'Food',
             ean: '1',
             amount: 100,
             values: const {Nutrient.energy: 418.4},
@@ -128,39 +90,83 @@ void main() {
       return diary;
     }
 
-    Color tintOf(WidgetTester tester, String key) {
-      final box = tester.widget<DecoratedBox>(find.byKey(ValueKey(key)));
-      return (box.decoration as BoxDecoration).color!;
-    }
+    Finder inRow(Meal meal, Finder finder) => find.descendant(
+      of: find.byKey(ValueKey('meal-row-${meal.name}')),
+      matching: finder,
+    );
 
-    testWidgets('Today: each logged meal on its tint, with its picture', (
+    testWidgets('Today: all four meals, logged ones with items and kcal', (
       tester,
     ) async {
       await tester.pumpQoutApp(diary: logged());
-      final palette = QoutPalette.of(
-        tester.element(find.text("Today's meals")),
-      );
 
-      expect(tintOf(tester, 'meal-row-breakfast'), palette.breakfastTint);
-      expect(tintOf(tester, 'meal-row-snack'), palette.snackTint);
-      expect(find.byKey(const ValueKey('meal-row-lunch')), findsNothing);
-      expect(find.byKey(const ValueKey('meal-art-breakfast')), findsOneWidget);
-      expect(find.byKey(const ValueKey('meal-art-snack')), findsOneWidget);
+      for (final meal in Meal.values) {
+        expect(inRow(meal, find.text(meal.label)), findsOneWidget);
+        expect(
+          inRow(meal, find.byKey(ValueKey('meal-art-${meal.name}'))),
+          findsOneWidget,
+        );
+      }
+      expect(inRow(Meal.breakfast, find.text('2 items')), findsOneWidget);
+      expect(inRow(Meal.breakfast, find.text('200 kcal')), findsOneWidget);
+      expect(inRow(Meal.snack, find.text('1 item')), findsOneWidget);
+      expect(inRow(Meal.breakfast, find.text('Add')), findsNothing);
+      // Empty meals offer "+ Add".
+      expect(inRow(Meal.lunch, find.text('Nothing yet')), findsOneWidget);
+      expect(inRow(Meal.dinner, find.text('Add')), findsOneWidget);
     });
 
-    testWidgets('Diary: each meal heading on its tint, with its picture', (
+    testWidgets("Today: an empty meal's + Add quick adds to that meal", (
+      tester,
+    ) async {
+      final diary = FakeDiaryRepository();
+      tester.view
+        ..physicalSize = const Size(500, 1600)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpQoutApp(diary: diary);
+
+      await tester.tap(inRow(Meal.dinner, find.text('Add')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Energy'), '300');
+      await tester.tap(find.text('Add to diary'));
+      await tester.pumpAndSettle();
+
+      expect(diary.entries.single.meal, Meal.dinner);
+      expect(inRow(Meal.dinner, find.text('1 item')), findsOneWidget);
+    });
+
+    testWidgets('Today: + Add is named for screen readers', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpQoutApp();
+      expect(find.bySemanticsLabel('Add to lunch'), findsOneWidget);
+      handle.dispose();
+    });
+
+    testWidgets('Diary: each meal heading with its picture, no tint', (
       tester,
     ) async {
       await tester.pumpQoutApp(diary: logged());
       await tester.pushRoute(AppRoutes.diary);
       await tester.pumpAndSettle();
-      final palette = QoutPalette.of(
-        tester.element(find.byKey(const ValueKey('meal-heading-breakfast'))),
-      );
 
-      expect(tintOf(tester, 'meal-heading-breakfast'), palette.breakfastTint);
-      expect(tintOf(tester, 'meal-heading-snack'), palette.snackTint);
+      for (final meal in [Meal.breakfast, Meal.snack]) {
+        expect(
+          find.descendant(
+            of: find.byKey(ValueKey('meal-heading-${meal.name}')),
+            matching: find.byKey(ValueKey('meal-art-${meal.name}')),
+          ),
+          findsOneWidget,
+        );
+      }
       expect(find.byKey(const ValueKey('meal-heading-dinner')), findsNothing);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('meal-heading-breakfast')),
+          matching: find.byType(DecoratedBox),
+        ),
+        findsNothing,
+      );
     });
   });
 }

@@ -102,13 +102,17 @@ Future<void> showEditEntrySheet(BuildContext context, DiaryEntry entry) =>
       ),
     );
 
-/// Food without a barcode: a name and its kcal.
-Future<void> showQuickAddSheet(BuildContext context, {DateTime? day}) =>
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => _QuickAddSheet(initialDay: day),
-    );
+/// Food without a barcode: a name and its kcal; [meal] chosen at first
+/// (else the one for the time of day).
+Future<void> showQuickAddSheet(
+  BuildContext context, {
+  DateTime? day,
+  Meal? meal,
+}) => showModalBottomSheet<void>(
+  context: context,
+  isScrollControlled: true,
+  builder: (context) => _QuickAddSheet(initialDay: day, initialMeal: meal),
+);
 
 enum _PortionChoice { serving, hundred, other }
 
@@ -327,9 +331,10 @@ class _EntrySheetState extends ConsumerState<_EntrySheet> {
 }
 
 class _QuickAddSheet extends ConsumerStatefulWidget {
-  const _QuickAddSheet({this.initialDay});
+  const _QuickAddSheet({this.initialDay, this.initialMeal});
 
   final DateTime? initialDay;
+  final Meal? initialMeal;
 
   @override
   ConsumerState<_QuickAddSheet> createState() => _QuickAddSheetState();
@@ -338,7 +343,7 @@ class _QuickAddSheet extends ConsumerStatefulWidget {
 class _QuickAddSheetState extends ConsumerState<_QuickAddSheet> {
   final _name = TextEditingController();
   final _kcal = TextEditingController();
-  late Meal _meal = guessMeal(DateTime.now());
+  late Meal _meal = widget.initialMeal ?? guessMeal(DateTime.now());
   late DateTime _day = widget.initialDay ?? dayOf(DateTime.now());
   String? _error;
   bool _saving = false;

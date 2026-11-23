@@ -238,33 +238,27 @@ class _DayEntriesState extends ConsumerState<_DayEntries> {
             index: 2 + index,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: DecoratedBox(
+              child: Padding(
                 key: ValueKey('meal-heading-${meal.name}'),
-                decoration: BoxDecoration(
-                  color: mealTint(QoutPalette.of(context), meal),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(6, 4, 14, 4),
-                  child: Row(
-                    children: [
-                      MealArt(meal),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Semantics(
-                          header: true,
-                          child: Text(meal.label, style: textTheme.titleSmall),
-                        ),
+                padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
+                child: Row(
+                  children: [
+                    MealArt(meal),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Semantics(
+                        header: true,
+                        child: Text(meal.label, style: textTheme.titleSmall),
                       ),
-                      Flexible(
-                        child: Text(
-                          '$kcal kcal',
-                          textAlign: TextAlign.end,
-                          style: textTheme.bodySmall,
-                        ),
+                    ),
+                    Flexible(
+                      child: Text(
+                        '$kcal kcal',
+                        textAlign: TextAlign.end,
+                        style: textTheme.bodySmall,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

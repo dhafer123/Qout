@@ -49,24 +49,20 @@ void main() {
     });
   });
 
-  testWidgets("Scan to log and the bar's scan button open the scanner", (
-    tester,
-  ) async {
+  testWidgets("the bar's scan button opens the scanner; no second one on "
+      'Today', (tester) async {
     installFakeScanner();
     await pumpToday(
       tester,
     );
+    // One way to scan, the raised button in the bar (T43f).
+    expect(find.text('Scan to log'), findsNothing);
+    expect(find.text('Quick add'), findsOneWidget);
 
-    await tester.tap(find.text('Scan to log'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ScanScreen), findsOneWidget);
-    expect(find.byKey(FakeScannerPlatform.cameraKey), findsOneWidget);
-
-    await tester.pageBack();
-    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('scan-button')));
     await tester.pumpAndSettle();
     expect(find.byType(ScanScreen), findsOneWidget);
+    expect(find.byKey(FakeScannerPlatform.cameraKey), findsOneWidget);
   });
 
   testWidgets('a scanned code opens its product; back shows it on Today', (
@@ -82,7 +78,7 @@ void main() {
       history: history,
       overrides: [productRepositoryProvider.overrideWithValue(repository)],
     );
-    await tester.tap(find.text('Scan to log'));
+    await tester.tap(find.byKey(const ValueKey('scan-button')));
     await tester.pumpAndSettle();
 
     for (var i = 0; i < 3; i++) {

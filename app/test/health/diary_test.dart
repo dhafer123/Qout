@@ -116,6 +116,43 @@ void main() {
       expect(aboveReference(Nutrient.salt, 5.01, 5), isTrue);
       expect(aboveReference(Nutrient.energy, 99999, 8400), isFalse);
     });
+
+    group('status for the bars (decision H8)', () {
+      test('ok under 70 %, warn from 70 % up to the amount', () {
+        expect(nutrientStatus(Nutrient.fat, 69.9, 100), NutrientStatus.ok);
+        expect(nutrientStatus(Nutrient.fat, 70, 100), NutrientStatus.warn);
+        expect(nutrientStatus(Nutrient.fat, 100, 100), NutrientStatus.warn);
+      });
+
+      test('over above the amount for fat, saturates and salt', () {
+        for (final nutrient in [
+          Nutrient.fat,
+          Nutrient.saturates,
+          Nutrient.salt,
+        ]) {
+          expect(
+            nutrientStatus(nutrient, 100.1, 100),
+            NutrientStatus.over,
+            reason: nutrient.name,
+          );
+        }
+      });
+
+      test('sugars, a reference intake, stay at warn above it', () {
+        expect(nutrientStatus(Nutrient.sugars, 62, 90), NutrientStatus.ok);
+        expect(nutrientStatus(Nutrient.sugars, 63, 90), NutrientStatus.warn);
+        expect(nutrientStatus(Nutrient.sugars, 400, 90), NutrientStatus.warn);
+      });
+
+      test('nothing eaten, or no amount, is ok', () {
+        expect(nutrientStatus(Nutrient.salt, 0, 5), NutrientStatus.ok);
+        expect(nutrientStatus(Nutrient.salt, 3, 0), NutrientStatus.ok);
+      });
+
+      test('the warn step is 70 %', () {
+        expect(warnShare, 0.7);
+      });
+    });
   });
 
   test('copyWith changes the meal, day and amount only', () {

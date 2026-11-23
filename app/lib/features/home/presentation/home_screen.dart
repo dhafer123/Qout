@@ -8,6 +8,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/entrance.dart';
+import 'package:qout/core/ui/fading_rule.dart';
 import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/diary/data/diary_repository.dart';
 import 'package:qout/features/diary/presentation/day_summary.dart';
@@ -236,36 +237,23 @@ class _TodaySummary extends ConsumerWidget {
   }
 }
 
-/// Scan to log (the main way), or quick add.
+/// Quick add. Scanning is the raised Scan button in the bottom bar (T43f).
 class _LogActions extends StatelessWidget {
   const _LogActions();
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-    child: Row(
-      children: [
-        Expanded(
-          child: FilledButton.icon(
-            onPressed: () => context.push(AppRoutes.scan),
-            icon: const Icon(PhosphorIconsBold.barcode, size: 20),
-            label: const Text('Scan to log'),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () => showQuickAddSheet(context),
-            icon: const Icon(PhosphorIconsRegular.plusCircle, size: 20),
-            label: const Text('Quick add'),
-          ),
-        ),
-      ],
+    child: OutlinedButton.icon(
+      onPressed: () => showQuickAddSheet(context),
+      icon: const Icon(PhosphorIconsRegular.plusCircle, size: 20),
+      label: const Text('Quick add'),
     ),
   );
 }
 
-/// What was logged today, per meal; opens the Diary on today.
+/// Today's four meals, each with its picture: what was logged (items and
+/// kcal) or "+ Add". Tapping the card opens the Diary on today.
 class _TodayMeals extends ConsumerWidget {
   const _TodayMeals();
 
@@ -288,7 +276,7 @@ class _TodayMeals extends ConsumerWidget {
         child: InkWell(
           onTap: openDiary,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+            padding: const EdgeInsets.fromLTRB(16, 14, 12, 6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -310,66 +298,82 @@ class _TodayMeals extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                if (entries.isEmpty)
-                  Row(
-                    children: [
-                      const VeggieArt(VeggieFor.emptyDay, size: 44),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Nothing logged yet. Scan a product and tap "I ate '
-                          'this", or quick add.',
-                          style: textTheme.bodySmall,
-                        ),
-                      ),
+                const SizedBox(height: 4),
+                for (final (i, meal) in Meal.values.indexed) ...[
+                  if (i > 0) const FadingRule(),
+                  _MealRow(
+                    meal: meal,
+                    entries: [
+                      for (final entry in entries)
+                        if (entry.meal == meal) entry,
                     ],
-                  )
-                else
-                  for (final meal in Meal.values)
-                    if (entries.where((e) => e.meal == meal).toList()
-                        case final ofMeal when ofMeal.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6, right: 4),
-                        child: DecoratedBox(
-                          key: ValueKey('meal-row-${meal.name}'),
-                          decoration: BoxDecoration(
-                            color: mealTint(palette, meal),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(6, 4, 12, 4),
-                            child: Row(
-                              children: [
-                                MealArt(meal),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    '${meal.label} · ${ofMeal.length} '
-                                    '${ofMeal.length == 1 ? 'item' : 'items'}',
-                                  ),
-                                ),
-                                // Wraps under large text rather than overflow.
-                                Flexible(
-                                  child: Text(
-                                    _kcalOf(ofMeal),
-                                    textAlign: TextAlign.end,
-                                    style: textTheme.bodyMedium?.copyWith(
-                                      fontFeatures: const [
-                                        FontFeature.tabularFigures(),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                  ),
+                ],
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// One meal on Today: picture, name, "2 items" under it, kcal on the
+/// right; "+ Add" (quick add on this meal) while nothing is logged.
+class _MealRow extends StatelessWidget {
+  const _MealRow({required this.meal, required this.entries});
+
+  final Meal meal;
+  final List<DiaryEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final count = entries.length;
+    return Padding(
+      key: ValueKey('meal-row-${meal.name}'),
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          MealArt(meal),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(meal.label, style: textTheme.titleSmall),
+                Text(
+                  count == 0
+                      ? 'Nothing yet'
+                      : '$count ${count == 1 ? 'item' : 'items'}',
+                  style: textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+          // Both shrink (and wrap) under large text rather than overflow.
+          if (count == 0)
+            Flexible(
+              child: TextButton.icon(
+                onPressed: () => showQuickAddSheet(context, meal: meal),
+                icon: const Icon(PhosphorIconsRegular.plus, size: 18),
+                label: Text(
+                  'Add',
+                  semanticsLabel: 'Add to ${meal.label.toLowerCase()}',
+                ),
+              ),
+            )
+          else
+            Flexible(
+              child: Text(
+                _kcalOf(entries),
+                textAlign: TextAlign.end,
+                style: textTheme.bodyMedium?.copyWith(
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

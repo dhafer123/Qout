@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
+import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/diary/data/diary_repository.dart';
 import 'package:qout/features/diary/presentation/diary_screen.dart';
@@ -129,9 +130,10 @@ void main() {
 
     final entry = diary.entries.single;
     expect((entry.name, entry.isQuickAdd), ('Couscous', true));
-    expect(find.text('450'), findsOneWidget); // the energy ring
-    expect(find.textContaining('items'), findsNothing);
-    expect(find.textContaining('· 1 item'), findsOneWidget); // meals card
+    // The energy ring, and the meal's row on the meals card.
+    expect(find.textContaining('450 eaten'), findsOneWidget);
+    expect(find.text('1 item'), findsOneWidget);
+    expect(find.text('450 kcal'), findsOneWidget);
   });
 
   testWidgets('Today: totals, and a reference passed said gently', (
@@ -151,9 +153,14 @@ void main() {
     );
     await pump(tester);
 
-    expect(find.text('48'), findsOneWidget); // 200 kJ ≈ 48 kcal
+    expect(find.textContaining('48 eaten'), findsOneWidget); // 200 kJ
     expect(find.text('Above your daily reference'), findsOneWidget);
-    expect(find.textContaining('6.0 / under 5 g'), findsOneWidget);
+    expect(find.text('6.0 / 5 g'), findsOneWidget);
+    // Above the salt amount: the bar is red (T43f).
+    final bar = tester.widget<LinearProgressIndicator>(
+      find.byKey(const ValueKey('bar-salt')),
+    );
+    expect(bar.color, StatusColors.light.over);
     expect(
       find.textContaining('Compared with your daily needs.'),
       findsOneWidget,
