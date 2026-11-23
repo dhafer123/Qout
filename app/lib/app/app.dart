@@ -5,6 +5,7 @@ import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/env/app_env.dart';
 import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
+import 'package:qout/features/settings/presentation/theme_mode_provider.dart';
 
 class QoutApp extends ConsumerWidget {
   const QoutApp({super.key});
@@ -16,6 +17,8 @@ class QoutApp extends ConsumerWidget {
       title: 'Qout',
       theme: buildQoutTheme(Brightness.light),
       darkTheme: buildQoutTheme(Brightness.dark),
+      // System, light or dark, as chosen on the Profile tab (T43b).
+      themeMode: ref.watch(themeModeProvider),
       // The debug banner marks non-prod builds.
       debugShowCheckedModeBanner: env.flavor != AppFlavor.prod,
       routerConfig: ref.watch(routerProvider),

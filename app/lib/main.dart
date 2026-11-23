@@ -9,6 +9,8 @@ import 'package:qout/core/database/database.dart';
 import 'package:qout/core/database/database_provider.dart';
 import 'package:qout/core/env/app_env.dart';
 import 'package:qout/features/profile/data/profile_repository.dart';
+import 'package:qout/features/settings/data/settings_repository.dart';
+import 'package:qout/features/settings/presentation/theme_mode_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,12 +27,17 @@ Future<void> main() async {
   final start = await ProfileRepository(
     dao: database.profileDao,
   ).startScreen().catchError((Object _) => StartScreen.home);
+  // The chosen theme too, so the first screen never flashes the other one.
+  final themeMode = await SettingsRepository(
+    dao: database.settingsDao,
+  ).themeMode();
   runApp(
     ProviderScope(
       overrides: [
         appEnvProvider.overrideWithValue(env),
         appDatabaseProvider.overrideWithValue(database),
         startScreenProvider.overrideWithValue(start),
+        initialThemeModeProvider.overrideWithValue(themeMode),
       ],
       child: const QoutApp(),
     ),
