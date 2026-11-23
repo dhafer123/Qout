@@ -1,0 +1,7 @@
+-- The app database at schema version 5 (T42), as created by drift.
+-- Used to test migrations from it; never edit.
+CREATE TABLE "cached_products" ("ean" TEXT NOT NULL, "json" TEXT NOT NULL, "fetched_at" TEXT NOT NULL, PRIMARY KEY ("ean"));
+CREATE TABLE "contribution_outbox" ("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "kind" TEXT NOT NULL, "client_id" TEXT NOT NULL UNIQUE, "payload" TEXT NOT NULL, "created_at" TEXT NOT NULL, "state" TEXT NOT NULL DEFAULT 'waiting', "next_attempt_at" TEXT NULL, "attempts" INTEGER NOT NULL DEFAULT 0, "last_error" TEXT NULL);
+CREATE TABLE "diary_entries" ("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "eaten_at" TEXT NOT NULL, "meal" TEXT NOT NULL, "ean" TEXT NULL, "name" TEXT NULL, "brand" TEXT NULL, "image_url" TEXT NULL, "grade" TEXT NULL, "nova_group" INTEGER NULL, "unit" TEXT NULL, "amount" REAL NULL, "serving_quantity" REAL NULL, "energy_kj" REAL NULL, "fat_g" REAL NULL, "saturates_g" REAL NULL, "sugars_g" REAL NULL, "salt_g" REAL NULL);
+CREATE TABLE "local_profile" ("id" INTEGER NOT NULL, "onboarding_completed_at" TEXT NOT NULL, "sex" TEXT NULL, "age" INTEGER NULL, "age_entered_at" TEXT NULL, "height_cm" REAL NULL, "weight_kg" REAL NULL, "pal" TEXT NULL, "allergens" TEXT NOT NULL DEFAULT '[]', "avoided_additives" TEXT NOT NULL DEFAULT '[]', "first_name" TEXT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "scan_history" ("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "ean" TEXT NOT NULL, "scanned_at" TEXT NOT NULL);

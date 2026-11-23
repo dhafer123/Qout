@@ -223,4 +223,36 @@ void main() {
     expect(await _schema(migrated), await _schema(fresh));
     expect(await _userVersion(migrated), fresh.schemaVersion);
   });
+
+  test('5 -> 6: no settings saved (theme follows the phone), the rest '
+      'kept', () async {
+    final migrated = AppDatabase(
+      _atVersion(5, '''
+        INSERT INTO local_profile (id, onboarding_completed_at, first_name)
+          VALUES (1, '2026-11-18T09:00:00.000Z', 'Dhafer');
+        INSERT INTO diary_entries (eaten_at, meal, energy_kj)
+          VALUES ('2026-11-22T12:00:00.000Z', 'lunch', 2000);
+      '''),
+    );
+    addTearDown(migrated.close);
+
+    expect(await migrated.settingsDao.themeMode(), isNull);
+    expect((await migrated.profileDao.get())!.firstName, 'Dhafer');
+    expect(
+      (await migrated.diaryDao.between(
+        DateTime(2000),
+        DateTime(2100),
+      )).single.energyKj,
+      2000,
+    );
+
+    // Saving works on the migrated table.
+    await migrated.settingsDao.saveThemeMode('dark');
+    expect(await migrated.settingsDao.themeMode(), 'dark');
+
+    final fresh = AppDatabase(NativeDatabase.memory());
+    addTearDown(fresh.close);
+    expect(await _schema(migrated), await _schema(fresh));
+    expect(await _userVersion(migrated), fresh.schemaVersion);
+  });
 }

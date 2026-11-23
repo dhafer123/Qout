@@ -9,8 +9,27 @@ void main() {
   setUp(() => database = AppDatabase(NativeDatabase.memory()));
   tearDown(() => database.close());
 
-  test('schema version 5', () {
-    expect(database.schemaVersion, 5);
+  test('schema version 6', () {
+    expect(database.schemaVersion, 6);
+  });
+
+  group('settings', () {
+    test('nothing saved, then saved and replaced', () async {
+      final settings = database.settingsDao;
+      expect(await settings.themeMode(), isNull);
+      await settings.saveThemeMode('dark');
+      expect(await settings.themeMode(), 'dark');
+      await settings.saveThemeMode('light');
+      expect(await settings.themeMode(), 'light');
+    });
+
+    test('kept when the profile is deleted', () async {
+      await database.profileDao.completeOnboarding(t0);
+      await database.settingsDao.saveThemeMode('dark');
+      await database.profileDao.clearProfile();
+      await database.diaryDao.clear();
+      expect(await database.settingsDao.themeMode(), 'dark');
+    });
   });
 
   group('product cache', () {

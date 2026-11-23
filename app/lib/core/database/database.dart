@@ -500,6 +500,41 @@ class DiaryDao extends DatabaseAccessor<AppDatabase> with _$DiaryDaoMixin {
       watchBetween(from, to).first;
 }
 
+/// App preferences (T43b): one row, id 1, written when something is first
+/// changed. Not personal data: deleting the profile or the diary keeps it.
+@DataClassName('AppSettingsRow')
+class AppSettings extends Table {
+  IntColumn get id => integer()();
+
+  /// `system`, `light` or `dark`. Plain text, not an enum column, so a value
+  /// this version doesn't know reads as the default instead of failing.
+  TextColumn get themeMode => text().withDefault(const Constant('system'))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DriftAccessor(tables: [AppSettings])
+class SettingsDao extends DatabaseAccessor<AppDatabase>
+    with _$SettingsDaoMixin {
+  SettingsDao(super.attachedDatabase);
+
+  static const _id = 1;
+
+  /// The stored theme mode, null while nothing was saved.
+  Future<String?> themeMode() async => (await (select(
+    appSettings,
+  )..where((t) => t.id.equals(_id))).getSingleOrNull())?.themeMode;
+
+  Future<void> saveThemeMode(String value) =>
+      into(appSettings).insertOnConflictUpdate(
+        AppSettingsCompanion.insert(
+          id: const Value(_id),
+          themeMode: Value(value),
+        ),
+      );
+}
+
 @DriftDatabase(
   tables: [
     CachedProducts,
@@ -507,8 +542,16 @@ class DiaryDao extends DatabaseAccessor<AppDatabase> with _$DiaryDaoMixin {
     ContributionOutbox,
     LocalProfile,
     DiaryEntries,
+    AppSettings,
   ],
-  daos: [ProductCacheDao, ScanHistoryDao, OutboxDao, ProfileDao, DiaryDao],
+  daos: [
+    ProductCacheDao,
+    ScanHistoryDao,
+    OutboxDao,
+    ProfileDao,
+    DiaryDao,
+    SettingsDao,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
@@ -520,7 +563,7 @@ class AppDatabase extends _$AppDatabase {
   /// old schema in `test/fixtures/database/schema_v<n>.sql` for its test
   /// (`make-migrations` needs a newer drift_dev than this SDK resolves).
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -558,6 +601,10 @@ class AppDatabase extends _$AppDatabase {
       if (from < 5) {
         // T42: the food diary.
         await m.createTable(diaryEntries);
+      }
+      if (from < 6) {
+        // T43b: app preferences; no row, so the theme follows the phone.
+        await m.createTable(appSettings);
       }
     },
   );
