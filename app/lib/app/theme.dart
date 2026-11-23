@@ -5,8 +5,10 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 /// Qout's look (T41, from Dhafer's inspiration shots, 2026-11-20): a fresh
 /// green on a light grey-green ground, white cards with a soft shadow, Inter
 /// at medium weight, and filled green primary actions. Dark mode keeps the
-/// green on a near-black green-grey. Dark and light follow the phone's
-/// setting. Every text colour passes WCAG AA on the surfaces it is used on.
+/// same deep green for filled actions (white on it) and a muted sage for
+/// lines and green text on a near-black green-grey, so nothing glows. Dark
+/// and light follow the phone's setting. Every text colour passes WCAG AA on
+/// the surfaces it is used on.
 
 /// Font family bundled in `assets/fonts/inter` (SIL Open Font License).
 const String qoutFontFamily = 'Inter';
@@ -81,9 +83,9 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
     edge: Color(0xFF2A362D),
     divider: Color(0x29E7EEE8),
     track: Color(0xFF26322A),
-    accent: Color(0xFF6FCF7A),
-    accentText: Color(0xFFA6E8AD),
-    accentTint: Color(0x1A6FCF7A),
+    accent: Color(0xFF5BAA69),
+    accentText: Color(0xFF9CCFA4),
+    accentTint: Color(0x1F5BAA69),
     tag: Color(0xFF1F3A24),
     onTag: Color(0xFFD8F5DB),
     against: Color(0xFFF47D67),
@@ -202,6 +204,10 @@ class QoutPalette extends ThemeExtension<QoutPalette> {
   }
 }
 
+/// The green filled actions use in both modes (primary buttons, the selected
+/// tab, the Scan button), with white on it.
+const Color qoutBrandGreen = Color(0xFF2E7D32);
+
 ColorScheme _scheme(Brightness brightness) {
   final dark = brightness == Brightness.dark;
   final p = dark ? QoutPalette.dark : QoutPalette.light;
@@ -210,17 +216,16 @@ ColorScheme _scheme(Brightness brightness) {
   final text = dark ? const Color(0xFFE7EEE8) : const Color(0xFF17201A);
   return ColorScheme(
     brightness: brightness,
-    primary: p.accent,
-    // White on the light green; the dark ground on the dark mode's green.
-    onPrimary: dark ? ground : const Color(0xFFFFFFFF),
+    primary: qoutBrandGreen,
+    onPrimary: const Color(0xFFFFFFFF),
     primaryContainer: p.tag,
     onPrimaryContainer: p.onTag,
-    secondary: p.accent,
-    onSecondary: dark ? ground : const Color(0xFFFFFFFF),
+    secondary: qoutBrandGreen,
+    onSecondary: const Color(0xFFFFFFFF),
     secondaryContainer: p.tag,
     onSecondaryContainer: p.onTag,
-    tertiary: p.accent,
-    onTertiary: dark ? ground : const Color(0xFFFFFFFF),
+    tertiary: qoutBrandGreen,
+    onTertiary: const Color(0xFFFFFFFF),
     error: dark ? const Color(0xFFF47D67) : const Color(0xFFB4372A),
     onError: dark ? const Color(0xFF0F1612) : const Color(0xFFFFFFFF),
     errorContainer: dark ? const Color(0xFF4A2621) : const Color(0xFFFBE3DF),

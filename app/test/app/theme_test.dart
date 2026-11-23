@@ -47,6 +47,17 @@ void main() {
         });
       }
 
+      test('filled actions use the deep brand green with white on it', () {
+        // Regression: dark mode filled actions with a bright mint that
+        // looked neon on the dark ground.
+        expect(scheme.primary, qoutBrandGreen);
+        expect(scheme.onPrimary, const Color(0xFFFFFFFF));
+        expect(contrast(scheme.onPrimary, scheme.primary), greaterThan(4.5));
+        for (final ground in grounds.values) {
+          expect(contrast(scheme.primary, ground), greaterThan(3));
+        }
+      });
+
       test('tags are readable', () {
         expect(contrast(palette.onTag, palette.tag), greaterThan(4.5));
       });
