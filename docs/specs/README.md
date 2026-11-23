@@ -232,7 +232,7 @@ within 62 kJ (`scoring-spec/needs/efsa-table-12.json`, tolerance 100 kJ).
 35–39.99, class III ≥ 40. WHO notes that BMI may not reflect the same fatness in every
 population (table footnote a).
 
-## Decisions (H1–H7)
+## Decisions (H1–H8)
 
 Decided 2026-11-19 with the T38 plan:
 
@@ -262,6 +262,13 @@ Decided 2026-11-19 with the T38 plan:
   that would be medical advice.
 - **H7. Input checks.** Age 18–120 whole years, height 100–250 cm, body mass 30–300 kg, PAL
   one of 1.4/1.6/1.8/2.0. These only catch typing errors; they are not nutrition values.
+- **H8. Bar colours on Today (T43f).** Decided by Dhafer on 2026-11-23. A day's bar for fat,
+  saturates, sugars and salt is green under 70 % of its daily amount, amber from 70 %, and red
+  above 100 %. The 70 % step is a **display choice**, not from any source: it only says that most
+  of the day's amount is used. The sourced line stays the daily amount itself. Sugars never turn
+  red: their 90 g is a reference intake for total sugars, not a limit (H5), so above it the bar
+  stays amber. Energy is a need, not a limit: the ring shows what is left, or how far past it,
+  in neutral colours.
 
 # Allergens and servings (T40)
 
