@@ -6,6 +6,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/state_message.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/scan/domain/barcode.dart';
 import 'package:qout/features/scan/domain/scan_acceptor.dart';
 import 'package:qout/features/scan/presentation/scan_success.dart';
@@ -310,6 +311,7 @@ class ScannerErrorView extends StatelessWidget {
       color: Theme.of(context).colorScheme.surface,
       child: SafeArea(
         child: StateMessage(
+          veggie: VeggieFor.noCamera,
           icon: icon,
           title: title,
           message: message,

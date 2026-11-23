@@ -6,6 +6,7 @@ import 'package:introduction_screen/introduction_screen.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/profile/presentation/welcome_art.dart';
 
 /// First run (`/welcome`): what the grade means, that scanning needs no
@@ -42,19 +43,22 @@ class WelcomeScreen extends StatelessWidget {
           PageViewModel(
             titleWidget: const _Title('Know what you eat'),
             bodyWidget: const _Body(_gradePage),
-            image: const GradeScaleArt(),
+            image: const _WithVeggie(
+              GradeScaleArt(),
+              VeggieFor.welcomeGrades,
+            ),
             decoration: decoration,
           ),
           PageViewModel(
             titleWidget: const _Title('No account needed'),
             bodyWidget: const _Body(_accountPage),
-            image: const ScanArt(),
+            image: const _WithVeggie(ScanArt(), VeggieFor.welcomeScan),
             decoration: decoration,
           ),
           PageViewModel(
             titleWidget: const _Title('Advice for you, kept on your phone'),
             bodyWidget: const _Body(_dataPage, note: _notMedical),
-            image: const LockArt(),
+            image: const _WithVeggie(LockArt(), VeggieFor.welcomePrivate),
             footer: Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
               child: FilledButton.icon(
@@ -114,6 +118,23 @@ class WelcomeScreen extends StatelessWidget {
 
 /// Passed as `extra` to the profile form on the first run: saving goes home.
 const firstRunEdit = 'first-run';
+
+/// A page's animated [art] with its vegetable sitting at the lower right.
+class _WithVeggie extends StatelessWidget {
+  const _WithVeggie(this.art, this.veggie);
+
+  final Widget art;
+  final Veggie veggie;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    clipBehavior: Clip.none,
+    children: [
+      art,
+      Positioned(right: 0, bottom: 0, child: VeggieArt(veggie, size: 72)),
+    ],
+  );
+}
 
 class _Title extends StatelessWidget {
   const _Title(this.text);

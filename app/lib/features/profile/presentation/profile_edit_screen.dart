@@ -8,6 +8,7 @@ import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/insets.dart';
 import 'package:qout/core/ui/section_label.dart';
 import 'package:qout/core/ui/state_message.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/profile/data/profile_repository.dart';
 import 'package:qout/features/profile/domain/profile_form.dart';
 import 'package:qout/features/profile/presentation/profile_labels.dart';
@@ -33,6 +34,7 @@ class ProfileEditScreen extends ConsumerWidget {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (_, _) => const StateMessage(
               icon: PhosphorIconsRegular.warningCircle,
+              veggie: VeggieFor.error,
               title: 'The profile could not be read',
               message: 'Try again later.',
             ),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/insets.dart';
+import 'package:qout/core/ui/veggie.dart';
 
-/// A whole-screen state (empty, offline, error, not found): an icon, a title,
+/// A whole-screen state (empty, offline, error, not found): a vegetable or an
+/// icon, a title,
 /// an explanation and its actions, flush left and scrollable so large text
 /// never overflows. Used by every screen, so these states look the same
 /// everywhere.
@@ -11,6 +13,7 @@ class StateMessage extends StatelessWidget {
     required this.icon,
     required this.title,
     this.message,
+    this.veggie,
     this.actions = const [],
     super.key,
   });
@@ -18,6 +21,10 @@ class StateMessage extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? message;
+
+  /// Shown instead of [icon]: the vegetable that goes with this state
+  /// (see [VeggieFor]).
+  final Veggie? veggie;
 
   /// Full-width buttons, the primary one first.
   final List<Widget> actions;
@@ -35,7 +42,10 @@ class StateMessage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 44, color: QoutPalette.of(context).muted),
+          if (veggie case final veggie?)
+            VeggieArt(veggie, size: 72)
+          else
+            Icon(icon, size: 44, color: QoutPalette.of(context).muted),
           const SizedBox(height: 16),
           Semantics(
             header: true,

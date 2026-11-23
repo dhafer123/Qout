@@ -8,11 +8,13 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/entrance.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/diary/data/diary_repository.dart';
 import 'package:qout/features/diary/presentation/day_summary.dart';
 import 'package:qout/features/diary/presentation/diary_format.dart';
 import 'package:qout/features/diary/presentation/diary_screen.dart';
 import 'package:qout/features/diary/presentation/diary_sheets.dart';
+import 'package:qout/features/diary/presentation/meal_veggie.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/history/domain/history_entry.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
@@ -327,10 +329,18 @@ class _TodayMeals extends ConsumerWidget {
                 ),
                 const SizedBox(height: 6),
                 if (entries.isEmpty)
-                  Text(
-                    'Nothing logged yet. Scan a product and tap "I ate '
-                    'this", or quick add.',
-                    style: textTheme.bodySmall,
+                  Row(
+                    children: [
+                      const VeggieArt(VeggieFor.emptyDay, size: 44),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Nothing logged yet. Scan a product and tap "I ate '
+                          'this", or quick add.',
+                          style: textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
                   )
                 else
                   for (final meal in Meal.values)
@@ -340,19 +350,24 @@ class _TodayMeals extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(vertical: 3),
                         child: Row(
                           children: [
+                            VeggieArt(mealVeggie(meal), size: 28, pop: false),
+                            const SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 '${meal.label} · ${ofMeal.length} '
                                 '${ofMeal.length == 1 ? 'item' : 'items'}',
                               ),
                             ),
-                            Text(
-                              '${kcalOf(totalsOf(ofMeal).of(Nutrient.energy))}'
-                              ' kcal',
-                              style: textTheme.bodyMedium?.copyWith(
-                                fontFeatures: const [
-                                  FontFeature.tabularFigures(),
-                                ],
+                            // Wraps under large text rather than overflow.
+                            Flexible(
+                              child: Text(
+                                _kcalOf(ofMeal),
+                                textAlign: TextAlign.end,
+                                style: textTheme.bodyMedium?.copyWith(
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
@@ -412,10 +427,14 @@ class _RecentScans extends ConsumerWidget {
             child: Center(child: CircularProgressIndicator()),
           )
         else if (history.hasError)
-          const _RecentMessage('The history could not be read.')
+          const _RecentMessage(
+            'The history could not be read.',
+            veggie: VeggieFor.error,
+          )
         else if (entries.isEmpty)
           const _RecentMessage(
             'No scans yet. Scanned products appear here, also offline.',
+            veggie: VeggieFor.noScans,
           )
         else
           SizedBox(
@@ -435,14 +454,23 @@ class _RecentScans extends ConsumerWidget {
 }
 
 class _RecentMessage extends StatelessWidget {
-  const _RecentMessage(this.text);
+  const _RecentMessage(this.text, {required this.veggie});
 
   final String text;
+  final Veggie veggie;
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-    child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+    child: Row(
+      children: [
+        VeggieArt(veggie, size: 44),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+        ),
+      ],
+    ),
   );
 }
 
@@ -528,3 +556,7 @@ class RecentScanCard extends ConsumerWidget {
     );
   }
 }
+
+/// The energy of [entries] as "123 kcal".
+String _kcalOf(List<DiaryEntry> entries) =>
+    '${kcalOf(totalsOf(entries).of(Nutrient.energy))} kcal';

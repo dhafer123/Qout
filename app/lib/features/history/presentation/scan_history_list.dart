@@ -7,6 +7,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/entrance.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/history/domain/history_entry.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
@@ -225,12 +226,16 @@ class ListMessage extends StatelessWidget {
     required this.icon,
     required this.title,
     this.message,
+    this.veggie,
     super.key,
   });
 
   final IconData icon;
   final String title;
   final String? message;
+
+  /// Shown instead of [icon] (see [VeggieFor]).
+  final Veggie? veggie;
 
   @override
   Widget build(BuildContext context) {
@@ -240,7 +245,10 @@ class ListMessage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 40, color: QoutPalette.of(context).muted),
+          if (veggie case final veggie?)
+            VeggieArt(veggie, size: 56)
+          else
+            Icon(icon, size: 40, color: QoutPalette.of(context).muted),
           const SizedBox(height: 12),
           Text(title, style: theme.textTheme.titleSmall),
           if (message case final text?) ...[

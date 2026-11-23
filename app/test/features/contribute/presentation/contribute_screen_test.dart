@@ -2,15 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/qout_api.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/contribute/presentation/contribute_screen.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
 
 import '../../../helpers/fake_contribution.dart';
 import '../../../helpers/pump_app.dart';
+import '../../../helpers/veggie_finder.dart';
 
 const _ean = '6191234567897';
 
@@ -441,7 +442,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.byIcon(PhosphorIconsRegular.cloudArrowUp), findsOneWidget);
+      expect(findVeggie(VeggieFor.thanks), findsOneWidget);
       expect(fake.api.submitted, isEmpty);
 
       await tester.tap(find.text('Done'));

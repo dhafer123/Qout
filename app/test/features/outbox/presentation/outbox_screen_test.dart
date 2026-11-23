@@ -8,6 +8,7 @@ import 'package:qout/app/router.dart';
 import 'package:qout/core/api/api_providers.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/core/database/database.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/auth/presentation/sign_in_screen.dart';
 import 'package:qout/features/outbox/domain/queued_contribution.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
@@ -16,6 +17,7 @@ import 'package:qout/features/profile/presentation/profile_screen.dart';
 import '../../../helpers/fake_auth_api.dart';
 import '../../../helpers/fake_outbox.dart';
 import '../../../helpers/pump_app.dart';
+import '../../../helpers/veggie_finder.dart';
 
 final _created = DateTime.utc(2026, 11, 16, 15);
 final _nextTry = DateTime.utc(2026, 11, 16, 15, 7);
@@ -249,6 +251,7 @@ void main() {
       await open(tester, route: AppRoutes.outbox);
       expect(find.text('Nothing waiting'), findsOneWidget);
       expect(find.text('Everything has been sent.'), findsOneWidget);
+      expect(findVeggie(VeggieFor.allSent), findsOneWidget);
       await tester.unmountQoutApp();
     });
   });

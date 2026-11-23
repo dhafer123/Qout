@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/router.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/diary/data/diary_repository.dart';
 import 'package:qout/features/diary/presentation/diary_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
@@ -11,6 +12,7 @@ import 'package:qout/health/profile.dart';
 import '../../../helpers/fake_diary_repository.dart';
 import '../../../helpers/fake_product_repository.dart';
 import '../../../helpers/pump_app.dart';
+import '../../../helpers/veggie_finder.dart';
 import '../../home/presentation/home_screen_test.dart' show recordedFound;
 
 final _profile = Profile(
@@ -189,6 +191,10 @@ void main() {
       expect(find.text('Breakfast'), findsOneWidget);
       expect(find.text('Dinner'), findsOneWidget);
       expect(find.text('Lunch'), findsNothing);
+      // Each meal with its vegetable: corn for breakfast, broccoli for dinner.
+      expect(findVeggie(Veggie.corn), findsOneWidget);
+      expect(findVeggie(Veggie.broccoli), findsOneWidget);
+      expect(findVeggie(Veggie.tomato), findsNothing);
       expect(find.byType(DiaryEntryTile), findsNWidgets(2));
       expect(find.text('100 g'), findsOneWidget);
       expect(find.text('1 serving (30 g)'), findsOneWidget);
@@ -238,6 +244,7 @@ void main() {
       await tester.tap(find.byTooltip('Previous week'));
       await tester.pumpAndSettle();
       expect(find.text('Nothing logged on this day'), findsOneWidget);
+      expect(findVeggie(VeggieFor.emptyDay), findsOneWidget);
       expect(find.byType(DiaryEntryTile), findsNothing);
     });
 

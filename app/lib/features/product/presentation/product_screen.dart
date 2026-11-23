@@ -10,6 +10,7 @@ import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/core/ui/entrance.dart';
 import 'package:qout/core/ui/insets.dart';
 import 'package:qout/core/ui/state_message.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/diary/presentation/diary_sheets.dart';
@@ -113,6 +114,7 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (_, _) => StateMessage(
             icon: PhosphorIconsRegular.warningCircle,
+            veggie: VeggieFor.error,
             title: 'Something went wrong',
             message: 'The product could not be shown.',
             actions: [
@@ -124,11 +126,15 @@ class _ProductScreenState extends ConsumerState<ProductScreen> {
             ProductNotFound(:final ean) => _NotFound(ean: ean),
             InvalidBarcode(:final ean, :final message) => StateMessage(
               icon: PhosphorIconsRegular.barcode,
+              veggie: VeggieFor.error,
               title: 'This barcode is not valid',
               message: '$ean: $message',
               actions: const [_ScanAgainButton(primary: true)],
             ),
             final ProductUnavailable unavailable => StateMessage(
+              veggie: unavailable.isOffline
+                  ? VeggieFor.offline
+                  : VeggieFor.error,
               icon: unavailable.isOffline
                   ? PhosphorIconsRegular.wifiSlash
                   : PhosphorIconsRegular.cloudSlash,
@@ -173,7 +179,7 @@ class _AteThisBar extends StatelessWidget {
             ? null
             : const [
                 BoxShadow(
-                  color: Color(0x1F17401C),
+                  color: Color(0x1F3A2A14),
                   blurRadius: 16,
                   offset: Offset(0, -4),
                 ),
@@ -373,6 +379,7 @@ class _NotFound extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return StateMessage(
       icon: PhosphorIconsRegular.magnifyingGlass,
+      veggie: VeggieFor.unknown,
       title: 'We do not know this product yet',
       message:
           'Barcode $ean. You can help by adding it from photos of its '

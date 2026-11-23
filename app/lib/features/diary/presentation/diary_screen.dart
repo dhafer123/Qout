@@ -7,9 +7,11 @@ import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart' show Grade;
 import 'package:qout/core/ui/entrance.dart';
 import 'package:qout/core/ui/section_label.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/diary/data/diary_repository.dart';
 import 'package:qout/features/diary/presentation/diary_format.dart';
 import 'package:qout/features/diary/presentation/diary_sheets.dart';
+import 'package:qout/features/diary/presentation/meal_veggie.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/history/presentation/scan_history_list.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
@@ -104,6 +106,7 @@ class DiaryScreen extends ConsumerWidget {
               const SliverToBoxAdapter(
                 child: ListMessage(
                   icon: PhosphorIconsRegular.warningCircle,
+                  veggie: VeggieFor.error,
                   title: 'The diary could not be read.',
                 ),
               )
@@ -111,6 +114,7 @@ class DiaryScreen extends ConsumerWidget {
               const SliverToBoxAdapter(
                 child: ListMessage(
                   icon: PhosphorIconsRegular.forkKnife,
+                  veggie: VeggieFor.emptyDay,
                   title: 'Nothing logged on this day',
                   message:
                       'Open a product and tap "I ate this", or use quick '
@@ -148,6 +152,7 @@ class DiaryScreen extends ConsumerWidget {
                 SliverToBoxAdapter(
                   child: ListMessage(
                     icon: PhosphorIconsRegular.warningCircle,
+                    veggie: VeggieFor.error,
                     title: 'The history could not be read.',
                   ),
                 ),
@@ -157,6 +162,7 @@ class DiaryScreen extends ConsumerWidget {
                   const SliverToBoxAdapter(
                     child: ListMessage(
                       icon: PhosphorIconsRegular.clockCounterClockwise,
+                      veggie: VeggieFor.noScans,
                       title: 'No scans yet',
                       message: 'Scanned products appear here, also offline.',
                     ),
@@ -234,13 +240,21 @@ class _DayEntriesState extends ConsumerState<_DayEntries> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
               child: Row(
                 children: [
+                  VeggieArt(mealVeggie(meal), size: 32, pop: false),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Semantics(
                       header: true,
                       child: Text(meal.label, style: textTheme.titleSmall),
                     ),
                   ),
-                  Text('$kcal kcal', style: textTheme.bodySmall),
+                  Flexible(
+                    child: Text(
+                      '$kcal kcal',
+                      textAlign: TextAlign.end,
+                      style: textTheme.bodySmall,
+                    ),
+                  ),
                 ],
               ),
             ),

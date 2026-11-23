@@ -7,6 +7,7 @@ import 'package:qout/core/api/qout_api.dart' show Grade;
 import 'package:qout/core/ui/entrance.dart';
 import 'package:qout/core/ui/section_card.dart';
 import 'package:qout/core/ui/state_message.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/diary/data/diary_repository.dart';
 import 'package:qout/features/diary/presentation/diary_format.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
@@ -49,6 +50,7 @@ class ProgressScreen extends ConsumerWidget {
             child: switch ((entries, needs)) {
               (AsyncError(), _) => const StateMessage(
                 icon: PhosphorIconsRegular.warningCircle,
+                veggie: VeggieFor.error,
                 title: 'The diary could not be read',
                 message: 'Try again later.',
               ),
@@ -127,6 +129,7 @@ class _Week extends StatelessWidget {
     if (week.isEmpty) {
       return const StateMessage(
         icon: PhosphorIconsRegular.chartLineUp,
+        veggie: VeggieFor.emptyWeek,
         title: 'Nothing logged this week',
         message:
             'Log what you eat with "I ate this" on a product or a quick add; '

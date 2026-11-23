@@ -11,6 +11,7 @@ import 'package:qout/core/database/database.dart';
 import 'package:qout/core/database/database_provider.dart';
 import 'package:qout/core/ui/insets.dart';
 import 'package:qout/core/ui/state_message.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/outbox/data/outbox.dart';
 import 'package:qout/features/outbox/domain/queued_contribution.dart';
 import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
@@ -75,6 +76,7 @@ class OutboxScreen extends ConsumerWidget {
       body: switch (entries) {
         AsyncData(value: final rows) when rows.isEmpty => const StateMessage(
           icon: PhosphorIconsRegular.checkCircle,
+          veggie: VeggieFor.allSent,
           title: 'Nothing waiting',
           message: 'Everything has been sent.',
         ),
@@ -99,6 +101,7 @@ class OutboxScreen extends ConsumerWidget {
         ),
         AsyncError() => const StateMessage(
           icon: PhosphorIconsRegular.warningCircle,
+          veggie: VeggieFor.error,
           title: 'Could not read the queue.',
         ),
         _ => const Center(child: CircularProgressIndicator()),

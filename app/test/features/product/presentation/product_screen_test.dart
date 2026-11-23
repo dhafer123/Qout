@@ -9,6 +9,7 @@ import 'package:qout/app/router.dart';
 import 'package:qout/core/api/api_providers.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/core/database/database.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/auth/presentation/sign_in_screen.dart';
 import 'package:qout/features/contribute/presentation/contribute_screen.dart';
@@ -26,6 +27,7 @@ import '../../../helpers/fake_scanner_platform.dart';
 import '../../../helpers/fixtures.dart';
 import '../../../helpers/in_memory_token_store.dart';
 import '../../../helpers/pump_app.dart';
+import '../../../helpers/veggie_finder.dart';
 
 final _fetchedAt = DateTime.utc(2026, 11, 12, 18);
 
@@ -441,6 +443,7 @@ void main() {
 
       expect(find.text('We do not know this product yet'), findsOneWidget);
       expect(find.textContaining('Barcode 6191234567897'), findsOneWidget);
+      expect(findVeggie(VeggieFor.unknown), findsOneWidget);
 
       await tester.tap(find.text('Add this product'));
       await tester.pumpAndSettle();

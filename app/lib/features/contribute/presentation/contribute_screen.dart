@@ -9,6 +9,7 @@ import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart' show PhotoKind;
 import 'package:qout/core/photos/label_photo_picker.dart';
 import 'package:qout/core/ui/state_message.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/contribute/presentation/contribute_labels.dart';
 import 'package:qout/features/contribute/presentation/contribution_controller.dart';
 import 'package:qout/features/contribute/presentation/review_form.dart';
@@ -260,6 +261,7 @@ class _Done extends StatelessWidget {
       icon: savedReason == null
           ? PhosphorIconsRegular.checkCircle
           : PhosphorIconsRegular.cloudArrowUp,
+      veggie: VeggieFor.thanks,
       title: 'Thank you!',
       message: savedReason == null
           ? completing

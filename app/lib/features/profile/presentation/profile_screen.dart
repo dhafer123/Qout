@@ -12,6 +12,7 @@ import 'package:qout/core/ui/fading_rule.dart';
 import 'package:qout/core/ui/insets.dart';
 import 'package:qout/core/ui/section_card.dart';
 import 'package:qout/core/ui/state_message.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
 import 'package:qout/features/diary/data/diary_repository.dart';
@@ -41,6 +42,7 @@ class ProfileScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => const StateMessage(
           icon: PhosphorIconsRegular.warningCircle,
+          veggie: VeggieFor.error,
           title: 'The profile could not be read',
           message: 'Try again later.',
         ),
