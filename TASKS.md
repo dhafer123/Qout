@@ -12,6 +12,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Open in Phase 4c: the product screen's large photo header and green grade pill (T41 item, still unticked below).
 - Done 2026-11-23 from Dhafer's phone test: dark theme without the neon green fills, new animated welcome screens, vegetable stickers and a warmer theme in both modes (notes under T41). Waiting for the rest of his feedback.
 - Done 2026-11-23: T43b (appearance: system, light or dark, on the Profile tab).
+- Planned 2026-11-23: T43c (profile photo).
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
 
@@ -391,7 +392,15 @@ Asked for after phone testing (2026-11-23): the app only follows the phone's dar
 - [x] An app preference, not personal data: signing out, deleting the profile or the diary keeps it
 - Tests: **U** settings repository (round trip, unknown or unreadable value → System), theme notifier (change applies, a failed save reverts and reports); **D** v5 → v6 migration (data kept, System by default); **W** the card shows the current choice, choosing Dark/Light switches the app's theme, the choice is used on the next start, deleting the profile keeps it; layout and accessibility in both themes.
 - Done (2026-11-23): app 1327 tests. `AppSettings` table (one row, id 1, `theme_mode` as plain text so an unknown value reads as System) and `SettingsDao`; schema v6 with `schema_v5.sql` fixture and migration test. `features/settings/`: `SettingsRepository` (`parseThemeMode`; a read failure gives System), `initialThemeModeProvider` (read in `main()`, System in tests), `themeModeProvider` (`ThemeModeController.choose`: applies at once, saves, brings the previous mode back on a failed save unless another choice was made meanwhile; the card then shows "The appearance could not be saved"), `AppearanceCard` after "Additives you avoid". `MaterialApp.themeMode` follows it; the system bars already follow the app's theme. The label OCR test centres its row before tapping (the card pushed it under the navigation bar). Checked on Dhafer's phone: Light on a dark phone switches at once.
-- Follow-up: the Android splash screen is drawn before Flutter starts, so it still follows the phone's mode (with the phone dark and the app on Light, a dark splash shows for a moment). Fixing it needs native code (e.g. saving the choice where `MainActivity` can read it and calling `AppCompatDelegate.setDefaultNightMode`).
+- Follow-up (T43b): the Android splash screen is drawn before Flutter starts, so it still follows the phone's mode (with the phone dark and the app on Light, a dark splash shows for a moment). Fixing it needs native code (e.g. saving the choice where `MainActivity` can read it and calling `AppCompatDelegate.setDefaultNightMode`).
+
+### T43c · Profile photo
+Asked for on 2026-11-23: the avatar only shows the first letter of the name.
+- [ ] Tap the avatar on the Profile tab: take a photo, choose one from the gallery, or remove it
+- [ ] The photo replaces the initial on the Profile header and the Today greeting; the initial (or the person icon) stays the fallback
+- [ ] Stays on the phone: a reduced copy (512 px, JPEG) in the app's documents folder, its file name in the profile (drift, schema v7); never uploaded
+- [ ] Personal data: deleting the profile deletes the photo too
+- Tests: **U** photo store (copy, replace removes the old file, remove), repository (save, remove, delete profile removes the file); **D** v6 → v7 migration; **W** pick from gallery/camera shows the photo on Profile and Today, cancel changes nothing, remove brings the initial back, a missing file falls back to the initial; layout and accessibility in both themes.
 
 
 ---
