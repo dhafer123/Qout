@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/app_shell.dart';
 import 'package:qout/app/router.dart';
+import 'package:qout/app/theme.dart';
 import 'package:qout/features/diary/presentation/diary_screen.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/insights/presentation/progress_screen.dart';
@@ -103,6 +104,68 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.byType(QoutNavBar), findsOneWidget);
+  });
+
+  testWidgets('every tab shows its label; the active one has a pill', (
+    tester,
+  ) async {
+    await tester.pumpQoutApp();
+    for (final label in ['Today', 'Diary', 'Progress', 'Profile']) {
+      expect(
+        find.descendant(
+          of: find.byType(QoutNavBar),
+          matching: find.text(label),
+        ),
+        findsOneWidget,
+        reason: label,
+      );
+    }
+
+    Color? pill(AppTab tab) {
+      final box = tester.widget<AnimatedContainer>(
+        find.byKey(ValueKey('tab-pill-${tab.name}')),
+      );
+      return (box.decoration as BoxDecoration?)?.color;
+    }
+
+    final palette = QoutPalette.of(tester.element(find.byType(QoutNavBar)));
+    final green = Theme.of(
+      tester.element(find.byType(QoutNavBar)),
+    ).colorScheme.primary;
+
+    expect(pill(AppTab.today), palette.tag);
+    expect(pill(AppTab.diary), Colors.transparent);
+    // Solid green is for the Scan button only (T43f).
+    expect(pill(AppTab.today), isNot(green));
+
+    await openTab(tester, AppTab.progress);
+    expect(pill(AppTab.progress), palette.tag);
+    expect(pill(AppTab.today), Colors.transparent);
+  });
+
+  testWidgets('tabs are named and say which is selected', (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpQoutApp();
+    expect(
+      tester.getSemantics(tab(AppTab.today)),
+      matchesSemantics(
+        label: 'Today',
+        isButton: true,
+        isSelected: true,
+        hasSelectedState: true,
+        hasTapAction: true,
+      ),
+    );
+    expect(
+      tester.getSemantics(tab(AppTab.diary)),
+      matchesSemantics(
+        label: 'Diary',
+        isButton: true,
+        hasSelectedState: true,
+        hasTapAction: true,
+      ),
+    );
+    handle.dispose();
   });
 
   for (final width in [320.0, 360.0, 412.0]) {

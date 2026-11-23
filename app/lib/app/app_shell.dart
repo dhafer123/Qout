@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
@@ -53,9 +52,9 @@ class AppShell extends StatelessWidget {
   }
 }
 
-/// Today · Diary | raised Scan | Progress · Profile. The active tab is a
-/// green pill with its label (`google_nav_bar`); the bar is two halves so
-/// the Scan button stays in the middle whatever the pill's width.
+/// Today · Diary | raised Scan | Progress · Profile. Every tab shows its
+/// icon and label; the active one has a soft tinted pill behind its icon
+/// (T43f). Solid green is kept for the Scan button alone.
 class QoutNavBar extends StatelessWidget {
   const QoutNavBar({
     required this.current,
@@ -69,11 +68,6 @@ class QoutNavBar extends StatelessWidget {
   final VoidCallback onScan;
 
   static const double scanSize = 60;
-  static const double _iconSize = 22;
-
-  /// Around each icon: 22 + 2 × 13 = 48 px, the smallest touch target.
-  static const double _tabPadding = 13;
-  static const double _gap = 6;
 
   @override
   Widget build(BuildContext context) {
@@ -82,70 +76,12 @@ class QoutNavBar extends StatelessWidget {
     final palette = QoutPalette.of(context);
     final dark = theme.brightness == Brightness.dark;
 
-    final labelStyle = theme.textTheme.labelMedium?.copyWith(
-      color: scheme.onPrimary,
-    );
-
-    // Labels show when the widest one fits next to the other tab's icon;
-    // on a narrow screen (or with large text) the pills keep only their
-    // icons. Decided per half, whichever tab is active, so a pill shrinking
-    // away never needs more room than the half has. Each tab stays at least
-    // 48 px wide.
-    Widget half(List<AppTab> tabs) => LayoutBuilder(
-      builder: (context, constraints) {
-        const iconBox = _iconSize + 2 * _tabPadding;
-        var widest = 0.0;
-        for (final tab in tabs) {
-          final painter = TextPainter(
-            text: TextSpan(text: tab.label, style: labelStyle),
-            textDirection: Directionality.of(context),
-            textScaler: MediaQuery.textScalerOf(context),
-            maxLines: 1,
-          )..layout();
-          if (painter.width > widest) widest = painter.width;
-          painter.dispose();
-        }
-        final labels =
-            iconBox * tabs.length + _gap + widest + 8 <= constraints.maxWidth;
-        return GNav(
-          selectedIndex: tabs.indexOf(current), // -1: none on this side
-          onTabChange: (index) => onTab(tabs[index]),
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          gap: labels ? _gap : 0,
-          iconSize: _iconSize,
-          padding: const EdgeInsets.symmetric(
-            horizontal: _tabPadding,
-            vertical: _tabPadding,
-          ),
-          duration: const Duration(milliseconds: 250),
-          tabBorderRadius: 24,
-          color: palette.muted,
-          activeColor: scheme.onPrimary,
-          tabBackgroundColor: scheme.primary,
-          rippleColor: palette.accent.withValues(alpha: 0.12),
-          hoverColor: palette.accent.withValues(alpha: 0.08),
-          textStyle: labelStyle,
-          tabs: [
-            for (final tab in tabs)
-              GButton(
-                key: ValueKey('tab-${tab.name}'),
-                icon: tab.icon,
-                // The package's own label sits outside the tappable node,
-                // and an inactive tab hides its text: the icon names it.
-                leading: Icon(
-                  tab == current ? tab.activeIcon : tab.icon,
-                  size: _iconSize,
-                  color: tab == current ? scheme.onPrimary : palette.muted,
-                  semanticLabel: tab == current && labels
-                      ? null // the visible label reads it
-                      : tab.label,
-                ),
-                text: labels ? tab.label : '',
-                semanticLabel: '',
-              ),
-          ],
-        );
-      },
+    Widget tab(AppTab tab) => Expanded(
+      child: _Tab(
+        tab: tab,
+        active: tab == current,
+        onTap: () => onTab(tab),
+      ),
     );
 
     // Labels stay readable at large text sizes without pushing the bar
@@ -170,16 +106,82 @@ class QoutNavBar extends StatelessWidget {
         child: SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+            padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
             child: Row(
               children: [
-                Expanded(child: half(const [AppTab.today, AppTab.diary])),
+                tab(AppTab.today),
+                tab(AppTab.diary),
                 _ScanButton(onPressed: onScan),
-                Expanded(
-                  child: half(const [AppTab.progress, AppTab.profile]),
-                ),
+                tab(AppTab.progress),
+                tab(AppTab.profile),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One tab: its icon (on a tinted pill when active) and its label under it.
+class _Tab extends StatelessWidget {
+  const _Tab({required this.tab, required this.active, required this.onTap});
+
+  final AppTab tab;
+  final bool active;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final palette = QoutPalette.of(context);
+    final color = active ? palette.accentText : palette.muted;
+    return Semantics(
+      container: true,
+      button: true,
+      selected: active,
+      label: tab.label,
+      onTap: onTap,
+      excludeSemantics: true,
+      child: InkWell(
+        key: ValueKey('tab-${tab.name}'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 56),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedContainer(
+                key: ValueKey('tab-pill-${tab.name}'),
+                duration: const Duration(milliseconds: 200),
+                width: 52,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: active ? palette.tag : Colors.transparent,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Icon(
+                  active ? tab.activeIcon : tab.icon,
+                  size: 22,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  tab.label,
+                  maxLines: 1,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontSize: 12,
+                    color: color,
+                    fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
