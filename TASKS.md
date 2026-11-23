@@ -406,7 +406,7 @@ Asked for on 2026-11-23: the avatar only shows the first letter of the name.
 
 ### T43d · Profile tab order
 Asked for on 2026-11-23 after trying the photo.
-- [x] Your daily needs right under the name card; the account card (signed in as / Sign out, or Sign in) last, under the delete buttons and the developer card
+- [x] Your daily needs right under the name card; at the bottom the developer card, the account card (signed in as / Sign out, or Sign in), then Delete my diary and Delete my profile last
 - [x] The note under the BMI ("BMI does not tell muscle from fat; it is shown for information only.") removed; the BMI row stays
 - Tests: **W** the cards' order and no BMI note; tests that sign in or out from the Profile tab scroll to the account card first (`scrollToCentre` in `pump_app.dart`, clear of the navigation bar).
 - Done (2026-11-23): app 1354 tests.

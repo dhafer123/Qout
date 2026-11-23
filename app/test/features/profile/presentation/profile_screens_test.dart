@@ -112,8 +112,8 @@ void main() {
       await tester.unmountQoutApp();
     });
 
-    testWidgets('order: needs under the name, the account last; no BMI '
-        'note', (tester) async {
+    testWidgets('order: needs under the name, the account then the '
+        'deletes last; no BMI note', (tester) async {
       await repository.save(_profile);
       await open(tester, AppRoutes.profile);
       // Tall enough for every card to be built.
@@ -126,10 +126,10 @@ void main() {
         'Your daily needs',
         'About you',
         'Appearance',
-        'Delete my diary',
-        'Delete my profile',
         'Developer',
         'Not signed in',
+        'Delete my diary',
+        'Delete my profile',
       ].map(top).toList();
       expect(order, [...order]..sort());
 

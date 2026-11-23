@@ -191,11 +191,7 @@ void main() {
   testWidgets('deleting the profile deletes the photo', (tester) async {
     await open(tester);
     await choose(tester, 'Choose from gallery');
-    await tester.scrollUntilVisible(
-      find.text('Delete my profile'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
+    await tester.scrollToCentre(find.text('Delete my profile'));
     await tester.tap(find.text('Delete my profile'));
     await tester.pumpAndSettle();
     expect(find.textContaining('your photo'), findsOneWidget);

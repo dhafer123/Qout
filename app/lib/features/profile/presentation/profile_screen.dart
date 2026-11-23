@@ -62,11 +62,11 @@ class ProfileScreen extends ConsumerWidget {
                 if (profile != null) _About(profile),
                 const _AvoidedAdditives(),
                 const AppearanceCard(),
-                const _DeleteDiary(),
-                if (profile != null) const _DeleteProfile(),
                 if (dev) const _Developer(),
                 // Signing in or out, last (T43d).
                 const _Account(),
+                const _DeleteDiary(),
+                if (profile != null) const _DeleteProfile(),
               ].indexed)
                 Entrance(index: i, child: section),
             ],
