@@ -348,6 +348,7 @@ class _MealRow extends StatelessWidget {
             label: _kcalOf(entries),
             excludeSemantics: true,
             child: AnimatedValue(
+              id: 'meal-kcal-${meal.name}',
               value: totalsOf(entries).of(Nutrient.energy),
               delay: const Duration(milliseconds: 350),
               builder: (context, kj) => Text(

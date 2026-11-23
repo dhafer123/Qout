@@ -5,7 +5,8 @@ import 'package:flutter/widgets.dart';
 /// Starts the entrance clock for the content below: [Entrance] widgets
 /// built within [Entrance.window] of it appearing fade and rise into place.
 /// Later builds (a row scrolled back into view, a refresh) show at once, so
-/// nothing plays twice.
+/// nothing plays twice. Also remembers which numbers have run
+/// ([Entrance.firstShow]) for as long as the screen lives.
 class EntranceScope extends StatefulWidget {
   const EntranceScope({required this.child, super.key});
 
@@ -17,16 +18,22 @@ class EntranceScope extends StatefulWidget {
 
 class _EntranceScopeState extends State<EntranceScope> {
   final Stopwatch _clock = Stopwatch()..start();
+  final Set<Object> _shown = {};
 
   @override
   Widget build(BuildContext context) =>
-      _EntranceClock(clock: _clock, child: widget.child);
+      _EntranceClock(clock: _clock, shown: _shown, child: widget.child);
 }
 
 class _EntranceClock extends InheritedWidget {
-  const _EntranceClock({required this.clock, required super.child});
+  const _EntranceClock({
+    required this.clock,
+    required this.shown,
+    required super.child,
+  });
 
   final Stopwatch clock;
+  final Set<Object> shown;
 
   @override
   bool updateShouldNotify(_EntranceClock oldWidget) => clock != oldWidget.clock;
@@ -50,16 +57,18 @@ class Entrance extends StatelessWidget {
   static const int _maxStaggered = 6;
   static const double _rise = 14;
 
-  /// Whether [context]'s screen is opening: inside an [EntranceScope]
-  /// shown less than [window] ago, and the phone allows motion. What plays
-  /// when a screen opens plays only then, never when a row scrolls back.
-  static bool isOpening(BuildContext context) {
-    final clock = context
-        .dependOnInheritedWidgetOfExactType<_EntranceClock>()
-        ?.clock;
-    return clock != null &&
-        clock.elapsed <= window &&
-        !MediaQuery.disableAnimationsOf(context);
+  /// Whether [id] is shown for the first time on [context]'s screen (inside
+  /// an [EntranceScope], the phone allowing motion), and notes that it now
+  /// has been: true once per screen, whenever its data arrives; false when
+  /// it is built again (scrolled back into view).
+  static bool firstShow(BuildContext context, Object id) {
+    final shown = context
+        .getInheritedWidgetOfExactType<_EntranceClock>()
+        ?.shown;
+    if (shown == null || MediaQuery.disableAnimationsOf(context)) {
+      return false;
+    }
+    return shown.add(id);
   }
 
   @override

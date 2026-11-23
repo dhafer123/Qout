@@ -440,7 +440,8 @@ Asked for on 2026-11-23: animate the bars and the ring on Today (a count-up).
 - [x] Each meal's kcal counts up
 - [x] Plays when Today opens, and from the old to the new value after logging; not when a card scrolls back or a tab is revisited; final values at once with reduced motion; screen readers always get the final values
 - Tests: **W** `AnimatedValue` (from 0 on opening, after its delay; old → new on change; at once outside an opening screen and with reduced motion); the ring mid-way and settled; the salt bar amber on its way to red; spoken labels final from the start; reduced motion.
-- Done (2026-11-23): app 1392 tests. `core/ui/animated_value.dart` (`AnimatedValue`, a `TweenAnimationBuilder` that starts from 0 only while `Entrance.isOpening`), `Entrance.isOpening`; `EnergyRing.duration` / `delay`, `NutrientBar.index` / `stagger`. The "Above your daily reference" line uses the final value so the card's height never jumps.
+- Done (2026-11-23): app 1394 tests. `core/ui/animated_value.dart` (`AnimatedValue`, a `TweenAnimationBuilder` that starts from 0 the first time its `id` shows on the screen, `Entrance.firstShow`); `EnergyRing.duration` / `delay`, `NutrientBar.index` / `stagger`. The "Above your daily reference" line uses the final value so the card's height never jumps.
+- Fixed after recording the phone's screen (2026-11-23): the first version only counted up within the screen's 0.7 s opening window, but on the phone the card appears only once the database has answered, later than that, so nothing moved. Now each number runs the first time it shows on its screen, whenever its data arrives; the screen's `EntranceScope` remembers what has run, so nothing replays when a card scrolls back. Regression test: data arriving 3 s late still counts up. In a debug build the first second after a start stutters, so only the end of the count-up may be seen; release builds don't.
 
 
 ---

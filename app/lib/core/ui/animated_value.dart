@@ -1,13 +1,16 @@
 import 'package:flutter/widgets.dart';
 import 'package:qout/core/ui/entrance.dart';
 
-/// [builder] with a number running to [value] (T43g): from 0 when its
-/// screen opens ([Entrance.isOpening]), from the previous value when it
-/// changes (something logged), shown at once otherwise or when the phone
-/// asks for reduced motion. Readers of the screen get the final values from
-/// the caller's semantics, never a number on its way.
-class AnimatedValue extends StatelessWidget {
+/// [builder] with a number running to [value] (T43g): from 0 the first time
+/// [id] shows on its screen ([Entrance.firstShow]: when its data arrives,
+/// however long that takes), from the previous value when it changes
+/// (something logged), and shown at once when built again (scrolled back
+/// into view), outside an [EntranceScope] or when the phone asks for reduced
+/// motion. Readers of the screen get the final values from the caller's
+/// semantics, never a number on its way.
+class AnimatedValue extends StatefulWidget {
   const AnimatedValue({
+    required this.id,
     required this.value,
     required this.builder,
     this.duration = const Duration(milliseconds: 700),
@@ -15,6 +18,8 @@ class AnimatedValue extends StatelessWidget {
     super.key,
   });
 
+  /// What this number is on its screen ("ring", "bar-salt"...).
+  final Object id;
   final double value;
   final Widget Function(BuildContext context, double value) builder;
   final Duration duration;
@@ -23,23 +28,36 @@ class AnimatedValue extends StatelessWidget {
   final Duration delay;
 
   @override
+  State<AnimatedValue> createState() => _AnimatedValueState();
+}
+
+class _AnimatedValueState extends State<AnimatedValue> {
+  /// Where the number starts, decided once.
+  double? _begin;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _begin ??= Entrance.firstShow(context, widget.id) ? 0 : widget.value;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (MediaQuery.disableAnimationsOf(context)) return builder(context, value);
-    final total = delay + duration;
+    if (MediaQuery.disableAnimationsOf(context)) {
+      return widget.builder(context, widget.value);
+    }
+    final total = widget.delay + widget.duration;
     return TweenAnimationBuilder<double>(
       // The begin only counts on the first build; later values run from
       // wherever the number is.
-      tween: Tween(
-        begin: Entrance.isOpening(context) ? 0 : value,
-        end: value,
-      ),
+      tween: Tween(begin: _begin, end: widget.value),
       duration: total,
       curve: Interval(
-        delay.inMicroseconds / total.inMicroseconds,
+        widget.delay.inMicroseconds / total.inMicroseconds,
         1,
         curve: Curves.easeOutCubic,
       ),
-      builder: (context, current, _) => builder(context, current),
+      builder: (context, current, _) => widget.builder(context, current),
     );
   }
 }

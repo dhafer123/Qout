@@ -215,6 +215,7 @@ class EnergyRing extends StatelessWidget {
           '${groupThousands(need)}.',
       excludeSemantics: true,
       child: AnimatedValue(
+        id: 'ring',
         value: eatenKj,
         duration: duration,
         delay: delay,
@@ -369,6 +370,7 @@ class NutrientBar extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: AnimatedValue(
+          id: 'bar-${nutrient.name}',
           value: total,
           delay: EnergyRing.delay + stagger * index,
           builder: (context, shown) {
