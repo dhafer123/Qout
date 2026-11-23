@@ -22,6 +22,7 @@ import 'package:qout/features/product/domain/score_explanation.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
 import 'package:qout/features/product/presentation/product_photo.dart';
 import 'package:qout/features/profile/data/profile_repository.dart';
+import 'package:qout/features/profile/presentation/profile_avatar.dart';
 import 'package:qout/features/scan/domain/barcode.dart';
 import 'package:qout/health/advice.dart' show Nutrient;
 import 'package:qout/health/diary.dart';
@@ -97,29 +98,11 @@ class _Greeting extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       child: Row(
         children: [
-          ExcludeSemantics(
-            child: SizedBox.square(
-              dimension: 48,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: palette.tag,
-                ),
-                child: Center(
-                  child: name == null
-                      ? Icon(PhosphorIconsRegular.user, color: palette.onTag)
-                      : Text(
-                          name.characters.first.toUpperCase(),
-                          style: TextStyle(
-                            color: palette.onTag,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            height: 1,
-                          ),
-                        ),
-                ),
-              ),
-            ),
+          ProfileAvatar(
+            size: 48,
+            firstName: name,
+            background: palette.tag,
+            foreground: palette.onTag,
           ),
           const SizedBox(width: 12),
           Expanded(

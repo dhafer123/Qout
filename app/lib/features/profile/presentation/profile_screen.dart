@@ -20,6 +20,7 @@ import 'package:qout/features/product/presentation/product_labels.dart'
     show formatAmount, kjPerKcalForDisplay;
 import 'package:qout/features/profile/data/profile_repository.dart';
 import 'package:qout/features/profile/domain/profile_form.dart';
+import 'package:qout/features/profile/presentation/profile_avatar.dart';
 import 'package:qout/features/profile/presentation/profile_labels.dart';
 import 'package:qout/features/profile/presentation/welcome_screen.dart';
 import 'package:qout/features/settings/presentation/appearance_card.dart';
@@ -118,32 +119,16 @@ class _Header extends ConsumerWidget {
           padding: const EdgeInsets.all(18),
           child: Row(
             children: [
-              ExcludeSemantics(
-                child: SizedBox.square(
-                  dimension: 56,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: onBanner.withValues(alpha: 0.18),
-                      border: Border.all(
-                        color: onBanner.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    child: Center(
-                      child: name == null
-                          ? Icon(PhosphorIconsRegular.user, color: onBanner)
-                          : Text(
-                              name.characters.first.toUpperCase(),
-                              style: TextStyle(
-                                color: onBanner,
-                                fontSize: 24,
-                                fontWeight: FontWeight.w600,
-                                height: 1,
-                              ),
-                            ),
-                    ),
-                  ),
+              EditableProfileAvatar(
+                firstName: name,
+                background: Color.alphaBlend(
+                  onBanner.withValues(alpha: 0.18),
+                  colors.first,
                 ),
+                foreground: onBanner,
+                border: Border.all(color: onBanner.withValues(alpha: 0.6)),
+                badgeBackground: onBanner,
+                badgeForeground: colors.first,
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -685,9 +670,9 @@ class _DeleteProfile extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: const Text('Delete your profile?'),
         content: const Text(
-          'Your age, height, weight, activity, allergies and the additives you '
-          'avoid are removed from this phone. Qout then asks for a new '
-          'profile.',
+          'Your age, height, weight, activity, allergies, the additives you '
+          'avoid and your photo are removed from this phone. Qout then asks '
+          'for a new profile.',
         ),
         actions: [
           TextButton(

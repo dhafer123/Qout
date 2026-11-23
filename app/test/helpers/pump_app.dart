@@ -18,14 +18,18 @@ import 'package:qout/features/outbox/data/outbox_files.dart';
 import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
 import 'package:qout/features/product/data/alternatives_repository.dart';
+import 'package:qout/features/profile/data/profile_photo_store.dart';
 import 'package:qout/features/profile/data/profile_repository.dart';
+import 'package:qout/features/profile/presentation/profile_avatar.dart';
 import 'package:qout/health/profile.dart';
 
 import 'fake_alternatives_repository.dart';
 import 'fake_diary_repository.dart';
 import 'fake_outbox.dart';
+import 'fake_profile_photo_store.dart';
 import 'fake_scan_history_repository.dart';
 import 'in_memory_token_store.dart';
+import 'test_images.dart';
 
 extension PumpQoutApp on WidgetTester {
   /// Pumps the full app with a fixed [AppEnv] (no build flavor in tests), a
@@ -38,7 +42,8 @@ extension PumpQoutApp on WidgetTester {
   /// ([start]: home by default), the
   /// [profile] and [avoidedAdditives] (fixed values by default; with
   /// [liveProfile], read from the database and followed as it changes: call
-  /// [unmountQoutApp] at the end), and any extra provider [overrides] (fake
+  /// [unmountQoutApp] at the end), profile [photos] kept in memory (drawn as
+  /// a one-pixel image), and any extra provider [overrides] (fake
   /// repositories).
   Future<void> pumpQoutApp({
     AppFlavor flavor = AppFlavor.dev,
@@ -55,6 +60,7 @@ extension PumpQoutApp on WidgetTester {
     Set<String> avoidedAdditives = const {},
     String? firstName,
     bool liveProfile = false,
+    FakeProfilePhotoStore? photos,
     List<Override> overrides = const [],
   }) async {
     final db = database ?? _memoryDatabase();
@@ -66,8 +72,16 @@ extension PumpQoutApp on WidgetTester {
           ),
           appDatabaseProvider.overrideWithValue(db),
           startScreenProvider.overrideWithValue(start),
+          // Never the app's documents folder.
+          profilePhotoStoreProvider.overrideWithValue(
+            photos ?? FakeProfilePhotoStore(),
+          ),
+          profilePhotoImageProvider.overrideWithValue(
+            (_) => MemoryImage(onePixelPng),
+          ),
           // Not the drift streams by default (see [unmountQoutApp]).
           if (!liveProfile) ...[
+            profilePhotoProvider.overrideWith((ref) => Stream.value(null)),
             profileProvider.overrideWith((ref) => Stream.value(profile)),
             avoidedAdditivesProvider.overrideWith(
               (ref) => Stream.value(avoidedAdditives),
