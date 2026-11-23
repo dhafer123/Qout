@@ -204,6 +204,15 @@ class EnergyRing extends StatelessWidget {
     final over = left < 0;
     final big = groupThousands(left.abs());
     final word = over ? 'over' : 'left';
+    // One line beside the bars; under large text it may wrap.
+    final large = MediaQuery.textScalerOf(context).scale(10) > 13;
+    final detail = Text(
+      '${groupThousands(eaten)} eaten · ${groupThousands(need)} need',
+      key: const ValueKey('ring-detail'),
+      maxLines: large ? null : 1,
+      textAlign: TextAlign.center,
+      style: textTheme.bodySmall?.copyWith(fontFeatures: _tabular),
+    );
     return Semantics(
       container: true,
       label:
@@ -247,15 +256,13 @@ class EnergyRing extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          SizedBox(
-            width: size + 24,
-            child: Text(
-              '${groupThousands(eaten)} eaten · ${groupThousands(need)} need',
-              key: const ValueKey('ring-detail'),
-              textAlign: TextAlign.center,
-              style: textTheme.bodySmall?.copyWith(fontFeatures: _tabular),
+          if (large)
+            detail
+          else
+            SizedBox(
+              width: size + 24,
+              child: FittedBox(fit: BoxFit.scaleDown, child: detail),
             ),
-          ),
         ],
       ),
     );
@@ -356,12 +363,25 @@ class NutrientBar extends StatelessWidget {
                 ],
               )
             else
-              Row(
-                children: [
-                  Expanded(child: Text(name, style: textTheme.bodyMedium)),
-                  const SizedBox(width: 8),
-                  value,
-                ],
+              LayoutBuilder(
+                // The value against the right edge; if it doesn't fit, it
+                // shrinks a little rather than overflow.
+                builder: (context, constraints) => Row(
+                  children: [
+                    Expanded(child: Text(name, style: textTheme.bodyMedium)),
+                    const SizedBox(width: 8),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: constraints.maxWidth * 0.6,
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: value,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             const SizedBox(height: 4),
             ClipRRect(

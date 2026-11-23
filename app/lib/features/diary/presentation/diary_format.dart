@@ -24,7 +24,7 @@ String portionText(DiaryEntry entry) {
 String nutrientName(Nutrient nutrient) => switch (nutrient) {
   Nutrient.energy => 'Energy',
   Nutrient.fat => 'Fat',
-  Nutrient.saturates => 'Saturated fat',
+  Nutrient.saturates => 'Saturates',
   Nutrient.sugars => 'Sugars',
   Nutrient.salt => 'Salt',
 };

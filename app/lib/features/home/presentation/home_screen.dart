@@ -330,50 +330,56 @@ class _MealRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final count = entries.length;
+    // Against the right edge at its own width, at most 45 % of the row, so
+    // it wraps under large text rather than overflow.
+    final trailing = count == 0
+        ? TextButton.icon(
+            onPressed: () => showQuickAddSheet(context, meal: meal),
+            icon: const Icon(PhosphorIconsRegular.plus, size: 18),
+            label: Text(
+              'Add',
+              semanticsLabel: 'Add to ${meal.label.toLowerCase()}',
+            ),
+          )
+        : Text(
+            _kcalOf(entries),
+            key: ValueKey('meal-kcal-${meal.name}'),
+            textAlign: TextAlign.end,
+            style: textTheme.bodyMedium?.copyWith(
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          );
     return Padding(
       key: ValueKey('meal-row-${meal.name}'),
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          MealArt(meal),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(meal.label, style: textTheme.titleSmall),
-                Text(
-                  count == 0
-                      ? 'Nothing yet'
-                      : '$count ${count == 1 ? 'item' : 'items'}',
-                  style: textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
-          // Both shrink (and wrap) under large text rather than overflow.
-          if (count == 0)
-            Flexible(
-              child: TextButton.icon(
-                onPressed: () => showQuickAddSheet(context, meal: meal),
-                icon: const Icon(PhosphorIconsRegular.plus, size: 18),
-                label: Text(
-                  'Add',
-                  semanticsLabel: 'Add to ${meal.label.toLowerCase()}',
-                ),
-              ),
-            )
-          else
-            Flexible(
-              child: Text(
-                _kcalOf(entries),
-                textAlign: TextAlign.end,
-                style: textTheme.bodyMedium?.copyWith(
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
+      child: LayoutBuilder(
+        builder: (context, constraints) => Row(
+          children: [
+            MealArt(meal),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(meal.label, style: textTheme.titleSmall),
+                  Text(
+                    count == 0
+                        ? 'Nothing yet'
+                        : '$count ${count == 1 ? 'item' : 'items'}',
+                    style: textTheme.bodySmall,
+                  ),
+                ],
               ),
             ),
-        ],
+            const SizedBox(width: 8),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: constraints.maxWidth * 0.45,
+              ),
+              child: trailing,
+            ),
+          ],
+        ),
       ),
     );
   }

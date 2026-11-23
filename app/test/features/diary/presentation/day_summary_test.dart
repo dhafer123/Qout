@@ -63,6 +63,14 @@ void main() {
       expect(find.text('1,086 eaten · 2,000 need'), findsOneWidget);
     });
 
+    testWidgets('eaten and need on one line beside the bars', (tester) async {
+      await _pump(tester, _totals({Nutrient.energy: 1086 * 4.184}));
+      final detail = tester.widget<Text>(
+        find.byKey(const ValueKey('ring-detail')),
+      );
+      expect(detail.maxLines, 1);
+    });
+
     testWidgets('past the need: how far over, not in red', (tester) async {
       await _pump(tester, _totals({Nutrient.energy: 2214 * 4.184}));
       expect(find.text('214'), findsOneWidget);
@@ -140,7 +148,7 @@ void main() {
 
     testWidgets('name and value on one line', (tester) async {
       await _pump(tester, _totals({Nutrient.saturates: 9.1}));
-      final name = tester.getCenter(find.text('Saturated fat'));
+      final name = tester.getCenter(find.text('Saturates'));
       final value = tester.getCenter(find.text('9.1 / 20 g'));
       expect(value.dy, name.dy);
       expect(value.dx, greaterThan(name.dx));

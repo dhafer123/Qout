@@ -241,24 +241,31 @@ class _DayEntriesState extends ConsumerState<_DayEntries> {
               child: Padding(
                 key: ValueKey('meal-heading-${meal.name}'),
                 padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
-                child: Row(
-                  children: [
-                    MealArt(meal),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Semantics(
-                        header: true,
-                        child: Text(meal.label, style: textTheme.titleSmall),
+                // The kcal against the right edge, at most 45 % of the row.
+                child: LayoutBuilder(
+                  builder: (context, constraints) => Row(
+                    children: [
+                      MealArt(meal),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Semantics(
+                          header: true,
+                          child: Text(meal.label, style: textTheme.titleSmall),
+                        ),
                       ),
-                    ),
-                    Flexible(
-                      child: Text(
-                        '$kcal kcal',
-                        textAlign: TextAlign.end,
-                        style: textTheme.bodySmall,
+                      const SizedBox(width: 8),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: constraints.maxWidth * 0.45,
+                        ),
+                        child: Text(
+                          '$kcal kcal',
+                          textAlign: TextAlign.end,
+                          style: textTheme.bodySmall,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

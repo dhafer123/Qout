@@ -114,6 +114,17 @@ void main() {
       // Empty meals offer "+ Add".
       expect(inRow(Meal.lunch, find.text('Nothing yet')), findsOneWidget);
       expect(inRow(Meal.dinner, find.text('Add')), findsOneWidget);
+
+      // kcal and + Add sit against the row's right edge.
+      final row = tester.getRect(find.byKey(const ValueKey('meal-row-lunch')));
+      final kcal = tester.getRect(
+        find.byKey(const ValueKey('meal-kcal-breakfast')),
+      );
+      final add = tester.getRect(
+        inRow(Meal.dinner, find.byWidgetPredicate((w) => w is TextButton)),
+      );
+      expect(kcal.right, closeTo(row.right, 0.5));
+      expect(add.right, closeTo(row.right, 0.5));
     });
 
     testWidgets("Today: an empty meal's + Add quick adds to that meal", (
