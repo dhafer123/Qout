@@ -12,7 +12,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Open in Phase 4c: the product screen's large photo header and green grade pill (T41 item, still unticked below).
 - Done 2026-11-23 from Dhafer's phone test: dark theme without the neon green fills, new animated welcome screens, vegetable stickers and a warmer theme in both modes (notes under T41). Waiting for the rest of his feedback.
 - Done 2026-11-23: T43b (appearance: system, light or dark, on the Profile tab).
-- Done 2026-11-23: T43c (profile photo, on the phone only), T43d (Profile tab order), T43e (meal pictures and tints).
+- Done 2026-11-23: T43c (profile photo, on the phone only), T43d (Profile tab order), T43e (meal pictures), T43f (Today UI fixes from Dhafer's review).
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
 
@@ -417,6 +417,19 @@ Asked for on 2026-11-23, with pictures Dhafer supplied (he holds the rights).
 - [x] Warm meal accents: the green brand and the grounds stay; each meal has a soft tint from its picture (butter, bento pink, chip orange, tomato) behind its row on Today and its heading in the Diary, light and dark; pictures at 40 dp (were 28/32)
 - Tests: **U** every meal has its picture (PNG, size, bundled, no extra file), tints distinct and body, small, title and muted text ≥ 4.5:1 on them in both themes; **W** `MealArt` size and hidden from screen readers, Today rows and Diary headings use their meal's tint and picture; layout and accessibility in both themes.
 - Done (2026-11-23): app 1363 tests. `meal_art.dart` (`mealPicture`, `mealTint`, `MealArt`) replaces `meal_veggie.dart`; `QoutPalette` gets `breakfastTint`, `lunchTint`, `snackTint`, `dinnerTint` (light `#FCF0CF` `#FBE3EA` `#FBE6CF` `#FAE0D8`, dark `#3A3120` `#3A2530` `#3C2C1D` `#3C2521`). Corn, tomato, carrot and broccoli stickers stay in the app, no longer tied to meals. Cut with a throwaway Pillow script (flood fill from the edges, outlines stop it; not in the repo).
+- Changed by T43f (same day): the meal tints were removed again; the pictures stay.
+
+### T43f · Today screen UI fixes
+From Dhafer's review (`ui-theme-fixes.md`, 2026-11-23). Decisions: 70/100 % bar colours with sugars kept amber (H8 in `docs/specs/README.md`); the ring says "left" with "eaten · need" (energy is a need, not a goal); today's tuned colours kept and moved into Material's tokens (no `fromSeed`); own bottom bar instead of `google_nav_bar`.
+- [x] Nutrient bars coloured by status (`nutrientStatus`, `StatusColors`): green, amber from 70 %, red above 100 % (sugars stay amber); one line each, "9.1 / 33 g"; "up to", "reference" and "under" moved into an ⓘ sheet with the colours explained and "General information, not medical advice"
+- [x] Energy ring: "1,799 left" (or "214 over", not red), "1,086 eaten · 2,885 need" under it; a lighter track
+- [x] "Scan to log" removed (the bar's Scan button does it); one wide Quick add
+- [x] Bottom bar: icon and label on every tab, a soft pill behind the active icon, solid green only for Scan; `google_nav_bar` removed
+- [x] Meals on Today: one surface (no tints), dividers instead of filled rows, "2 items" under the name, kcal right-aligned, all four meals always shown, an empty one with "+ Add" (quick add on that meal)
+- [x] Tokens: `surfaceContainerHigh` for rows and chips, `StatusColors` for the bars; secondary text checked: "What are you eating today?" is 5.4:1 (light) and 7.9:1 (dark), no change needed
+- Tests: **U** `nutrientStatus` at 69.9 / 70 / 100 / 100.1 % and sugars above 100 %, `groupThousands`; **W** bar colours in both themes, one wording and one line, the ⓘ sheet, ring "left" / "over" and its spoken sentence, no "Scan to log", all four meals with "+ Add" quick adding to that meal, tab labels, the active pill, tabs named and selected for screen readers; layout and accessibility in both themes at ×2 text.
+- Done (2026-11-23): app 1377 tests. Found on the way: the new tabs and the profile avatar needed their own tap action for screen readers (`excludeSemantics` drops the InkWell's).
+- Not done: "Search food" (no food search exists; a wide Quick add instead).
 
 
 ---
