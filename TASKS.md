@@ -461,6 +461,8 @@ Asked for on 2026-11-23: animate the bars and the ring on Today (a count-up).
 - [ ] Declare `android.permission.INTERNET` in the main manifest: only the debug/profile manifests have it, so a release build has no network (found 2026-11-13). Release builds keep cleartext HTTP blocked (only debug allows it, for local backends)
 - Acceptance: tag → a GitHub Release whose signed APK installs and works on a real phone. (I create the keystore.)
 
+- Note (2026-11-23): the first release build (`flutter run --release --flavor dev`) failed in R8 on ML Kit's optional Chinese/Devanagari/Japanese/Korean recognizers; `android/app/proguard-rules.pro` now marks them absent on purpose (`-dontwarn`). Release builds still sign with the debug key and block cleartext, so on a phone they can't reach a local `http://` backend.
+
 ### T33b · Download website
 - [ ] Small static site (plain HTML/CSS, no framework, English) in `site/`, deployed to **GitHub Pages** by GitHub Actions
 - [ ] Home page: what Qout does, screenshots, **Download** button for the latest APK (GitHub's stable "latest release" download link, so the site doesn't change per release) with version, size, date and SHA-256
