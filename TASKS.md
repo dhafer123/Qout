@@ -12,7 +12,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Open in Phase 4c: the product screen's large photo header and green grade pill (T41 item, still unticked below).
 - Done 2026-11-23 from Dhafer's phone test: dark theme without the neon green fills, new animated welcome screens, vegetable stickers and a warmer theme in both modes (notes under T41). Waiting for the rest of his feedback.
 - Done 2026-11-23: T43b (appearance: system, light or dark, on the Profile tab).
-- Done 2026-11-23: T43c (profile photo, on the phone only), T43d (Profile tab order), T43e (meal pictures), T43f (Today UI fixes from Dhafer's review).
+- Done 2026-11-23: T43c (profile photo, on the phone only), T43d (Profile tab order), T43e (meal pictures), T43f (Today UI fixes from Dhafer's review), T43g (animated Today summary).
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
 
@@ -432,6 +432,15 @@ From Dhafer's review (`ui-theme-fixes.md`, 2026-11-23). Decisions: 70/100 % bar 
 - Not done: "Search food" (no food search exists; a wide Quick add instead).
 - After checking on the phone (2026-11-23): "Saturated fat" is now "Saturates" (one line); the ring's "eaten · need" stays on one line (shrinks slightly if needed, may wrap under large text); the kcal on Today's meal rows and the Diary's meal headings sits against the right edge (at most 45 % of the row); a bar's value shrinks a little rather than overflow.
 - Bug found when installing on the phone (2026-11-23): an older build (the APK installed earlier, opened from the launcher) opened the v7 database and wrote version 6 back; the v7 build then added `photo_file` again and the database could not be opened (no profile, "The history could not be read"). Every migration step now checks that its table or column is missing first (`_hasTable`, `_hasColumn`). Regression test: today's schema marked as each older version (1–6) opens, keeps its rows and ends at the current schema. Matters for T33 too: an older APK installed over a newer one does the same.
+
+### T43g · Animated Today summary
+Asked for on 2026-11-23: animate the bars and the ring on Today (a count-up).
+- [x] The ring sweeps to today's share (0.9 s, after the card fades in); the big number counts down from the need to what is left, "eaten" counts up
+- [x] Each nutrient bar fills in turn (0.7 s, 80 ms apart), its value counting up and its colour following the fill (green, amber past 70 %, red past 100 %)
+- [x] Each meal's kcal counts up
+- [x] Plays when Today opens, and from the old to the new value after logging; not when a card scrolls back or a tab is revisited; final values at once with reduced motion; screen readers always get the final values
+- Tests: **W** `AnimatedValue` (from 0 on opening, after its delay; old → new on change; at once outside an opening screen and with reduced motion); the ring mid-way and settled; the salt bar amber on its way to red; spoken labels final from the start; reduced motion.
+- Done (2026-11-23): app 1392 tests. `core/ui/animated_value.dart` (`AnimatedValue`, a `TweenAnimationBuilder` that starts from 0 only while `Entrance.isOpening`), `Entrance.isOpening`; `EnergyRing.duration` / `delay`, `NutrientBar.index` / `stagger`. The "Above your daily reference" line uses the final value so the card's height never jumps.
 
 
 ---

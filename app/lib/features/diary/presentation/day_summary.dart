@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/theme.dart';
+import 'package:qout/core/ui/animated_value.dart';
 import 'package:qout/features/diary/presentation/diary_format.dart';
 import 'package:qout/health/advice.dart' show Nutrient;
 import 'package:qout/health/diary.dart';
@@ -38,8 +39,9 @@ class DaySummaryCard extends StatelessWidget {
     );
     final bars = Column(
       children: [
-        for (final nutrient in _bars)
+        for (final (index, nutrient) in _bars.indexed)
           NutrientBar(
+            index: index,
             nutrient: nutrient,
             total: totals.of(nutrient),
             daily: dailyAmount(needs, nutrient),
@@ -193,17 +195,42 @@ class EnergyRing extends StatelessWidget {
 
   static const double size = 128;
 
+  /// The ring sweeps and the numbers run after the card has faded in
+  /// (T43g).
+  static const Duration duration = Duration(milliseconds: 900);
+  static const Duration delay = Duration(milliseconds: 250);
+
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final palette = QoutPalette.of(context);
     final eaten = kcalOf(eatenKj);
     final need = kcalOf(needKj.toDouble());
-    final share = shareOfDay(eatenKj, needKj);
     final left = need - eaten;
-    final over = left < 0;
-    final big = groupThousands(left.abs());
-    final word = over ? 'over' : 'left';
+    // Read out once, with the final values.
+    return Semantics(
+      container: true,
+      label:
+          'Energy: ${groupThousands(left.abs())} kilocalories '
+          '${left < 0 ? 'over' : 'left'}. '
+          '${groupThousands(eaten)} eaten of a daily need of '
+          '${groupThousands(need)}.',
+      excludeSemantics: true,
+      child: AnimatedValue(
+        value: eatenKj,
+        duration: duration,
+        delay: delay,
+        builder: _ring,
+      ),
+    );
+  }
+
+  /// The ring as it stands with [kj] eaten.
+  Widget _ring(BuildContext context, double kj) {
+    final textTheme = Theme.of(context).textTheme;
+    final palette = QoutPalette.of(context);
+    final eaten = kcalOf(kj);
+    final need = kcalOf(needKj.toDouble());
+    final left = need - eaten;
+    final word = left < 0 ? 'over' : 'left';
     // One line beside the bars; under large text it may wrap.
     final large = MediaQuery.textScalerOf(context).scale(10) > 13;
     final detail = Text(
@@ -213,58 +240,50 @@ class EnergyRing extends StatelessWidget {
       textAlign: TextAlign.center,
       style: textTheme.bodySmall?.copyWith(fontFeatures: _tabular),
     );
-    return Semantics(
-      container: true,
-      label:
-          'Energy: $big kilocalories $word. '
-          '${groupThousands(eaten)} eaten of a daily need of '
-          '${groupThousands(need)}.',
-      excludeSemantics: true,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox.square(
-            dimension: size,
-            child: CustomPaint(
-              painter: _RingPainter(
-                share: share,
-                color: palette.accent,
-                track: palette.track,
-              ),
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(18),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          big,
-                          key: const ValueKey('ring-left'),
-                          style: textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            fontFeatures: _tabular,
-                          ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox.square(
+          dimension: size,
+          child: CustomPaint(
+            painter: _RingPainter(
+              share: shareOfDay(kj, needKj),
+              color: palette.accent,
+              track: palette.track,
+            ),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        groupThousands(left.abs()),
+                        key: const ValueKey('ring-left'),
+                        style: textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontFeatures: _tabular,
                         ),
-                        Text('kcal $word', style: textTheme.bodySmall),
-                      ],
-                    ),
+                      ),
+                      Text('kcal $word', style: textTheme.bodySmall),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 6),
-          if (large)
-            detail
-          else
-            SizedBox(
-              width: size + 24,
-              child: FittedBox(fit: BoxFit.scaleDown, child: detail),
-            ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 6),
+        if (large)
+          detail
+        else
+          SizedBox(
+            width: size + 24,
+            child: FittedBox(fit: BoxFit.scaleDown, child: detail),
+          ),
+      ],
     );
   }
 }
@@ -316,6 +335,7 @@ class NutrientBar extends StatelessWidget {
     required this.nutrient,
     required this.total,
     required this.daily,
+    this.index = 0,
     super.key,
   });
 
@@ -323,86 +343,110 @@ class NutrientBar extends StatelessWidget {
   final double total;
   final int daily;
 
+  /// Its place in the card: bars fill one after another (T43g).
+  final int index;
+
+  /// One after another: each starts this long after the one above.
+  static const Duration stagger = Duration(milliseconds: 80);
+
+  static String _amount(double total) =>
+      total < 10 ? total.toStringAsFixed(1) : '${total.round()}';
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final palette = QoutPalette.of(context);
-    final status = nutrientStatus(nutrient, total, daily);
     final above = aboveReference(nutrient, total, daily);
-    final eaten = total < 10 ? total.toStringAsFixed(1) : '${total.round()}';
     final name = nutrientName(nutrient);
-    final spoken =
-        '$name: $eaten of $daily grams'
-        '${above ? ', above your daily reference' : ''}';
-    final value = Text(
-      '$eaten / $daily g',
-      style: textTheme.bodyMedium?.copyWith(
-        color: palette.muted,
-        fontFeatures: _tabular,
-      ),
-    );
     final large = MediaQuery.textScalerOf(context).scale(10) > 13;
+    // Read out once, with the final values.
     return Semantics(
       container: true,
-      label: spoken,
+      label:
+          '$name: ${_amount(total)} of $daily grams'
+          '${above ? ', above your daily reference' : ''}',
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // One line: the name on the left, the value on the right.
-            // Under large text the value may move under the name.
-            if (large)
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                spacing: 8,
-                children: [
-                  Text(name, style: textTheme.bodyMedium),
-                  value,
-                ],
-              )
-            else
-              LayoutBuilder(
-                // The value against the right edge; if it doesn't fit, it
-                // shrinks a little rather than overflow.
-                builder: (context, constraints) => Row(
-                  children: [
-                    Expanded(child: Text(name, style: textTheme.bodyMedium)),
-                    const SizedBox(width: 8),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: constraints.maxWidth * 0.6,
-                      ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerRight,
-                        child: value,
+        child: AnimatedValue(
+          value: total,
+          delay: EnergyRing.delay + stagger * index,
+          builder: (context, shown) {
+            final value = Text(
+              '${_amount(shown)} / $daily g',
+              key: ValueKey('bar-value-${nutrient.name}'),
+              style: textTheme.bodyMedium?.copyWith(
+                color: palette.muted,
+                fontFeatures: _tabular,
+              ),
+            );
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // One line: the name on the left, the value on the right.
+                // Under large text the value may move under the name.
+                if (large)
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    spacing: 8,
+                    children: [
+                      Text(name, style: textTheme.bodyMedium),
+                      value,
+                    ],
+                  )
+                else
+                  LayoutBuilder(
+                    // The value against the right edge; if it doesn't fit,
+                    // it shrinks a little rather than overflow.
+                    builder: (context, constraints) => Row(
+                      children: [
+                        Expanded(
+                          child: Text(name, style: textTheme.bodyMedium),
+                        ),
+                        const SizedBox(width: 8),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: constraints.maxWidth * 0.6,
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: value,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 4),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    key: ValueKey('bar-${nutrient.name}'),
+                    value: shareOfDay(shown, daily).clamp(0, 1).toDouble(),
+                    minHeight: 7,
+                    // The colour follows the fill: green, then amber, then
+                    // red as the bar passes each step.
+                    color: statusColor(
+                      StatusColors.of(context),
+                      nutrientStatus(nutrient, shown, daily),
+                    ),
+                    backgroundColor: palette.track,
+                  ),
+                ),
+                // From the final value, so the card's height never jumps.
+                if (above)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      'Above your daily reference',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: palette.doubt,
                       ),
                     ),
-                  ],
-                ),
-              ),
-            const SizedBox(height: 4),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                key: ValueKey('bar-${nutrient.name}'),
-                value: shareOfDay(total, daily).clamp(0, 1).toDouble(),
-                minHeight: 7,
-                color: statusColor(StatusColors.of(context), status),
-                backgroundColor: palette.track,
-              ),
-            ),
-            if (above)
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Text(
-                  'Above your daily reference',
-                  style: textTheme.bodySmall?.copyWith(color: palette.doubt),
-                ),
-              ),
-          ],
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );

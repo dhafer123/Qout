@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
+import 'package:qout/core/ui/animated_value.dart';
 import 'package:qout/core/ui/entrance.dart';
 import 'package:qout/core/ui/fading_rule.dart';
 import 'package:qout/core/ui/veggie.dart';
@@ -341,12 +342,22 @@ class _MealRow extends StatelessWidget {
               semanticsLabel: 'Add to ${meal.label.toLowerCase()}',
             ),
           )
-        : Text(
-            _kcalOf(entries),
-            key: ValueKey('meal-kcal-${meal.name}'),
-            textAlign: TextAlign.end,
-            style: textTheme.bodyMedium?.copyWith(
-              fontFeatures: const [FontFeature.tabularFigures()],
+        // Counts up after the card has faded in (T43g); read out once,
+        // with the final value.
+        : Semantics(
+            label: _kcalOf(entries),
+            excludeSemantics: true,
+            child: AnimatedValue(
+              value: totalsOf(entries).of(Nutrient.energy),
+              delay: const Duration(milliseconds: 350),
+              builder: (context, kj) => Text(
+                '${kcalOf(kj)} kcal',
+                key: ValueKey('meal-kcal-${meal.name}'),
+                textAlign: TextAlign.end,
+                style: textTheme.bodyMedium?.copyWith(
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
             ),
           );
     return Padding(

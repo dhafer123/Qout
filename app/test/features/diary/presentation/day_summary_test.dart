@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qout/app/theme.dart';
+import 'package:qout/core/ui/entrance.dart';
 import 'package:qout/features/diary/presentation/day_summary.dart';
 import 'package:qout/health/advice.dart' show Nutrient;
 import 'package:qout/health/diary.dart';
@@ -26,6 +27,7 @@ Future<void> _pump(
   WidgetTester tester,
   Totals totals, {
   Brightness brightness = Brightness.light,
+  bool opening = false,
 }) async {
   tester.view
     ..physicalSize = const Size(420, 900)
@@ -36,7 +38,12 @@ Future<void> _pump(
       theme: buildQoutTheme(brightness),
       home: Scaffold(
         body: SingleChildScrollView(
-          child: DaySummaryCard(totals: totals, needs: _needs),
+          child: opening
+              // As on Today when it opens: the numbers run (T43g).
+              ? EntranceScope(
+                  child: DaySummaryCard(totals: totals, needs: _needs),
+                )
+              : DaySummaryCard(totals: totals, needs: _needs),
         ),
       ),
     ),
@@ -179,5 +186,103 @@ void main() {
       find.text('General information, not medical advice.'),
       findsOneWidget,
     );
+  });
+
+  group('animated when Today opens (T43g)', () {
+    String text(WidgetTester tester, String key) =>
+        tester.widget<Text>(find.byKey(ValueKey(key))).data!;
+
+    testWidgets('the ring counts down to what is left as it sweeps', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        _totals({Nutrient.energy: 1086 * 4.184}),
+        opening: true,
+      );
+      // At first: nothing eaten yet, the whole need left.
+      expect(text(tester, 'ring-left'), '2,000');
+      expect(text(tester, 'ring-detail'), '0 eaten · 2,000 need');
+
+      await tester.pump(const Duration(milliseconds: 600));
+      final left = int.parse(text(tester, 'ring-left').replaceAll(',', ''));
+      expect(left, allOf(greaterThan(914), lessThan(2000)));
+
+      await tester.pumpAndSettle();
+      expect(text(tester, 'ring-left'), '914');
+      expect(text(tester, 'ring-detail'), '1,086 eaten · 2,000 need');
+    });
+
+    testWidgets("a bar's colour passes amber on its way to red", (
+      tester,
+    ) async {
+      await _pump(tester, _totals({Nutrient.salt: 7}), opening: true);
+      Color salt() => tester
+          .widget<LinearProgressIndicator>(
+            find.byKey(const ValueKey('bar-salt')),
+          )
+          .color!;
+      expect(text(tester, 'bar-value-salt'), '0.0 / 6 g');
+      expect(salt(), StatusColors.light.ok);
+
+      // Salt is the fourth bar: it starts 250 + 3 × 80 ms in.
+      await tester.pump(const Duration(milliseconds: 750));
+      expect(salt(), StatusColors.light.warn);
+
+      await tester.pumpAndSettle();
+      expect(salt(), StatusColors.light.over);
+      expect(text(tester, 'bar-value-salt'), '7.0 / 6 g');
+    });
+
+    testWidgets('screen readers get the final values from the start', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await _pump(
+        tester,
+        _totals({Nutrient.energy: 1086 * 4.184, Nutrient.salt: 7}),
+        opening: true,
+      );
+      expect(
+        find.bySemanticsLabel(
+          'Energy: 914 kilocalories left. 1,086 eaten of a daily need of '
+          '2,000.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.bySemanticsLabel(
+          'Salt: 7.0 of 6 grams, above your daily reference',
+        ),
+        findsOneWidget,
+      );
+      await tester.pumpAndSettle();
+      handle.dispose();
+    });
+
+    testWidgets('with reduced motion, the final values at once', (
+      tester,
+    ) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await _pump(
+        tester,
+        _totals({Nutrient.energy: 1086 * 4.184, Nutrient.salt: 7}),
+        opening: true,
+      );
+      expect(text(tester, 'ring-left'), '914');
+      expect(text(tester, 'bar-value-salt'), '7.0 / 6 g');
+      expect(
+        tester
+            .widget<LinearProgressIndicator>(
+              find.byKey(const ValueKey('bar-salt')),
+            )
+            .color,
+        StatusColors.light.over,
+      );
+    });
   });
 }

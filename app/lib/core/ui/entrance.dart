@@ -50,6 +50,18 @@ class Entrance extends StatelessWidget {
   static const int _maxStaggered = 6;
   static const double _rise = 14;
 
+  /// Whether [context]'s screen is opening: inside an [EntranceScope]
+  /// shown less than [window] ago, and the phone allows motion. What plays
+  /// when a screen opens plays only then, never when a row scrolls back.
+  static bool isOpening(BuildContext context) {
+    final clock = context
+        .dependOnInheritedWidgetOfExactType<_EntranceClock>()
+        ?.clock;
+    return clock != null &&
+        clock.elapsed <= window &&
+        !MediaQuery.disableAnimationsOf(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final clock = context
