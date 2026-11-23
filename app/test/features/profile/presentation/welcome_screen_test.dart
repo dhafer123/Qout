@@ -1,10 +1,14 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:qout/app/theme.dart';
 import 'package:qout/core/database/database.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
+import 'package:qout/features/product/presentation/grade_badge.dart';
 import 'package:qout/features/profile/data/profile_repository.dart';
 import 'package:qout/features/profile/presentation/profile_edit_screen.dart';
+import 'package:qout/features/profile/presentation/welcome_art.dart';
 import 'package:qout/features/profile/presentation/welcome_screen.dart';
 import 'package:qout/health/profile.dart';
 
@@ -51,8 +55,64 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Set up my profile'), findsOneWidget);
-    // The profile is required (T31e).
-    expect(find.textContaining('Skip'), findsNothing);
+    // The profile is required (T31e): nothing skips past this page.
+    expect(find.text('Skip').hitTestable(), findsNothing);
+  });
+
+  testWidgets('skip: straight to the last page, still before the profile', (
+    tester,
+  ) async {
+    await openFirstRun(tester);
+    await tester.tap(find.text('Skip'));
+    await tester.pumpAndSettle();
+    expect(find.text('Advice for you, kept on your phone'), findsOneWidget);
+    expect(find.bySemanticsLabel('Page 3 of 3'), findsOneWidget);
+    expect(find.text('Set up my profile'), findsOneWidget);
+    expect(find.text('Skip').hitTestable(), findsNothing);
+    expect(find.text('Next'), findsNothing);
+    expect(await repository.onboardingCompleted(), isFalse);
+  });
+
+  testWidgets('key phrases stand out in the accent', (tester) async {
+    await openFirstRun(tester);
+    final context = tester.element(find.byType(WelcomeScreen));
+    final accent = QoutPalette.of(context).accentText;
+    final body = tester.widget<Text>(
+      find.textContaining('Scan a food barcode'),
+    );
+    final strong = <String>[];
+    body.textSpan!.visitChildren((span) {
+      if (span is TextSpan && span.style?.color == accent) {
+        strong.add(span.text!);
+      }
+      return true;
+    });
+    expect(strong, ['A (best) to E']);
+  });
+
+  testWidgets('the illustrations play once, then hold still', (tester) async {
+    await openFirstRun(tester);
+    // pumpAndSettle in openFirstRun returning at all means no animation
+    // loops; the grade badges have all popped in.
+    expect(find.byType(GradeScaleArt), findsOneWidget);
+    expect(find.byType(GradeBadge), findsNWidgets(5));
+    expect(tester.hasRunningAnimations, isFalse);
+  });
+
+  testWidgets('reduced motion: the last frame at once', (tester) async {
+    tester.view
+      ..physicalSize = const Size(400, 900)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await tester.pumpQoutApp(database: database, start: StartScreen.welcome);
+    await tester.tap(find.text('Skip'));
+    await tester.pumpAndSettle();
+    // The padlock is already shut.
+    expect(find.byIcon(PhosphorIconsFill.lockSimple), findsOneWidget);
+    expect(find.byIcon(PhosphorIconsFill.lockSimpleOpen), findsNothing);
   });
 
   testWidgets('set up: the form, then home with the profile saved', (

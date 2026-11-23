@@ -2,73 +2,110 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:introduction_screen/introduction_screen.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
-import 'package:qout/core/api/qout_api.dart' show Grade;
-import 'package:qout/features/product/presentation/grade_badge.dart';
+import 'package:qout/features/profile/presentation/welcome_art.dart';
 
 /// First run (`/welcome`): what the grade means, that scanning needs no
 /// account, and what happens to the user's data; then the profile, which is
-/// required (T31e).
-class WelcomeScreen extends StatefulWidget {
+/// required (T31e). "Skip" only jumps to the last page, whose one action is
+/// setting up the profile.
+class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
-  State<WelcomeScreen> createState() => _WelcomeScreenState();
-}
-
-class _WelcomeScreenState extends State<WelcomeScreen> {
-  final _pages = PageController();
-  int _page = 0;
-
-  static const _count = 3;
-
-  @override
-  void dispose() {
-    _pages.dispose();
-    super.dispose();
-  }
-
-  bool get _last => _page == _count - 1;
-
-  void _next() => unawaited(
-    _pages.nextPage(
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOut,
-    ),
-  );
-
-  void _setUp() =>
-      unawaited(context.push(AppRoutes.profileEdit, extra: firstRunEdit));
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView(
-                controller: _pages,
-                onPageChanged: (page) => setState(() => _page = page),
-                children: const [_GradePage(), _AccountPage(), _DataPage()],
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final palette = QoutPalette.of(context);
+    final decoration = PageDecoration(
+      pageColor: scheme.surface,
+      imageFlex: 5,
+      bodyFlex: 6,
+      imagePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+      titlePadding: const EdgeInsets.only(top: 8, bottom: 14),
+      contentMargin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      bodyPadding: EdgeInsets.zero,
+      pageMargin: const EdgeInsets.only(bottom: 72),
+      safeArea: 0,
+    );
+    // The ground also fills the area under the status and navigation bars,
+    // which the package leaves outside its own Scaffold.
+    return ColoredBox(
+      color: scheme.surface,
+      child: IntroductionScreen(
+        globalBackgroundColor: scheme.surface,
+        safeAreaList: const [true, true, true, true],
+        pages: [
+          PageViewModel(
+            titleWidget: const _Title('Know what you eat'),
+            bodyWidget: const _Body(_gradePage),
+            image: const GradeScaleArt(),
+            decoration: decoration,
+          ),
+          PageViewModel(
+            titleWidget: const _Title('No account needed'),
+            bodyWidget: const _Body(_accountPage),
+            image: const ScanArt(),
+            decoration: decoration,
+          ),
+          PageViewModel(
+            titleWidget: const _Title('Advice for you, kept on your phone'),
+            bodyWidget: const _Body(_dataPage, note: _notMedical),
+            image: const LockArt(),
+            footer: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+              child: FilledButton.icon(
+                onPressed: () => unawaited(
+                  context.push(AppRoutes.profileEdit, extra: firstRunEdit),
+                ),
+                icon: const Icon(PhosphorIconsRegular.userCircle),
+                label: const Text('Set up my profile'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                ),
               ),
             ),
-            _Dots(count: _count, current: _page),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  FilledButton(
-                    onPressed: _last ? _setUp : _next,
-                    child: Text(_last ? 'Set up my profile' : 'Next'),
-                  ),
-                ],
-              ),
+            decoration: decoration.copyWith(
+              imageFlex: 4,
+              footerFit: FlexFit.tight,
             ),
-          ],
+          ),
+        ],
+        showSkipButton: true,
+        skip: const Text('Skip'),
+        skipStyle: TextButton.styleFrom(
+          foregroundColor: palette.muted,
+          minimumSize: const Size(64, 48),
+        ),
+        overrideNext: (context, onPressed) => Align(
+          alignment: Alignment.centerRight,
+          child: FilledButton.icon(
+            onPressed: onPressed,
+            iconAlignment: IconAlignment.end,
+            icon: const Icon(PhosphorIconsRegular.arrowRight, size: 18),
+            label: const Text('Next'),
+          ),
+        ),
+        // The last page's own button sets up the profile.
+        showDoneButton: false,
+        // Room for "Next" at twice the text size on a 360 dp wide phone.
+        skipOrBackFlex: 3,
+        dotsFlex: 3,
+        nextFlex: 4,
+        controlsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        curve: Curves.easeOutCubic,
+        dotsDecorator: DotsDecorator(
+          size: const Size(8, 8),
+          activeSize: const Size(24, 8),
+          color: scheme.outline,
+          activeColor: palette.accent,
+          spacing: const EdgeInsets.symmetric(horizontal: 4),
+          activeShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
         ),
       ),
     );
@@ -78,153 +115,121 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 /// Passed as `extra` to the profile form on the first run: saving goes home.
 const firstRunEdit = 'first-run';
 
-/// One welcome page: an illustration, a title and a few lines.
-class _Page extends StatelessWidget {
-  const _Page({
-    required this.illustration,
-    required this.title,
-    required this.lines,
-  });
+class _Title extends StatelessWidget {
+  const _Title(this.text);
 
-  final Widget illustration;
-  final String title;
-  final List<String> lines;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    header: true,
+    child: Text(
+      text,
+      textAlign: TextAlign.center,
+      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  );
+}
+
+/// A run of body text; strong runs are set in the accent, a step bolder.
+typedef _Run = (String text, {bool strong});
+
+/// A page's paragraphs (each a list of runs), centred, then an optional
+/// small [note].
+class _Body extends StatelessWidget {
+  const _Body(this.paragraphs, {this.note});
+
+  final List<List<_Run>> paragraphs;
+  final String? note;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 48, 24, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          illustration,
-          const SizedBox(height: 28),
-          Semantics(
-            header: true,
-            child: Text(title, style: textTheme.headlineSmall),
-          ),
-          for (final line in lines) ...[
-            const SizedBox(height: 12),
-            Text(line, style: textTheme.bodyLarge),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _GradePage extends StatelessWidget {
-  const _GradePage();
-
-  @override
-  Widget build(BuildContext context) => _Page(
-    illustration: ExcludeSemantics(
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final grade in [Grade.a, Grade.b, Grade.c, Grade.d, Grade.e])
-            GradeBadge(grade: grade, size: 48),
-        ],
-      ),
-    ),
-    title: 'Know what you eat',
-    lines: const [
-      _gradeScale,
-      _gradeReasons,
-    ],
-  );
-}
-
-class _AccountPage extends StatelessWidget {
-  const _AccountPage();
-
-  @override
-  Widget build(BuildContext context) => const _Page(
-    illustration: _Icon(PhosphorIconsRegular.barcode),
-    title: 'No account needed',
-    lines: [
-      _noAccount,
-      'You only sign in to add a product Qout does not know yet.',
-    ],
-  );
-}
-
-class _DataPage extends StatelessWidget {
-  const _DataPage();
-
-  @override
-  Widget build(BuildContext context) => const _Page(
-    illustration: _Icon(PhosphorIconsRegular.lockSimple),
-    title: 'Advice for you, kept on your phone',
-    lines: [
-      _profileStays,
-      _photosSent,
-      'Qout gives general information, not medical advice.',
-    ],
-  );
-}
-
-class _Icon extends StatelessWidget {
-  const _Icon(this.icon);
-
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) => ExcludeSemantics(
-    child: Icon(icon, size: 56, color: QoutPalette.of(context).accentText),
-  );
-}
-
-/// Which page is shown: one dot per page.
-class _Dots extends StatelessWidget {
-  const _Dots({required this.count, required this.current});
-
-  final int count;
-  final int current;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final palette = QoutPalette.of(context);
-    return Semantics(
-      label: 'Page ${current + 1} of $count',
-      child: ExcludeSemantics(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (var i = 0; i < count; i++)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: i == current ? 20 : 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: i == current ? palette.accentText : scheme.outline,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-          ],
-        ),
-      ),
+    final base = textTheme.bodyLarge?.copyWith(height: 1.5);
+    final strong = base?.copyWith(
+      color: palette.accentText,
+      fontWeight: FontWeight.w600,
+    );
+    return Column(
+      children: [
+        for (final (i, paragraph) in paragraphs.indexed) ...[
+          if (i > 0) const SizedBox(height: 10),
+          Text.rich(
+            TextSpan(
+              children: [
+                for (final run in paragraph)
+                  TextSpan(text: run.$1, style: run.strong ? strong : base),
+              ],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+        if (note case final note?) ...[
+          const SizedBox(height: 16),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(PhosphorIconsRegular.info, size: 16, color: palette.muted),
+              const SizedBox(width: 6),
+              Flexible(child: Text(note, style: textTheme.bodySmall)),
+            ],
+          ),
+        ],
+      ],
     );
   }
 }
 
-// Welcome texts that span lines (kept out of the list literals).
-const _gradeScale =
-    'Scan a food barcode and Qout grades it from A (best) to E, with the '
-    'Nutri-Score.';
-const _gradeReasons =
-    'Every grade comes with the reasons: what counts against the food and '
-    'what counts in its favour.';
-const _noAccount =
-    'Scanning works without an account, and products you have seen stay '
-    'available offline.';
-const _profileStays =
-    'A short profile lets Qout compare products with your daily needs. It '
-    'stays on this phone and is never sent.';
-const _photosSent =
-    'Photos are sent only when you add a product, for a moderator to '
-    'check.';
+// The welcome texts.
+const List<List<_Run>> _gradePage = [
+  [
+    ('Scan a food barcode and Qout grades it from ', strong: false),
+    ('A (best) to E', strong: true),
+    (', with the Nutri-Score.', strong: false),
+  ],
+  [
+    ('Every grade comes with ', strong: false),
+    ('the reasons', strong: true),
+    (
+      ': what counts against the food and what counts in its favour.',
+      strong: false,
+    ),
+  ],
+];
+
+const List<List<_Run>> _accountPage = [
+  [
+    ('Scanning works ', strong: false),
+    ('without an account', strong: true),
+    (', and products you have seen stay ', strong: false),
+    ('available offline', strong: true),
+    ('.', strong: false),
+  ],
+  [
+    ('You only sign in to ', strong: false),
+    ('add a product', strong: true),
+    (' Qout does not know yet.', strong: false),
+  ],
+];
+
+const List<List<_Run>> _dataPage = [
+  [
+    ('A short profile lets Qout compare products with ', strong: false),
+    ('your daily needs', strong: true),
+    ('. It stays on this phone and is ', strong: false),
+    ('never sent', strong: true),
+    ('.', strong: false),
+  ],
+  [
+    (
+      'Photos are sent only when you add a product, for a moderator to '
+          'check.',
+      strong: false,
+    ),
+  ],
+];
+
+const _notMedical = 'Qout gives general information, not medical advice.';
