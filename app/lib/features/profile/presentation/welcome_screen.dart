@@ -41,7 +41,13 @@ class WelcomeScreen extends StatelessWidget {
         pages: [
           PageViewModel(
             titleWidget: const _Title('Welcome to Qout'),
-            bodyWidget: const _Body(_welcomePage),
+            bodyWidget: const Column(
+              children: [
+                _Body(_welcomePage),
+                SizedBox(height: 28),
+                WelcomeFeatures(),
+              ],
+            ),
             image: const GreetingArt(),
             decoration: decoration,
           ),
@@ -120,6 +126,59 @@ class WelcomeScreen extends StatelessWidget {
 
 /// Passed as `extra` to the profile form on the first run: saving goes home.
 const firstRunEdit = 'first-run';
+
+/// The welcome page's three things Qout does, an icon and a few words each.
+class WelcomeFeatures extends StatelessWidget {
+  const WelcomeFeatures({super.key});
+
+  static const List<(IconData, String)> features = [
+    (PhosphorIconsRegular.barcode, 'Scan a barcode'),
+    (PhosphorIconsRegular.sealCheck, 'See the grade and why'),
+    (PhosphorIconsRegular.forkKnife, 'Track what you eat'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = QoutPalette.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    // A block centred on the page, its rows aligned on their icons.
+    return Center(
+      child: IntrinsicWidth(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final (i, (icon, label)) in features.indexed) ...[
+              if (i > 0) const SizedBox(height: 14),
+              Row(
+                children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: palette.tag,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Icon(icon, size: 22, color: palette.onTag),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _Title extends StatelessWidget {
   const _Title(this.text);

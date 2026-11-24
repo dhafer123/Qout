@@ -14,9 +14,16 @@ import 'package:qout/features/product/presentation/grade_badge.dart';
 
 /// Runs [builder] with an animation that goes from 0 to 1 once.
 class _PlayOnce extends StatefulWidget {
-  const _PlayOnce({required this.duration, required this.builder});
+  const _PlayOnce({
+    required this.duration,
+    required this.builder,
+    this.size = WelcomeArt.size,
+  });
 
   final Duration duration;
+
+  /// Side of the square it is drawn in (scaled down to fit).
+  final double size;
   final Widget Function(BuildContext context, Animation<double> t) builder;
 
   @override
@@ -54,7 +61,7 @@ class _PlayOnceState extends State<_PlayOnce>
     child: FittedBox(
       fit: BoxFit.scaleDown,
       child: SizedBox.square(
-        dimension: WelcomeArt.size,
+        dimension: widget.size,
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, _) => widget.builder(context, _controller),
@@ -267,6 +274,9 @@ class GreetingArt extends StatelessWidget {
   /// The frame it holds on, out of the 120 frames.
   static const double holdAt = 80 / 120;
 
+  /// Larger than the other pages' art: the page has little text.
+  static const double size = 300;
+
   /// The tile's lower edge, under its face.
   static const Color lip = Color(0xFF1B5E20);
 
@@ -286,15 +296,16 @@ class GreetingArt extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _PlayOnce(
     duration: const Duration(milliseconds: 2670),
+    size: size,
     builder: (context, t) => ClipRect(
       child: OverflowBox(
-        maxWidth: WelcomeArt.size * 1080 / 600,
-        maxHeight: WelcomeArt.size * 1920 / 600,
+        maxWidth: size * 1080 / 600,
+        maxHeight: size * 1920 / 600,
         child: Lottie.asset(
           asset,
           controller: t.drive(Tween(begin: 0, end: holdAt)),
-          width: WelcomeArt.size * 1080 / 600,
-          height: WelcomeArt.size * 1920 / 600,
+          width: size * 1080 / 600,
+          height: size * 1920 / 600,
           fit: BoxFit.fill,
           delegates: LottieDelegates(values: colours),
           errorBuilder: (context, error, stackTrace) => const SizedBox(),

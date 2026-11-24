@@ -42,6 +42,13 @@ void main() {
     expect(find.byType(HomeScreen), findsNothing);
     expect(find.text('Welcome to Qout'), findsOneWidget);
     expect(find.byType(GreetingArt), findsOneWidget);
+    for (final label in [
+      'Scan a barcode',
+      'See the grade and why',
+      'Track what you eat',
+    ]) {
+      expect(find.text(label), findsOneWidget);
+    }
     expect(find.bySemanticsLabel('Page 1 of 4'), findsOneWidget);
 
     await tester.tap(find.text('Next'));
