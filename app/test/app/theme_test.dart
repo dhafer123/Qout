@@ -47,6 +47,14 @@ void main() {
         });
       }
 
+      test('the ground and cards are green-grey, not brown (T44a)', () {
+        // Regression: the dark mode's brown made the app look dull.
+        for (final ground in [...grounds.values, scheme.surfaceContainerHigh]) {
+          expect(ground.g, greaterThanOrEqualTo(ground.r));
+          expect(ground.g, greaterThanOrEqualTo(ground.b));
+        }
+      });
+
       test('filled actions use the deep brand green with white on it', () {
         // Regression: dark mode filled actions with a bright mint that
         // looked neon on the dark ground.
