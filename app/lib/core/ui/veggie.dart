@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// The vegetable stickers (`assets/illustrations/veg/`, see
 /// `assets/illustrations/SOURCE.md`). Each stands for something: every
-/// state and welcome page has its own ([VeggieFor]), except the empty
+/// state has its own ([VeggieFor]), except the empty
 /// day and week, which share the tearful onion.
 enum Veggie {
   asparagus,
@@ -13,18 +13,15 @@ enum Veggie {
   corn,
   cucumber,
   eggplant,
-  garlic,
   mushroom,
   onion,
 
   /// The smiling onion with a tear (a separate picture, not from the sheet).
   onionTear,
   peas,
-  pepper,
   potato,
   pumpkin,
   radish,
-  spinach,
   tomato
   ;
 
@@ -57,15 +54,6 @@ abstract final class VeggieFor {
 
   /// The camera can't be used.
   static const Veggie noCamera = Veggie.eggplant;
-
-  /// Welcome, the grade page (spinach: an A food).
-  static const Veggie welcomeGrades = Veggie.spinach;
-
-  /// Welcome, scanning without an account.
-  static const Veggie welcomeScan = Veggie.pepper;
-
-  /// Welcome, data kept on the phone (garlic keeps the vampires away).
-  static const Veggie welcomePrivate = Veggie.garlic;
 }
 
 /// A vegetable sticker, [size] dp square (kept at 72 or less: the

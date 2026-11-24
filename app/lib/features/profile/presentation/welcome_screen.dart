@@ -6,13 +6,12 @@ import 'package:introduction_screen/introduction_screen.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
-import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/profile/presentation/welcome_art.dart';
 
-/// First run (`/welcome`): what the grade means, that scanning needs no
-/// account, and what happens to the user's data; then the profile, which is
-/// required (T31e). "Skip" only jumps to the last page, whose one action is
-/// setting up the profile.
+/// First run (`/welcome`): what Qout is, what the grade means, that scanning
+/// needs no account, and what happens to the user's data; then the profile,
+/// which is required (T31e). "Skip" only jumps to the last page, whose one
+/// action is setting up the profile.
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
@@ -41,24 +40,27 @@ class WelcomeScreen extends StatelessWidget {
         safeAreaList: const [true, true, true, true],
         pages: [
           PageViewModel(
+            titleWidget: const _Title('Welcome to Qout'),
+            bodyWidget: const _Body(_welcomePage),
+            image: const GreetingArt(),
+            decoration: decoration,
+          ),
+          PageViewModel(
             titleWidget: const _Title('Know what you eat'),
             bodyWidget: const _Body(_gradePage),
-            image: const _WithVeggie(
-              GradeScaleArt(),
-              VeggieFor.welcomeGrades,
-            ),
+            image: const GradeScaleArt(),
             decoration: decoration,
           ),
           PageViewModel(
             titleWidget: const _Title('No account needed'),
             bodyWidget: const _Body(_accountPage),
-            image: const _WithVeggie(ScanArt(), VeggieFor.welcomeScan),
+            image: const ScanArt(),
             decoration: decoration,
           ),
           PageViewModel(
             titleWidget: const _Title('Advice for you, kept on your phone'),
             bodyWidget: const _Body(_dataPage, note: _notMedical),
-            image: const _WithVeggie(LockArt(), VeggieFor.welcomePrivate),
+            image: const ShieldArt(),
             footer: Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
               child: FilledButton.icon(
@@ -118,23 +120,6 @@ class WelcomeScreen extends StatelessWidget {
 
 /// Passed as `extra` to the profile form on the first run: saving goes home.
 const firstRunEdit = 'first-run';
-
-/// A page's animated [art] with its vegetable sitting at the lower right.
-class _WithVeggie extends StatelessWidget {
-  const _WithVeggie(this.art, this.veggie);
-
-  final Widget art;
-  final Veggie veggie;
-
-  @override
-  Widget build(BuildContext context) => Stack(
-    clipBehavior: Clip.none,
-    children: [
-      art,
-      Positioned(right: 0, bottom: 0, child: VeggieArt(veggie, size: 72)),
-    ],
-  );
-}
 
 class _Title extends StatelessWidget {
   const _Title(this.text);
@@ -205,6 +190,17 @@ class _Body extends StatelessWidget {
 }
 
 // The welcome texts.
+const List<List<_Run>> _welcomePage = [
+  [
+    ('Qout', strong: true),
+    (
+      ' grades the food you buy, tells you why, and keeps track of what '
+          'you eat.',
+      strong: false,
+    ),
+  ],
+];
+
 const List<List<_Run>> _gradePage = [
   [
     ('Scan a food barcode and Qout grades it from ', strong: false),

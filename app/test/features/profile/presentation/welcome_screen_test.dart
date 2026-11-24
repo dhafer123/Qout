@@ -1,9 +1,10 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:lottie/lottie.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/database/database.dart';
+import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
 import 'package:qout/features/profile/data/profile_repository.dart';
@@ -33,14 +34,19 @@ void main() {
     await tester.pumpQoutApp(database: database, start: StartScreen.welcome);
   }
 
-  testWidgets('first run: three pages, then the profile (no skip)', (
+  testWidgets('first run: four pages, then the profile (no skip)', (
     tester,
   ) async {
     await openFirstRun(tester);
     expect(find.byType(WelcomeScreen), findsOneWidget);
     expect(find.byType(HomeScreen), findsNothing);
+    expect(find.text('Welcome to Qout'), findsOneWidget);
+    expect(find.byType(GreetingArt), findsOneWidget);
+    expect(find.bySemanticsLabel('Page 1 of 4'), findsOneWidget);
+
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
     expect(find.text('Know what you eat'), findsOneWidget);
-    expect(find.bySemanticsLabel('Page 1 of 3'), findsOneWidget);
 
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
@@ -49,6 +55,7 @@ void main() {
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
     expect(find.text('Advice for you, kept on your phone'), findsOneWidget);
+    expect(find.byType(ShieldArt), findsOneWidget);
     expect(find.textContaining('never sent'), findsOneWidget);
     expect(
       find.text('Qout gives general information, not medical advice.'),
@@ -59,6 +66,17 @@ void main() {
     expect(find.text('Skip').hitTestable(), findsNothing);
   });
 
+  testWidgets('no vegetable stickers on any page (T44b)', (tester) async {
+    await openFirstRun(tester);
+    for (var page = 0; page < 4; page++) {
+      expect(find.byType(VeggieArt), findsNothing);
+      if (page < 3) {
+        await tester.tap(find.text('Next'));
+        await tester.pumpAndSettle();
+      }
+    }
+  });
+
   testWidgets('skip: straight to the last page, still before the profile', (
     tester,
   ) async {
@@ -66,7 +84,7 @@ void main() {
     await tester.tap(find.text('Skip'));
     await tester.pumpAndSettle();
     expect(find.text('Advice for you, kept on your phone'), findsOneWidget);
-    expect(find.bySemanticsLabel('Page 3 of 3'), findsOneWidget);
+    expect(find.bySemanticsLabel('Page 4 of 4'), findsOneWidget);
     expect(find.text('Set up my profile'), findsOneWidget);
     expect(find.text('Skip').hitTestable(), findsNothing);
     expect(find.text('Next'), findsNothing);
@@ -77,23 +95,32 @@ void main() {
     await openFirstRun(tester);
     final context = tester.element(find.byType(WelcomeScreen));
     final accent = QoutPalette.of(context).accentText;
-    final body = tester.widget<Text>(
-      find.textContaining('Scan a food barcode'),
-    );
-    final strong = <String>[];
-    body.textSpan!.visitChildren((span) {
-      if (span is TextSpan && span.style?.color == accent) {
-        strong.add(span.text!);
-      }
-      return true;
-    });
-    expect(strong, ['A (best) to E']);
+    List<String> strongIn(String text) {
+      final body = tester.widget<Text>(find.textContaining(text));
+      final strong = <String>[];
+      body.textSpan!.visitChildren((span) {
+        if (span is TextSpan && span.style?.color == accent) {
+          strong.add(span.text!);
+        }
+        return true;
+      });
+      return strong;
+    }
+
+    expect(strongIn('grades the food you buy'), ['Qout']);
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+    expect(strongIn('Scan a food barcode'), ['A (best) to E']);
   });
 
   testWidgets('the illustrations play once, then hold still', (tester) async {
     await openFirstRun(tester);
-    // pumpAndSettle in openFirstRun returning at all means no animation
-    // loops; the grade badges have all popped in.
+    // pumpAndSettle returning at all means no animation loops; the grade
+    // badges have all popped in.
+    expect(find.byType(GreetingArt), findsOneWidget);
+    expect(tester.hasRunningAnimations, isFalse);
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
     expect(find.byType(GradeScaleArt), findsOneWidget);
     expect(find.byType(GradeBadge), findsNWidgets(5));
     expect(tester.hasRunningAnimations, isFalse);
@@ -110,16 +137,21 @@ void main() {
     await tester.pumpQoutApp(database: database, start: StartScreen.welcome);
     await tester.tap(find.text('Skip'));
     await tester.pumpAndSettle();
-    // The padlock is already shut.
-    expect(find.byIcon(PhosphorIconsFill.lockSimple), findsOneWidget);
-    expect(find.byIcon(PhosphorIconsFill.lockSimpleOpen), findsNothing);
+    // The shield is already drawn: its animation stands at the end.
+    final shield = tester.widget<Lottie>(
+      find.descendant(
+        of: find.byType(ShieldArt),
+        matching: find.byType(Lottie),
+      ),
+    );
+    expect(shield.controller!.value, 1);
   });
 
   testWidgets('set up: the form, then home with the profile saved', (
     tester,
   ) async {
     await openFirstRun(tester);
-    for (var page = 0; page < 2; page++) {
+    for (var page = 0; page < 3; page++) {
       await tester.tap(find.text('Next'));
       await tester.pumpAndSettle();
     }

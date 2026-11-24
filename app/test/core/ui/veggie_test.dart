@@ -63,27 +63,6 @@ void main() {
     expect(VeggieFor.allSent, Veggie.peas);
   });
 
-  test('the welcome pages use vegetables no state uses', () {
-    // A list: the empty states share one vegetable.
-    final elsewhere = [
-      VeggieFor.error,
-      VeggieFor.offline,
-      VeggieFor.unknown,
-      VeggieFor.emptyDay,
-      VeggieFor.emptyWeek,
-      VeggieFor.allSent,
-      VeggieFor.thanks,
-      VeggieFor.noCamera,
-    ];
-    for (final veggie in [
-      VeggieFor.welcomeGrades,
-      VeggieFor.welcomeScan,
-      VeggieFor.welcomePrivate,
-    ]) {
-      expect(elsewhere, isNot(contains(veggie)));
-    }
-  });
-
   group('VeggieArt', () {
     testWidgets('shows the sticker at its size, hidden from screen readers', (
       tester,

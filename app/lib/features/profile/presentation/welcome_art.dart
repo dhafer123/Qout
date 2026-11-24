@@ -2,14 +2,15 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/features/product/presentation/grade_badge.dart';
 
-/// The welcome pages' illustrations: theme icons drawn and animated in code
-/// (no image or animation files). Each plays once when its page is built
-/// and then holds its last frame; with reduced motion it shows the last
-/// frame at once. Decorative only: hidden from screen readers.
+/// The welcome pages' illustrations: theme icons animated in code, and two
+/// supplied Lottie animations. Each plays once when its page is built and
+/// then holds its last frame; with reduced motion it shows the last frame at
+/// once. Decorative only: hidden from screen readers.
 
 /// Runs [builder] with an animation that goes from 0 to 1 once.
 class _PlayOnce extends StatefulWidget {
@@ -111,7 +112,7 @@ class _Halo extends StatelessWidget {
   }
 }
 
-/// Namespace for the three illustrations.
+/// Namespace for the illustrations.
 abstract final class WelcomeArt {
   /// Side of the square each illustration is drawn in (scaled down to fit).
   static const double size = 240;
@@ -251,53 +252,61 @@ class ScanArt extends StatelessWidget {
   );
 }
 
-/// Page 3: a phone whose padlock snaps shut, with a ring rippling out.
-class LockArt extends StatelessWidget {
-  const LockArt({super.key});
+/// The welcome page: a ball bounces in, grows and writes "hi.".
+///
+/// "If you are new here!" (Lottie, 1080 × 1920, supplied by the project
+/// owner), cropped to the 600 × 600 middle where the ball lands. It stops at
+/// frame 80 of 120, before the ball rolls away, and holds there.
+class GreetingArt extends StatelessWidget {
+  const GreetingArt({super.key});
+
+  static const String asset = 'assets/animations/greeting.json';
+
+  /// The frame it holds on, out of the 120 frames.
+  static const double holdAt = 80 / 120;
 
   @override
   Widget build(BuildContext context) => _PlayOnce(
-    duration: const Duration(milliseconds: 1600),
-    builder: (context, t) {
-      final palette = QoutPalette.of(context);
-      final scheme = Theme.of(context).colorScheme;
-      final closed = t.value >= 0.5;
-      final snap = _phase(t, 0.5, 0.75, Curves.easeInOut);
-      final lockScale = 1 + 0.22 * math.sin(snap * math.pi);
-      final ripple = _phase(t, 0.5, 1, Curves.easeOutCubic);
-      return Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned.fill(child: _Halo(t: t)),
-          if (ripple > 0 && ripple < 1)
-            Container(
-              width: 90 + 90 * ripple,
-              height: 90 + 90 * ripple,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: palette.accent.withValues(alpha: 0.7 * (1 - ripple)),
-                  width: 2,
-                ),
-              ),
-            ),
-          Icon(
-            PhosphorIconsRegular.deviceMobile,
-            size: 128,
-            color: scheme.onSurface,
-          ),
-          Transform.scale(
-            scale: lockScale,
-            child: Icon(
-              closed
-                  ? PhosphorIconsFill.lockSimple
-                  : PhosphorIconsFill.lockSimpleOpen,
-              size: 40,
-              color: palette.accent,
-            ),
-          ),
+    duration: const Duration(milliseconds: 2670),
+    builder: (context, t) => ClipRect(
+      child: OverflowBox(
+        maxWidth: WelcomeArt.size * 1080 / 600,
+        maxHeight: WelcomeArt.size * 1920 / 600,
+        child: Lottie.asset(
+          asset,
+          controller: t.drive(Tween(begin: 0, end: holdAt)),
+          width: WelcomeArt.size * 1080 / 600,
+          height: WelcomeArt.size * 1920 / 600,
+          fit: BoxFit.fill,
+          errorBuilder: (context, error, stackTrace) => const SizedBox(),
+        ),
+      ),
+    ),
+  );
+}
+
+/// The advice page: a shield pops in and a tick draws across it.
+///
+/// "Security status - Safe" (Lottie, supplied by the project owner), its
+/// shield recoloured from a bright mint to the brand green.
+class ShieldArt extends StatelessWidget {
+  const ShieldArt({super.key});
+
+  static const String asset = 'assets/animations/privacy_shield.json';
+
+  @override
+  Widget build(BuildContext context) => _PlayOnce(
+    duration: const Duration(milliseconds: 1280),
+    builder: (context, t) => Lottie.asset(
+      asset,
+      controller: t,
+      fit: BoxFit.contain,
+      delegates: LottieDelegates(
+        values: [
+          ValueDelegate.color(const ['shield', '**'], value: qoutBrandGreen),
         ],
-      );
-    },
+      ),
+      errorBuilder: (context, error, stackTrace) => const SizedBox(),
+    ),
   );
 }

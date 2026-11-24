@@ -300,7 +300,7 @@ void main() {
         testWidgets('welcome, every page', (tester) async {
           await configure(tester);
           await tester.pumpQoutApp(start: StartScreen.welcome);
-          for (var page = 0; page < 2; page++) {
+          for (var page = 0; page < 3; page++) {
             expect(tester.takeException(), isNull);
             await tester.tap(find.text('Next'));
             await tester.pumpAndSettle();
