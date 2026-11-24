@@ -243,7 +243,7 @@ void main() {
           await tester.pushRoute(AppRoutes.signIn);
           await tester.pumpAndSettle();
           await tester.scrollUntilVisible(
-            find.text('New here? Create an account'),
+            find.widgetWithText(FilledButton, 'Sign in'),
             200,
             scrollable: find.byType(Scrollable).first,
           );

@@ -1,9 +1,14 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lottie/lottie.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/api_providers.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/features/auth/domain/auth_session.dart';
+import 'package:qout/features/auth/presentation/sign_in_art.dart';
 import 'package:qout/features/auth/presentation/sign_in_screen.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 
@@ -31,6 +36,12 @@ void main() {
 
   Finder field(String label) => find.widgetWithText(TextFormField, label);
 
+  /// The Sign in / Sign up switch's choice (the button says "Sign in" too).
+  Finder segment(String label) => find.descendant(
+    of: find.byType(SegmentedButton<bool>),
+    matching: find.text(label),
+  );
+
   Future<void> fill(
     WidgetTester tester, {
     String email = 'a@example.tn',
@@ -44,6 +55,123 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, button));
     await tester.pumpAndSettle();
   }
+
+  group('look (T46)', () {
+    testWidgets('the illustration, a title per mode, the switch', (
+      tester,
+    ) async {
+      await openSignIn(tester);
+      expect(find.byType(SignInArt), findsOneWidget);
+      expect(find.text('Welcome back'), findsOneWidget);
+      expect(find.byType(SegmentedButton<bool>), findsOneWidget);
+      expect(find.text('At least 10 characters.'), findsNothing);
+
+      await tester.tap(segment('Sign up'));
+      await tester.pumpAndSettle();
+      expect(find.text('Create your account'), findsOneWidget);
+      expect(
+        find.widgetWithText(FilledButton, 'Create account'),
+        findsOneWidget,
+      );
+      expect(find.text('At least 10 characters.'), findsOneWidget);
+    });
+
+    testWidgets('switching modes clears the error', (tester) async {
+      api.loginResults.add(const ApiUnauthorized('wrong email or password'));
+      await openSignIn(tester);
+      await fill(tester);
+      await submit(tester, 'Sign in');
+      expect(find.text('Wrong email or password.'), findsOneWidget);
+
+      await tester.tap(segment('Sign up'));
+      await tester.pumpAndSettle();
+      expect(find.text('Wrong email or password.'), findsNothing);
+    });
+
+    testWidgets('the keyboard folds the illustration away', (tester) async {
+      await openSignIn(tester);
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      addTearDown(tester.view.resetViewInsets);
+      await tester.pumpAndSettle();
+      expect(find.byType(SignInArt), findsNothing);
+      expect(find.widgetWithText(FilledButton, 'Sign in'), findsOneWidget);
+    });
+
+    double progress(WidgetTester tester) => tester
+        .widget<Lottie>(
+          find.descendant(
+            of: find.byType(SignInArt),
+            matching: find.byType(Lottie),
+          ),
+        )
+        .controller!
+        .value;
+
+    testWidgets('it plays a round, rests, and plays again', (tester) async {
+      await openSignIn(tester);
+      // Settled at the end of a round, resting.
+      expect(progress(tester), 1);
+      await tester.pump(SignInArt.rest - const Duration(milliseconds: 100));
+      expect(progress(tester), 1);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(seconds: 1));
+      expect(progress(tester), inExclusiveRange(0, 1));
+    });
+
+    testWidgets('reduced motion: it stands still', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await openSignIn(tester);
+      await tester.pump(const Duration(seconds: 3));
+      expect(progress(tester), 0);
+      expect(tester.hasRunningAnimations, isFalse);
+    });
+  });
+
+  test("the illustration's phone is in the brand greens (T46)", () {
+    final json =
+        jsonDecode(File(SignInArt.asset).readAsStringSync())
+            as Map<String, dynamic>;
+    final found = <int>{};
+    int rgb(List<dynamic> c, int at) =>
+        ((c[at] as num) * 255).round() << 16 |
+        ((c[at + 1] as num) * 255).round() << 8 |
+        ((c[at + 2] as num) * 255).round();
+    void walk(Object? o) {
+      if (o is Map<String, dynamic>) {
+        final ty = o['ty'];
+        if ((ty == 'fl' || ty == 'st') && o['c'] is Map) {
+          final k = (o['c'] as Map)['k'] as List<dynamic>;
+          if (k.first is num) found.add(rgb(k, 0));
+        }
+        if (ty == 'gf' || ty == 'gs') {
+          final g = o['g'] as Map<String, dynamic>;
+          final k = (g['k'] as Map)['k'] as List<dynamic>;
+          for (var i = 0; i < (g['p'] as int); i++) {
+            found.add(rgb(k, i * 4 + 1));
+          }
+        }
+        o.values.forEach(walk);
+      } else if (o is List) {
+        o.forEach(walk);
+      }
+    }
+
+    const phone = {'Group 5', 'phone', 'password', 'login', 'profile'};
+    for (final layer in (json['layers'] as List).cast<Map<String, dynamic>>()) {
+      if (phone.contains(layer['nm'])) walk(layer);
+    }
+    // Regression: the supplied phone was hot pink with purple details.
+    const pinkAndPurple = {
+      0xFF9085, 0xFD80A0, 0xFB6FBB, 0xDE8BDF, //
+      0x3B407A, 0xAA80F9, 0x8672E8, 0x6165D7,
+    };
+    expect(found.intersection(pinkAndPurple), isEmpty);
+    expect(found, contains(0x2E7D32));
+  });
 
   group('form validation', () {
     testWidgets('empty fields', (tester) async {
@@ -68,7 +196,7 @@ void main() {
 
     testWidgets('a new account needs a 10-character password', (tester) async {
       await openSignIn(tester);
-      await tester.tap(find.text('New here? Create an account'));
+      await tester.tap(find.text('Sign up'));
       await tester.pumpAndSettle();
       expect(find.text('At least 10 characters.'), findsOneWidget);
       await fill(tester, password: 'short');
@@ -93,12 +221,12 @@ void main() {
       await openSignIn(tester);
       await fill(tester);
 
-      await tester.tap(find.text('New here? Create an account'));
+      await tester.tap(find.text('Sign up'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Create an account'), findsOneWidget); // title
+      expect(find.text('Create your account'), findsOneWidget); // title
       expect(find.text('a@example.tn'), findsOneWidget);
-      await tester.tap(find.text('Already have an account? Sign in'));
+      await tester.tap(segment('Sign in'));
       await tester.pumpAndSettle();
       expect(find.widgetWithText(FilledButton, 'Sign in'), findsOneWidget);
     });
@@ -138,7 +266,7 @@ void main() {
     testWidgets('creating an account signs in', (tester) async {
       api.registerResults.add(pair('1'));
       await openSignIn(tester);
-      await tester.tap(find.text('New here? Create an account'));
+      await tester.tap(find.text('Sign up'));
       await tester.pumpAndSettle();
       await fill(tester);
 
@@ -186,7 +314,7 @@ void main() {
     testWidgets('an email already registered', (tester) async {
       api.registerResults.add(const ApiConflict('exists'));
       await openSignIn(tester);
-      await tester.tap(find.text('New here? Create an account'));
+      await tester.tap(find.text('Sign up'));
       await tester.pumpAndSettle();
       await fill(tester);
 
@@ -205,7 +333,7 @@ void main() {
         const ApiInvalidRequest('not a valid email address'),
       );
       await openSignIn(tester);
-      await tester.tap(find.text('New here? Create an account'));
+      await tester.tap(find.text('Sign up'));
       await tester.pumpAndSettle();
       await fill(tester);
 

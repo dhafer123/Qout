@@ -6,6 +6,7 @@ import 'package:qout/app/theme.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/features/auth/data/auth_repository.dart';
 import 'package:qout/features/auth/domain/credentials.dart';
+import 'package:qout/features/auth/presentation/sign_in_art.dart';
 
 /// Sign in, or create a contributor account. Pops `true` once signed in.
 class SignInScreen extends ConsumerStatefulWidget {
@@ -83,37 +84,79 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       ? 'The server refused this. Check your entries.'
       : '${text[0].toUpperCase()}${text.substring(1)}.';
 
+  void _setMode({required bool newAccount}) => setState(() {
+    _newAccount = newAccount;
+    _error = null;
+  });
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final title = _newAccount ? 'Create an account' : 'Sign in';
+    final scheme = theme.colorScheme;
+    // With the keyboard up, the illustration makes room for the form.
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom > 0;
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
           child: Form(
             key: _form,
             child: AutofillGroup(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
+                    child: keyboard
+                        ? const SizedBox(width: double.infinity)
+                        : const Center(child: SignInArt()),
+                  ),
+                  const SizedBox(height: 12),
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      _newAccount ? 'Create your account' : 'Welcome back',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                   if (widget.reason case final reason?) ...[
+                    const SizedBox(height: 6),
                     Text(
                       reason,
+                      textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: QoutPalette.of(context).muted,
                       ),
                     ),
-                    const SizedBox(height: 24),
                   ],
+                  const SizedBox(height: 20),
+                  SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment(value: false, label: Text('Sign in')),
+                      ButtonSegment(value: true, label: Text('Sign up')),
+                    ],
+                    selected: {_newAccount},
+                    showSelectedIcon: false,
+                    onSelectionChanged: _busy
+                        ? null
+                        : (choice) => _setMode(newAccount: choice.single),
+                  ),
+                  const SizedBox(height: 20),
                   TextFormField(
                     controller: _email,
                     enabled: !_busy,
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const [AutofillHints.email],
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: 'Email'),
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(PhosphorIconsRegular.envelopeSimple),
+                    ),
                     validator: (value) => emailProblem(value ?? ''),
                   ),
                   const SizedBox(height: 16),
@@ -131,6 +174,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     onFieldSubmitted: (_) => _submit(),
                     decoration: InputDecoration(
                       labelText: 'Password',
+                      prefixIcon: const Icon(PhosphorIconsRegular.lockSimple),
                       helperText: _newAccount
                           ? 'At least $minPasswordLength characters.'
                           : null,
@@ -152,47 +196,50 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   ),
                   if (_error case final error?) ...[
                     const SizedBox(height: 16),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          PhosphorIconsRegular.warningCircle,
-                          size: 20,
-                          color: theme.colorScheme.error,
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: scheme.errorContainer,
+                        borderRadius: BorderRadius.circular(QoutRadius.lg),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              PhosphorIconsRegular.warningCircle,
+                              size: 20,
+                              color: scheme.onErrorContainer,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                error,
+                                style: TextStyle(
+                                  color: scheme.onErrorContainer,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            error,
-                            style: TextStyle(color: theme.colorScheme.error),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                   const SizedBox(height: 24),
                   FilledButton(
                     onPressed: _busy ? null : _submit,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(52),
+                    ),
                     child: _busy
-                        ? const SizedBox.square(
+                        ? SizedBox.square(
                             dimension: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: scheme.onPrimary,
+                            ),
                           )
                         : Text(_newAccount ? 'Create account' : 'Sign in'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: _busy
-                        ? null
-                        : () => setState(() {
-                            _newAccount = !_newAccount;
-                            _error = null;
-                          }),
-                    child: Text(
-                      _newAccount
-                          ? 'Already have an account? Sign in'
-                          : 'New here? Create an account',
-                    ),
                   ),
                 ],
               ),
