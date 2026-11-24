@@ -13,6 +13,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Done 2026-11-23 from Dhafer's phone test: dark theme without the neon green fills, new animated welcome screens, vegetable stickers and a warmer theme in both modes (notes under T41). Waiting for the rest of his feedback.
 - Done 2026-11-23: T43b (appearance: system, light or dark, on the Profile tab).
 - Done 2026-11-23: T43c (profile photo, on the phone only), T43d (Profile tab order), T43e (meal pictures), T43f (Today UI fixes from Dhafer's review), T43g (animated Today summary), T43h (replayed on each visit).
+- Done 2026-11-24: T44a (softer colours), T44b (welcome page, greeting, shield), T44c (profile form, male/female), T44d (less text). Not yet seen on the phone (it disconnected).
 - Done 2026-11-24: the tearful onion Dhafer supplied (background removed, cropped) replaces the cabbage (empty day) and the pumpkin (empty week); "No scans yet" shows only its clock icon; "everything sent" keeps the peas.
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
@@ -449,6 +450,33 @@ Asked for on 2026-11-23: the count-up plays every time Today comes back into vie
 - [x] Replays when switching back to the Today tab and when coming back from a screen on top (product, scanner); not while staying on Today; the card fade-ins still play once; scroll position kept
 - Tests: **W** a screen replay runs a number from 0 again (and nothing moves without one); on Today: back from the Diary tab and back from a product both start from "0 eaten" and settle on the real value; staying on Today doesn't replay.
 - Done (2026-11-23): app 1398 tests. `todayVisitsProvider` (`today_visits.dart`) listens to the router and counts each return to `/` (the route on top, so pushed screens count); `EntranceScope.replay` clears what has run and starts a new round, which `AnimatedValue` picks up (`Entrance.round`). Checked on the phone by recording a Diary → Today switch. Not included: coming back to the app from the background (offered as an option).
+
+### T44a · Softer colours
+Asked for on 2026-11-24: the dark mode's brown didn't invite people in; something softer in both modes.
+- [x] Dark: soft green-charcoal ground `#171C1A`, cards `#1E2421`, raised rows `#262D2A`; light: sage-white ground `#F4F7F3`, white cards, raised rows `#F1F5F0`; neutral shadows; Android splash grounds to match
+- [x] Brand green, grade colours and status colours unchanged; every text colour still passes AA, and the green buttons keep 3:1 on the dark cards
+- Tests: **U** grounds and cards are green-grey, not brown (regression); existing contrast tests.
+
+### T44b · Welcome page, greeting and shield
+Asked for on 2026-11-24.
+- [x] New first page "Welcome to Qout" (one sentence) with Dhafer's "If you are new here!" Lottie (`greeting.json`), cropped to its middle and held at frame 80 before the ball rolls away
+- [x] "Advice for you" page: his "Security status - Safe" Lottie (`privacy_shield.json`), shield recoloured to the brand green, instead of the code-drawn padlock
+- [x] No vegetable stickers on the welcome pages; spinach, pepper and garlic removed (15 stickers left)
+- Tests: **W** four pages in order, greeting and shield shown, no stickers on any page, animations settle, reduced motion shows the shield's last frame.
+- Note: "Walking Orange.json" was also supplied; unused for now.
+
+### T44c · Profile form without filler; male or female
+Asked for on 2026-11-24.
+- [x] Intro paragraph, "(optional)" labels and "For the greeting on Today." removed; activity examples and the pregnancy note (decision H3) kept
+- [x] Sex: Male or Female only (decision H2 revised in `docs/specs/README.md`); profiles saved without it show "Not given" and the form asks again on the next edit
+- Tests: **U** two choices only; a profile without a sex pre-fills nothing and is asked again; **W** labels and error text.
+
+### T44d · Less text across the app
+Asked for on 2026-11-24; the 21 cuts were listed and approved before applying.
+- [x] Today's "About these numbers" sheet, Diary empty states and quick add, Home, Progress (empty week, footnote), Profile (account card, appearance, no-profile card), sign-in, product (sign-in reason, missing values, unknown product), add a product (intro, done, provisional grade), outbox, camera permission
+- [x] Kept: errors, confirmations, score explanations, "check every value against the photo", activity examples, the pregnancy note
+- Tests: existing widget tests updated to the new wording; removed lines asserted absent.
+- Done (2026-11-24): app 1403 tests.
 
 
 ---
