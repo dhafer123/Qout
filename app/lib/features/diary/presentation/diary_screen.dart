@@ -162,7 +162,6 @@ class DiaryScreen extends ConsumerWidget {
                   const SliverToBoxAdapter(
                     child: ListMessage(
                       icon: PhosphorIconsRegular.clockCounterClockwise,
-                      veggie: VeggieFor.noScans,
                       title: 'No scans yet',
                       message: 'Scanned products appear here, also offline.',
                     ),

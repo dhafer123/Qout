@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/core/api/qout_api.dart';
 import 'package:qout/features/history/presentation/scan_history_list.dart';
@@ -55,6 +56,11 @@ void main() {
     await openDiary(tester);
 
     expect(find.text('No scans yet'), findsOneWidget);
+    // Only the icon: the onion is for an empty day or week.
+    expect(
+      find.byIcon(PhosphorIconsRegular.clockCounterClockwise),
+      findsOneWidget,
+    );
     expect(
       find.text('Scanned products appear here, also offline.'),
       findsOneWidget,

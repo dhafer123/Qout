@@ -13,7 +13,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Done 2026-11-23 from Dhafer's phone test: dark theme without the neon green fills, new animated welcome screens, vegetable stickers and a warmer theme in both modes (notes under T41). Waiting for the rest of his feedback.
 - Done 2026-11-23: T43b (appearance: system, light or dark, on the Profile tab).
 - Done 2026-11-23: T43c (profile photo, on the phone only), T43d (Profile tab order), T43e (meal pictures), T43f (Today UI fixes from Dhafer's review), T43g (animated Today summary), T43h (replayed on each visit).
-- Done 2026-11-24: the tearful onion Dhafer supplied (background removed, cropped) replaces the cabbage, pumpkin and cucumber on every empty state; "everything sent" keeps the peas.
+- Done 2026-11-24: the tearful onion Dhafer supplied (background removed, cropped) replaces the cabbage (empty day) and the pumpkin (empty week); "No scans yet" shows only its clock icon; "everything sent" keeps the peas.
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
 

@@ -60,7 +60,6 @@ void main() {
   test('every nothing-logged state shows the tearful onion', () {
     expect(VeggieFor.emptyDay, Veggie.onionTear);
     expect(VeggieFor.emptyWeek, Veggie.onionTear);
-    expect(VeggieFor.noScans, Veggie.onionTear);
     expect(VeggieFor.allSent, Veggie.peas);
   });
 
@@ -72,7 +71,6 @@ void main() {
       VeggieFor.unknown,
       VeggieFor.emptyDay,
       VeggieFor.emptyWeek,
-      VeggieFor.noScans,
       VeggieFor.allSent,
       VeggieFor.thanks,
       VeggieFor.noCamera,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/features/diary/presentation/diary_screen.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
@@ -142,6 +143,11 @@ void main() {
         tester,
       );
       expect(find.textContaining('No scans yet'), findsOneWidget);
+      // Only the icon: the onion is for an empty day or week.
+      expect(
+        find.byIcon(PhosphorIconsRegular.clockCounterClockwise),
+        findsOneWidget,
+      );
       expect(find.text('See all'), findsNothing);
     });
 

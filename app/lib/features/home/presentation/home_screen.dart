@@ -452,7 +452,7 @@ class _RecentScans extends ConsumerWidget {
         else if (entries.isEmpty)
           const _RecentMessage(
             'No scans yet. Scanned products appear here, also offline.',
-            veggie: VeggieFor.noScans,
+            icon: PhosphorIconsRegular.clockCounterClockwise,
           )
         else
           SizedBox(
@@ -472,17 +472,26 @@ class _RecentScans extends ConsumerWidget {
 }
 
 class _RecentMessage extends StatelessWidget {
-  const _RecentMessage(this.text, {required this.veggie});
+  const _RecentMessage(this.text, {this.veggie, this.icon});
 
   final String text;
-  final Veggie veggie;
+
+  /// Shown instead of [icon] (see [VeggieFor]).
+  final Veggie? veggie;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
     child: Row(
       children: [
-        VeggieArt(veggie, size: 44),
+        if (veggie case final veggie?)
+          VeggieArt(veggie, size: 44)
+        else
+          SizedBox.square(
+            dimension: 44,
+            child: Icon(icon, size: 32, color: QoutPalette.of(context).muted),
+          ),
         const SizedBox(width: 12),
         Expanded(
           child: Text(text, style: Theme.of(context).textTheme.bodySmall),

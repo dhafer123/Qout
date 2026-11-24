@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// The vegetable stickers (`assets/illustrations/veg/`, see
 /// `assets/illustrations/SOURCE.md`). Each stands for something: every
 /// state and welcome page has its own ([VeggieFor]), except the empty
-/// states, which share the tearful onion.
+/// day and week, which share the tearful onion.
 enum Veggie {
   asparagus,
   broccoli,
@@ -48,9 +48,6 @@ abstract final class VeggieFor {
 
   /// Nothing logged in a week.
   static const Veggie emptyWeek = Veggie.onionTear;
-
-  /// No scans yet.
-  static const Veggie noScans = Veggie.onionTear;
 
   /// Everything sent.
   static const Veggie allSent = Veggie.peas;
