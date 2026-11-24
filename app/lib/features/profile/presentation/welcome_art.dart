@@ -256,7 +256,9 @@ class ScanArt extends StatelessWidget {
 ///
 /// "If you are new here!" (Lottie, 1080 × 1920, supplied by the project
 /// owner), cropped to the 600 × 600 middle where the ball lands. It stops at
-/// frame 80 of 120, before the ball rolls away, and holds there.
+/// frame 80 of 120, before the ball rolls away, and holds there. Recoloured
+/// from its yellow-orange to the brand green (the tile's lip a darker green);
+/// "hi." stays white.
 class GreetingArt extends StatelessWidget {
   const GreetingArt({super.key});
 
@@ -264,6 +266,22 @@ class GreetingArt extends StatelessWidget {
 
   /// The frame it holds on, out of the 120 frames.
   static const double holdAt = 80 / 120;
+
+  /// The tile's lower edge, under its face.
+  static const Color lip = Color(0xFF1B5E20);
+
+  /// The brand green over the file's colours. The hidden track mattes keep
+  /// theirs: only their shape counts.
+  static final List<ValueDelegate<Object>> colours = [
+    for (final path in const [
+      ['Ball', '**'],
+      ['Ball 3', 'Rectangle 1', '**'],
+    ])
+      ValueDelegate.color(path, value: qoutBrandGreen),
+    for (final layer in const ['Tail', 'Tail 2'])
+      ValueDelegate.strokeColor([layer, '**'], value: qoutBrandGreen),
+    ValueDelegate.color(const ['Ball 3', 'Rectangle 2', '**'], value: lip),
+  ];
 
   @override
   Widget build(BuildContext context) => _PlayOnce(
@@ -278,6 +296,7 @@ class GreetingArt extends StatelessWidget {
           width: WelcomeArt.size * 1080 / 600,
           height: WelcomeArt.size * 1920 / 600,
           fit: BoxFit.fill,
+          delegates: LottieDelegates(values: colours),
           errorBuilder: (context, error, stackTrace) => const SizedBox(),
         ),
       ),

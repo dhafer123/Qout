@@ -66,6 +66,23 @@ void main() {
     expect(find.text('Skip').hitTestable(), findsNothing);
   });
 
+  testWidgets('the greeting is in the brand green, its lip darker', (
+    tester,
+  ) async {
+    await openFirstRun(tester);
+    final lottie = tester.widget<Lottie>(
+      find.descendant(
+        of: find.byType(GreetingArt),
+        matching: find.byType(Lottie),
+      ),
+    );
+    final values = lottie.delegates!.values!;
+    expect(values, same(GreetingArt.colours));
+    expect(values, hasLength(5));
+    final colours = values.map((d) => d.value).toSet();
+    expect(colours, {qoutBrandGreen, GreetingArt.lip});
+  });
+
   testWidgets('no vegetable stickers on any page (T44b)', (tester) async {
     await openFirstRun(tester);
     for (var page = 0; page < 4; page++) {
