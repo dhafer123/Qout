@@ -492,6 +492,13 @@ Asked for on 2026-11-24: the same icon on the splash, with Dhafer's "loading" Lo
 - Tests: **W** icon and dots, the app not built until the loop ends, centred like the system splash, ground fills the screen (regression), reduced motion, no splash in tests; **U** the dots' colours are only the two greens.
 - Done (2026-11-24): app 1410 tests. Checked on the phone by cold-starting and measuring both phases: the circle is 446 px (system) and 448 px (Flutter) at the same place.
 
+### T46 · Sign in / sign up polish
+Asked for on 2026-11-24, with Dhafer's "Sign In Green" Lottie.
+- [x] Illustration on top (`sign_in.json`: the phone recoloured from hot pink and purple to the brand greens; people, leaves, tablet and laptop keep their colours); a 5 s round, then a 1.5 s rest; folded away while the keyboard is up; still with reduced motion
+- [x] No app-bar title; "Welcome back" / "Create your account", the reason under it; a Sign in / Sign up switch instead of the link at the bottom; envelope and lock icons in the fields; a 52 dp full-width button; errors in a soft red box
+- Tests: **W** titles, button and password hint per mode, the switch clears the error, the keyboard hides the illustration, round then rest then round, reduced motion still; **U** no pink or purple left in the phone's layers.
+- Done (2026-11-24): app 1417 tests. Also since T45b: the splash dots kept clear of the icon (fix), the welcome greeting loops after a second on "hi.".
+
 
 ---
 
