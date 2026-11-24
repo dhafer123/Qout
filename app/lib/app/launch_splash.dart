@@ -31,6 +31,21 @@ class LaunchSplash extends StatefulWidget {
   static const double iconBox = 240;
   static const double circle = 160;
 
+  /// The dots' canvas (800 × 600) drawn 200 dp wide.
+  static const Size dotsBox = Size(200, 150);
+
+  /// The highest point the dots jump to over the loop: 108 of the canvas's
+  /// 600 (measured frame by frame).
+  static const double dotsJumpTop = 108 / 600;
+
+  /// Space between the circle and the dots at the top of their jump.
+  static const double dotsGap = 32;
+
+  /// How far below the icon's centre the dots' box is centred, so their
+  /// highest jump stays [dotsGap] under the circle.
+  static double get dotsOffset =>
+      circle / 2 + dotsGap - dotsBox.height * dotsJumpTop + dotsBox.height / 2;
+
   @override
   State<LaunchSplash> createState() => _LaunchSplashState();
 }
@@ -87,53 +102,54 @@ class _SplashView extends StatelessWidget {
     label: 'Qout, loading',
     child: ColoredBox(
       color: Theme.of(context).colorScheme.surface,
-      // The whole screen, not only the icon's square.
-      child: Stack(
-        fit: StackFit.expand,
-        alignment: Alignment.center,
-        children: [
-          ExcludeSemantics(
-            child: SizedBox.square(
-              dimension: LaunchSplash.iconBox,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: qoutBrandGreen,
-                      shape: BoxShape.circle,
+      // The whole screen, not only the icon's square; its children keep
+      // their own sizes (regression: stretched, the dots grew into the icon).
+      child: SizedBox.expand(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            ExcludeSemantics(
+              child: SizedBox.square(
+                dimension: LaunchSplash.iconBox,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: qoutBrandGreen,
+                        shape: BoxShape.circle,
+                      ),
+                      child: SizedBox.square(dimension: LaunchSplash.circle),
                     ),
-                    child: SizedBox.square(dimension: LaunchSplash.circle),
-                  ),
-                  Image.asset(
-                    LaunchSplash.markAsset,
-                    width: LaunchSplash.iconBox,
-                    height: LaunchSplash.iconBox,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const SizedBox(),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // The dots' canvas is 800 × 600 with the dots in its middle:
-          // drawn 200 dp wide, they sit 130 dp under the icon's centre.
-          Transform.translate(
-            offset: const Offset(0, 130),
-            child: ExcludeSemantics(
-              child: SizedBox(
-                width: 200,
-                height: 150,
-                child: Lottie.asset(
-                  LaunchSplash.dotsAsset,
-                  controller: dots,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const SizedBox(),
+                    Image.asset(
+                      LaunchSplash.markAsset,
+                      width: LaunchSplash.iconBox,
+                      height: LaunchSplash.iconBox,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox(),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-        ],
+            // Regression: placed by their resting row, the dots jumped into
+            // the circle.
+            Transform.translate(
+              offset: Offset(0, LaunchSplash.dotsOffset),
+              child: ExcludeSemantics(
+                child: SizedBox.fromSize(
+                  size: LaunchSplash.dotsBox,
+                  child: Lottie.asset(
+                    LaunchSplash.dotsAsset,
+                    controller: dots,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const SizedBox(),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     ),
   );

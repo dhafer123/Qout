@@ -106,10 +106,14 @@ void main() {
       tester.getSize(find.byType(Image)),
       const Size.square(LaunchSplash.iconBox),
     );
-    // The dots under it.
+    // The dots under it: even at the top of their jump (108 of the 600
+    // canvas), a clear gap under the circle (regression: they overlapped).
+    final dots = tester.getRect(find.byType(Lottie));
+    expect(dots.size, LaunchSplash.dotsBox);
+    final jumpTop = dots.top + dots.height * LaunchSplash.dotsJumpTop;
     expect(
-      tester.getCenter(find.byType(Lottie)).dy,
-      greaterThan(screen.dy + LaunchSplash.circle / 2),
+      jumpTop - (screen.dy + LaunchSplash.circle / 2),
+      closeTo(LaunchSplash.dotsGap, 0.01),
     );
     await tester.pumpAndSettle(); // let the splash finish
   });
