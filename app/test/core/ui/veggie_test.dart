@@ -57,8 +57,16 @@ void main() {
     });
   });
 
+  test('every nothing-logged state shows the tearful onion', () {
+    expect(VeggieFor.emptyDay, Veggie.onionTear);
+    expect(VeggieFor.emptyWeek, Veggie.onionTear);
+    expect(VeggieFor.noScans, Veggie.onionTear);
+    expect(VeggieFor.allSent, Veggie.peas);
+  });
+
   test('the welcome pages use vegetables no state uses', () {
-    final elsewhere = {
+    // A list: the empty states share one vegetable.
+    final elsewhere = [
       VeggieFor.error,
       VeggieFor.offline,
       VeggieFor.unknown,
@@ -68,7 +76,7 @@ void main() {
       VeggieFor.allSent,
       VeggieFor.thanks,
       VeggieFor.noCamera,
-    };
+    ];
     for (final veggie in [
       VeggieFor.welcomeGrades,
       VeggieFor.welcomeScan,

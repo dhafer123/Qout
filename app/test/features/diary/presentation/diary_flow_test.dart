@@ -5,6 +5,8 @@ import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/veggie.dart';
 import 'package:qout/features/diary/data/diary_repository.dart';
 import 'package:qout/features/diary/presentation/diary_screen.dart';
+import 'package:qout/features/history/presentation/scan_history_list.dart'
+    show ListMessage;
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/health/advice.dart' show Nutrient;
 import 'package:qout/health/diary.dart';
@@ -251,7 +253,16 @@ void main() {
       await tester.tap(find.byTooltip('Previous week'));
       await tester.pumpAndSettle();
       expect(find.text('Nothing logged on this day'), findsOneWidget);
-      expect(findVeggie(VeggieFor.emptyDay), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.ancestor(
+            of: find.text('Nothing logged on this day'),
+            matching: find.byType(ListMessage),
+          ),
+          matching: findVeggie(VeggieFor.emptyDay),
+        ),
+        findsOneWidget,
+      );
       expect(find.byType(DiaryEntryTile), findsNothing);
     });
 

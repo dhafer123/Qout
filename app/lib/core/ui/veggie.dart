@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 /// The vegetable stickers (`assets/illustrations/veg/`, see
 /// `assets/illustrations/SOURCE.md`). Each stands for something: every
-/// state and welcome page has its own ([VeggieFor]).
+/// state and welcome page has its own ([VeggieFor]), except the empty
+/// states, which share the tearful onion.
 enum Veggie {
   asparagus,
   broccoli,
@@ -15,6 +16,9 @@ enum Veggie {
   garlic,
   mushroom,
   onion,
+
+  /// The smiling onion with a tear (a separate picture, not from the sheet).
+  onionTear,
   peas,
   pepper,
   potato,
@@ -39,14 +43,14 @@ abstract final class VeggieFor {
   /// A product Qout does not know (the mushroom, popping up).
   static const Veggie unknown = Veggie.mushroom;
 
-  /// Nothing logged on a day (the cabbage, an empty plate's greens).
-  static const Veggie emptyDay = Veggie.cabbage;
+  /// Nothing logged on a day (the tearful onion: nothing to eat yet).
+  static const Veggie emptyDay = Veggie.onionTear;
 
   /// Nothing logged in a week.
-  static const Veggie emptyWeek = Veggie.pumpkin;
+  static const Veggie emptyWeek = Veggie.onionTear;
 
   /// No scans yet.
-  static const Veggie noScans = Veggie.cucumber;
+  static const Veggie noScans = Veggie.onionTear;
 
   /// Everything sent.
   static const Veggie allSent = Veggie.peas;
