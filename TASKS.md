@@ -13,7 +13,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Done 2026-11-23 from Dhafer's phone test: dark theme without the neon green fills, new animated welcome screens, vegetable stickers and a warmer theme in both modes (notes under T41). Waiting for the rest of his feedback.
 - Done 2026-11-23: T43b (appearance: system, light or dark, on the Profile tab).
 - Done 2026-11-23: T43c (profile photo, on the phone only), T43d (Profile tab order), T43e (meal pictures), T43f (Today UI fixes from Dhafer's review), T43g (animated Today summary), T43h (replayed on each visit).
-- Done 2026-11-24: T44a (softer colours), T44b (welcome page, greeting, shield), T44c (profile form, male/female), T44d (less text). Not yet seen on the phone (it disconnected).
+- Done 2026-11-24: T44a (softer colours), T44b (welcome page, greeting, shield), T44c (profile form, male/female), T44d (less text), T45a (new launcher icon), T45b (launch splash with loading dots). Supplied but unused: `Walking Orange.json`.
 - Done 2026-11-24: the tearful onion Dhafer supplied (background removed, cropped) replaces the cabbage (empty day) and the pumpkin (empty week); "No scans yet" shows only its clock icon; "everything sent" keeps the peas.
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
@@ -477,6 +477,20 @@ Asked for on 2026-11-24; the 21 cuts were listed and approved before applying.
 - [x] Kept: errors, confirmations, score explanations, "check every value against the photo", activity examples, the pregnancy note
 - Tests: existing widget tests updated to the new wording; removed lines asserted absent.
 - Done (2026-11-24): app 1403 tests.
+
+### T45a · New launcher icon
+Chosen on 2026-11-24 from a design-AI sheet (`docs/brand/icon-sheet.png`): a leaf with a check, framed by scanner corners, off-white on the brand green.
+- [x] Adaptive icon (foreground, brand-green background, monochrome for themed icons) and legacy icons in every density; `assets/brand/qout_icon.png`; store icons in `docs/brand/` (1024 and 512 px)
+- [x] Built by `scripts/make_icons.py`: the mark is lifted from the sheet's 228 px tile, upscaled and re-thresholded, so edges stay crisp
+- Tests: **U** the launcher background colour is the brand green.
+- Note: the sheet is a picture of the designs, not the design AI's SVGs; if those are exported later, rebuild from them.
+
+### T45b · Launch splash with loading dots
+Asked for on 2026-11-24: the same icon on the splash, with Dhafer's "loading" Lottie under it, in matching colours.
+- [x] Android 12+ splash: `splash_icon` draws the 160 dp green circle and the mark in (no icon background), so Samsung's squircle mask can't reshape it; before Android 12, `launch_image` is the same disc
+- [x] Flutter splash (`LaunchSplash`, only on a real start): the same icon in the same place, the dots (`loading_dots.json`, recoloured brand green with a light-green flash) for one loop (1.32 s), then the first screen fades in; the first screen is built only then; reduced motion: still dots, same length
+- Tests: **W** icon and dots, the app not built until the loop ends, centred like the system splash, ground fills the screen (regression), reduced motion, no splash in tests; **U** the dots' colours are only the two greens.
+- Done (2026-11-24): app 1410 tests. Checked on the phone by cold-starting and measuring both phases: the circle is 446 px (system) and 448 px (Flutter) at the same place.
 
 
 ---
