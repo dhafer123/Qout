@@ -39,7 +39,7 @@ Future<void> main() async {
         startScreenProvider.overrideWithValue(start),
         initialThemeModeProvider.overrideWithValue(themeMode),
       ],
-      child: const QoutApp(),
+      child: const QoutApp(splash: true),
     ),
   );
 }

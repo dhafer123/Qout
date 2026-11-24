@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qout/app/launch_splash.dart';
 import 'package:qout/app/router.dart';
 import 'package:qout/app/theme.dart';
 import 'package:qout/core/env/app_env.dart';
@@ -8,7 +9,11 @@ import 'package:qout/features/outbox/presentation/outbox_scheduler.dart';
 import 'package:qout/features/settings/presentation/theme_mode_provider.dart';
 
 class QoutApp extends ConsumerWidget {
-  const QoutApp({super.key});
+  const QoutApp({this.splash = false, super.key});
+
+  /// Whether the launch splash with the loading dots plays first (T45b):
+  /// on a real start, not in tests.
+  final bool splash;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,7 +32,9 @@ class QoutApp extends ConsumerWidget {
         // status bar's).
         value: qoutSystemOverlayStyle(Theme.of(context).brightness),
         // Sends queued contributions and reports while the app runs (T30).
-        child: OutboxSyncHost(child: child!),
+        child: splash
+            ? LaunchSplash(child: OutboxSyncHost(child: child!))
+            : OutboxSyncHost(child: child!),
       ),
     );
   }
