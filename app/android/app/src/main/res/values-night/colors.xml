@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- The app's ground (Nocturne dark), shown while the app starts. -->
+    <!-- The app's ground (dark), shown while the app starts. -->
     <color name="splash_background">#171C1A</color>
 </resources>
