@@ -192,16 +192,13 @@ class _Account extends ConsumerWidget {
                           ? textTheme.titleSmall
                           : textTheme.bodySmall,
                     ),
-                    Text(
-                      email ??
-                          'Scanning needs no account. Sign in to add '
-                              'products.',
-                      style: email == null
-                          ? textTheme.bodySmall
-                          : textTheme.titleSmall,
-                      maxLines: email == null ? null : 2,
-                      overflow: email == null ? null : TextOverflow.ellipsis,
-                    ),
+                    if (email != null)
+                      Text(
+                        email,
+                        style: textTheme.titleSmall,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                   ],
                 ),
               ),
@@ -307,10 +304,7 @@ class _NoProfile extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
-          'Add your age, height, weight and activity to compare products '
-          'with your own daily needs. It stays on this phone.',
-        ),
+        const Text('Add your details to compare products with your needs.'),
         const SizedBox(height: 14),
         FilledButton.icon(
           onPressed: () => context.push(AppRoutes.profileEdit),

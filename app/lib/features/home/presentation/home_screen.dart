@@ -451,7 +451,7 @@ class _RecentScans extends ConsumerWidget {
           )
         else if (entries.isEmpty)
           const _RecentMessage(
-            'No scans yet. Scanned products appear here, also offline.',
+            'No scans yet.',
             icon: PhosphorIconsRegular.clockCounterClockwise,
           )
         else

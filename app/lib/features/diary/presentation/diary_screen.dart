@@ -116,9 +116,7 @@ class DiaryScreen extends ConsumerWidget {
                   icon: PhosphorIconsRegular.forkKnife,
                   veggie: VeggieFor.emptyDay,
                   title: 'Nothing logged on this day',
-                  message:
-                      'Open a product and tap "I ate this", or use quick '
-                      'add for food without a barcode.',
+                  message: 'Tap "I ate this" on a product, or use quick add.',
                 ),
               )
             else
@@ -163,7 +161,6 @@ class DiaryScreen extends ConsumerWidget {
                     child: ListMessage(
                       icon: PhosphorIconsRegular.clockCounterClockwise,
                       title: 'No scans yet',
-                      message: 'Scanned products appear here, also offline.',
                     ),
                   )
                 else

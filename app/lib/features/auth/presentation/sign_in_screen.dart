@@ -98,15 +98,15 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    widget.reason ??
-                        'An account is only needed to add products. '
-                            'Scanning works without one.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: QoutPalette.of(context).muted,
+                  if (widget.reason case final reason?) ...[
+                    Text(
+                      reason,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: QoutPalette.of(context).muted,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
+                  ],
                   TextFormField(
                     controller: _email,
                     enabled: !_busy,

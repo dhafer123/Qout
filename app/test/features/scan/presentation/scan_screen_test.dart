@@ -234,7 +234,7 @@ void main() {
 
       expect(find.text('Camera access needed'), findsOneWidget);
       expect(
-        find.textContaining('uses the camera only to read barcodes'),
+        find.textContaining('Allow camera access to scan barcodes'),
         findsOneWidget,
       );
       expect(find.text('Try again'), findsOneWidget);

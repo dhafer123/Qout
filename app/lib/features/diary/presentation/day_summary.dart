@@ -145,25 +145,16 @@ class _AboutSheet extends StatelessWidget {
           children: [
             Text('About these numbers', style: textTheme.titleMedium),
             const SizedBox(height: 8),
-            Text(
-              personal
-                  ? "Today's food against the daily needs worked out from "
-                        'your profile.'
-                  : "Today's food against the EU reference intakes "
-                        '(no personal profile).',
-            ),
-            const SizedBox(height: 12),
+            if (!personal) ...[
+              const Text('Based on EU reference intakes.'),
+              const SizedBox(height: 12),
+            ],
             for (final nutrient in _bars)
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(line(nutrient)),
               ),
             const SizedBox(height: 8),
-            const Text(
-              'A bar turns amber from 70 % of its amount and red above it. '
-              'Sugars stay amber: 90 g is a reference, not a limit.',
-            ),
-            const SizedBox(height: 12),
             Text(
               'General information, not medical advice.',
               style: textTheme.bodySmall,

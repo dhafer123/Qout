@@ -140,7 +140,10 @@ void main() {
     );
     await tester.pump();
     expect(find.text('Unverified'), findsOneWidget);
-    expect(find.textContaining('Provisional grade'), findsOneWidget);
+    expect(
+      find.text('Provisional until a moderator checks it.'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('Send for review'));
     await tester.pump();
@@ -236,7 +239,7 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(find.text('Thank you!'), findsOneWidget);
-    expect(find.textContaining('Your values are waiting'), findsOneWidget);
+    expect(find.text('Sent for review.'), findsOneWidget);
 
     final body = fake.api.submitted.single;
     expect(body.ean, _ean);

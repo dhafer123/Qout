@@ -328,7 +328,7 @@ Future<void> _contribute(
     if (!context.mounted) return;
     final signedIn = await context.push<bool>(
       AppRoutes.signIn,
-      extra: '$signInReason Scanning works without an account.',
+      extra: signInReason,
     );
     if (signedIn != true) return;
   }
@@ -349,8 +349,7 @@ class _CompleteValues extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Have it at hand? You can help by adding the values from a '
-            'photo of its nutrition table.',
+            'Add the values from a photo of the label.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 10),
@@ -381,9 +380,7 @@ class _NotFound extends ConsumerWidget {
       icon: PhosphorIconsRegular.magnifyingGlass,
       veggie: VeggieFor.unknown,
       title: 'We do not know this product yet',
-      message:
-          'Barcode $ean. You can help by adding it from photos of its '
-          'label.',
+      message: 'Barcode $ean.',
       actions: [
         FilledButton.icon(
           onPressed: () => _contribute(

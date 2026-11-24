@@ -63,7 +63,7 @@ void main() {
     );
     expect(
       find.text('Scanned products appear here, also offline.'),
-      findsOneWidget,
+      findsNothing,
     );
     expect(find.bySemanticsLabel('Clear history'), findsNothing);
   });

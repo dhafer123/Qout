@@ -388,12 +388,6 @@ class _QuickAddSheetState extends ConsumerState<_QuickAddSheet> {
     return _SheetFrame(
       children: [
         Text('Quick add', style: textTheme.titleLarge),
-        const SizedBox(height: 4),
-        Text(
-          'For food without a barcode. Only its energy counts toward your '
-          'day.',
-          style: textTheme.bodySmall,
-        ),
         const SizedBox(height: 16),
         TextField(
           controller: _name,

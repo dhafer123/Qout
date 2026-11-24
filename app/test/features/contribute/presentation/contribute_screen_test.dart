@@ -77,7 +77,7 @@ void main() {
       await open(tester);
 
       expect(find.text('Add a product'), findsOneWidget);
-      expect(find.textContaining('Barcode $_ean.'), findsOneWidget);
+      expect(find.text('Take three photos of the label.'), findsOneWidget);
       expect(find.text('Name and brand visible.'), findsOneWidget);
       expect(find.text('Ingredients (optional)'), findsOneWidget);
       FilledButton continueButton() =>
@@ -165,7 +165,10 @@ void main() {
 
       await tester.tap(find.text('None (0 %)'));
       await tester.pump();
-      expect(find.textContaining('Provisional grade'), findsOneWidget);
+      expect(
+        find.text('Provisional until a moderator checks it.'),
+        findsOneWidget,
+      );
       expect(grade(tester), isNotNull);
     });
 
@@ -437,8 +440,8 @@ void main() {
       expect(find.text('Saved'), findsOneWidget); // the title
       expect(
         find.text(
-          'No connection to Qout. It is saved on this phone and will be '
-          'sent automatically. You can follow it from the home screen.',
+          'No connection to Qout. Saved on this phone. It will be sent '
+          'automatically.',
         ),
         findsOneWidget,
       );

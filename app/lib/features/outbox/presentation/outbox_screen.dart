@@ -88,13 +88,6 @@ class OutboxScreen extends ConsumerWidget {
             24,
           ).clearOfNavigationBar(context),
           children: [
-            Text(
-              'Sent automatically while the app is open and online.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: QoutPalette.of(context).muted,
-              ),
-            ),
-            const SizedBox(height: 12),
             for (final row in rows)
               _EntryCard(row: row, sending: row.clientId == sending),
           ],

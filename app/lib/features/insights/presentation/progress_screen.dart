@@ -131,13 +131,9 @@ class _Week extends StatelessWidget {
         icon: PhosphorIconsRegular.chartLineUp,
         veggie: VeggieFor.emptyWeek,
         title: 'Nothing logged this week',
-        message:
-            'Log what you eat with "I ate this" on a product or a quick add; '
-            'your week appears here: energy, grades, processing, salt and '
-            'sugars.',
+        message: 'Log what you eat to see your week.',
       );
     }
-    final textTheme = Theme.of(context).textTheme;
     final sections = <Widget>[
       _EnergyCard(week: week, needs: needs),
       _GradesCard(week: week),
@@ -145,14 +141,6 @@ class _Week extends StatelessWidget {
       _ReferencesCard(week: week),
       if (week.topSugars.isNotEmpty || week.topSalt.isNotEmpty)
         _TopSourcesCard(week: week),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-        child: Text(
-          'From what you logged. Shares are of your energy (kcal). General '
-          'information, not medical advice.',
-          style: textTheme.bodySmall,
-        ),
-      ),
     ];
     return EntranceScope(
       child: ListView(

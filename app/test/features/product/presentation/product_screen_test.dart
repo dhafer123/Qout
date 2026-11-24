@@ -368,7 +368,7 @@ void main() {
 
         expect(find.text(addValues), findsOneWidget);
         expect(
-          find.textContaining('adding the values from a photo'),
+          find.text('Add the values from a photo of the label.'),
           findsOneWidget,
         );
       });
@@ -481,7 +481,7 @@ void main() {
       expect(find.byType(SignInScreen), findsNothing);
       expect(find.byType(ContributeScreen), findsOneWidget);
       expect(
-        find.textContaining('Barcode 6191234567897. Take'),
+        find.text('Take three photos of the label.'),
         findsOneWidget,
       );
 

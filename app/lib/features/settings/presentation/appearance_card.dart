@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:qout/app/theme.dart';
 import 'package:qout/core/ui/section_card.dart';
 import 'package:qout/features/settings/presentation/theme_mode_provider.dart';
 
@@ -14,7 +13,6 @@ class AppearanceCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(themeModeProvider);
-    final palette = QoutPalette.of(context);
     return SectionCard(
       title: 'Appearance',
       icon: PhosphorIconsRegular.palette,
@@ -22,13 +20,6 @@ class AppearanceCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'System follows the dark mode of your phone.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: palette.muted,
-            ),
-          ),
-          const SizedBox(height: 12),
           SegmentedButton<ThemeMode>(
             segments: const [
               ButtonSegment(

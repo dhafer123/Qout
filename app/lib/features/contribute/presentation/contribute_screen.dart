@@ -58,18 +58,13 @@ class ContributeScreen extends ConsumerWidget {
   Widget _body(WidgetRef ref, ContributionStep step) => switch (step) {
     ContributionStep.photos => _PhotosStep(ean: ean),
     ContributionStep.review => ReviewForm(ean: ean),
-    ContributionStep.sent => _Done(completing: _completing(ref)),
+    ContributionStep.sent => const _Done(),
     ContributionStep.saved => _Done(
-      completing: _completing(ref),
       savedReason: ref.watch(
         contributionControllerProvider(ean).select((s) => s.savedReason),
       ),
     ),
   };
-
-  bool _completing(WidgetRef ref) => ref.watch(
-    contributionControllerProvider(ean).select((s) => s.existing != null),
-  );
 }
 
 class _PhotosStep extends ConsumerWidget {
@@ -90,14 +85,11 @@ class _PhotosStep extends ConsumerWidget {
             children: [
               Text(
                 switch (state.existing) {
-                  null =>
-                    'Barcode $ean. Take three photos; the values are read '
-                        'from the nutrition table and you check them next.',
+                  null => 'Take three photos of the label.',
                   final existing =>
                     '${existing.name ?? 'Barcode $ean'} cannot be graded '
-                        'yet: values are missing. Take three photos; the '
-                        'values are read from the nutrition table and you '
-                        'check them next.',
+                        'yet: values are missing. Take three photos of the '
+                        'label.',
                 },
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: QoutPalette.of(context).muted,
@@ -249,10 +241,8 @@ class _Thumbnail extends StatelessWidget {
 /// After sending: received by the server, or kept on the phone
 /// ([savedReason]) for the outbox to send later.
 class _Done extends StatelessWidget {
-  const _Done({required this.completing, this.savedReason});
+  const _Done({this.savedReason});
 
-  /// The values of a known product, not a new product.
-  final bool completing;
   final String? savedReason;
 
   @override
@@ -264,14 +254,9 @@ class _Done extends StatelessWidget {
       veggie: VeggieFor.thanks,
       title: 'Thank you!',
       message: savedReason == null
-          ? completing
-                ? 'Your values are waiting for review. The grade appears '
-                      'once a moderator has checked them against your photos.'
-                : 'Your product is waiting for review. It appears in the '
-                      'app once a moderator has checked it against your '
-                      'photos.'
-          : '$savedReason It is saved on this phone and will be sent '
-                'automatically. You can follow it from the home screen.',
+          ? 'Sent for review.'
+          : '$savedReason Saved on this phone. It will be sent '
+                'automatically.',
       actions: [
         FilledButton(
           onPressed: () => context.go(AppRoutes.home),

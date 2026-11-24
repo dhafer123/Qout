@@ -181,7 +181,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Salt: 6 g, the EU reference intake.'), findsOneWidget);
-    expect(find.textContaining('amber from 70 %'), findsOneWidget);
+    expect(find.textContaining('amber from 70 %'), findsNothing); // T44d
     expect(
       find.text('General information, not medical advice.'),
       findsOneWidget,

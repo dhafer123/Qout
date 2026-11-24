@@ -231,8 +231,7 @@ class _ProvisionalGrade extends StatelessWidget {
     final (grade, text) = switch (result) {
       scoring.NutriScore(:final grade) => (
         Grade.fromJson(grade.letter),
-        'Provisional grade from these values. A moderator checks them '
-            'against your photos before it is published.',
+        'Provisional until a moderator checks it.',
       ),
       scoring.InsufficientData(:final missing) => (
         null,

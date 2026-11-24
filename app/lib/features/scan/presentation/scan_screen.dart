@@ -288,9 +288,8 @@ class ScannerErrorView extends StatelessWidget {
       MobileScannerErrorCode.permissionDenied => (
         PhosphorIconsRegular.cameraSlash,
         'Camera access needed',
-        'Qout uses the camera only to read barcodes. Allow camera access, '
-            "or turn it on in your phone's settings (Apps > Qout > "
-            'Permissions), then try again.',
+        'Allow camera access to scan barcodes (Settings > Apps > Qout > '
+            'Permissions).',
         true,
       ),
       MobileScannerErrorCode.unsupported => (

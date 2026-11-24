@@ -89,7 +89,8 @@ void main() {
     expect(find.text('Top sources'), findsOneWidget);
     expect(find.text('40 g'), findsOneWidget); // biscuits' sugars
     expect(find.text('7.0 g'), findsOneWidget); // biscuits' salt
-    expect(find.textContaining('not medical advice'), findsOneWidget);
+    // No footnote under the cards (T44d).
+    expect(find.textContaining('not medical advice'), findsNothing);
   });
 
   testWidgets('earlier weeks, never the future', (tester) async {

@@ -187,7 +187,7 @@ void main() {
           await tester.pushRoute(AppRoutes.progress);
           await tester.pumpAndSettle();
           await tester.scrollUntilVisible(
-            find.textContaining('not medical advice'),
+            find.text('Top sources'),
             300,
             scrollable: find
                 .descendant(
