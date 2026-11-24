@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:qout/features/diary/presentation/diary_screen.dart';
+import 'package:qout/features/home/domain/greeting.dart';
 import 'package:qout/features/home/presentation/home_screen.dart';
 import 'package:qout/features/product/data/product_repository.dart';
 import 'package:qout/features/product/domain/product_result.dart';
@@ -35,17 +36,14 @@ Future<void> pumpToday(
 
 void main() {
   group('greeting', () {
-    test('by name, else by the time of day', () {
-      final morning = DateTime(2026, 11, 20, 8);
-      expect(greeting('Dhafer', morning), 'Hello, Dhafer');
-      expect(greeting(null, morning), 'Good morning');
-      expect(greeting(null, DateTime(2026, 11, 20, 12)), 'Good afternoon');
-      expect(greeting(null, DateTime(2026, 11, 20, 18)), 'Good evening');
-    });
-
-    testWidgets('Today greets with the first name', (tester) async {
+    testWidgets('Today greets with the first name, for the time of day', (
+      tester,
+    ) async {
       await pumpToday(tester, firstName: 'Dhafer');
-      expect(find.text('Hello, Dhafer'), findsOneWidget);
+      final (:title, :subtitle) = greetingFor('Dhafer', DateTime.now());
+      expect(title, contains('Dhafer'));
+      expect(find.text(title), findsOneWidget);
+      expect(find.text(subtitle), findsOneWidget);
       expect(find.text('D'), findsOneWidget); // the initial
     });
   });

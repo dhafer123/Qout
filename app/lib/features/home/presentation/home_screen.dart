@@ -19,6 +19,7 @@ import 'package:qout/features/diary/presentation/diary_sheets.dart';
 import 'package:qout/features/diary/presentation/meal_art.dart';
 import 'package:qout/features/history/data/scan_history_repository.dart';
 import 'package:qout/features/history/domain/history_entry.dart';
+import 'package:qout/features/home/domain/greeting.dart';
 import 'package:qout/features/home/presentation/today_visits.dart';
 import 'package:qout/features/outbox/presentation/outbox_screen.dart';
 import 'package:qout/features/product/domain/score_explanation.dart';
@@ -29,16 +30,6 @@ import 'package:qout/features/profile/presentation/profile_avatar.dart';
 import 'package:qout/features/scan/domain/barcode.dart';
 import 'package:qout/health/advice.dart' show Nutrient;
 import 'package:qout/health/diary.dart';
-
-/// "Hello, Dhafer", or a greeting for the time of day without a name.
-String greeting(String? firstName, DateTime now) {
-  if (firstName != null) return 'Hello, $firstName';
-  return switch (now.hour) {
-    < 12 => 'Good morning',
-    < 18 => 'Good afternoon',
-    _ => 'Good evening',
-  };
-}
 
 /// The Today tab: the greeting, the day so far against the daily needs
 /// (T42), ways to log food, a barcode to type and what was scanned lately.
@@ -99,6 +90,7 @@ class _Greeting extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final palette = QoutPalette.of(context);
     final name = firstName;
+    final (:title, :subtitle) = greetingFor(name, DateTime.now());
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       child: Row(
@@ -116,13 +108,10 @@ class _Greeting extends StatelessWidget {
               children: [
                 Semantics(
                   header: true,
-                  child: Text(
-                    greeting(name, DateTime.now()),
-                    style: textTheme.titleLarge,
-                  ),
+                  child: Text(title, style: textTheme.titleLarge),
                 ),
                 Text(
-                  'What are you eating today?',
+                  subtitle,
                   style: textTheme.bodyMedium?.copyWith(color: palette.muted),
                 ),
               ],
