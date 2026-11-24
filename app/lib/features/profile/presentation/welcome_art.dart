@@ -14,16 +14,9 @@ import 'package:qout/features/product/presentation/grade_badge.dart';
 
 /// Runs [builder] with an animation that goes from 0 to 1 once.
 class _PlayOnce extends StatefulWidget {
-  const _PlayOnce({
-    required this.duration,
-    required this.builder,
-    this.size = WelcomeArt.size,
-  });
+  const _PlayOnce({required this.duration, required this.builder});
 
   final Duration duration;
-
-  /// Side of the square it is drawn in (scaled down to fit).
-  final double size;
   final Widget Function(BuildContext context, Animation<double> t) builder;
 
   @override
@@ -61,7 +54,7 @@ class _PlayOnceState extends State<_PlayOnce>
     child: FittedBox(
       fit: BoxFit.scaleDown,
       child: SizedBox.square(
-        dimension: widget.size,
+        dimension: WelcomeArt.size,
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, _) => widget.builder(context, _controller),
@@ -262,17 +255,29 @@ class ScanArt extends StatelessWidget {
 /// The welcome page: a ball bounces in, grows and writes "hi.".
 ///
 /// "If you are new here!" (Lottie, 1080 × 1920, supplied by the project
-/// owner), cropped to the 600 × 600 middle where the ball lands. It stops at
-/// frame 80 of 120, before the ball rolls away, and holds there. Recoloured
-/// from its yellow-orange to the brand green (the tile's lip a darker green);
-/// "hi." stays white.
-class GreetingArt extends StatelessWidget {
+/// owner), cropped to the 600 × 600 middle where the ball lands. It loops:
+/// the ball comes in and writes "hi." (frames 0 to 80 of 120), holds for
+/// [hold], rolls away (to frame 110, where the file is empty) and starts
+/// again. With reduced motion it shows "hi." and stays still. Recoloured from
+/// its yellow-orange to the brand green (the tile's lip a darker green); "hi."
+/// stays white.
+class GreetingArt extends StatefulWidget {
   const GreetingArt({super.key});
 
   static const String asset = 'assets/animations/greeting.json';
 
   /// The frame it holds on, out of the 120 frames.
   static const double holdAt = 80 / 120;
+
+  /// Where the ball has rolled away and the file shows nothing more.
+  static const double exitAt = 110 / 120;
+
+  /// How long "hi." stays before the ball rolls away.
+  static const Duration hold = Duration(seconds: 1);
+
+  /// Frames 0 to 80 and 80 to 110, at 30 fps.
+  static const Duration comeIn = Duration(milliseconds: 2670);
+  static const Duration rollAway = Duration(milliseconds: 1000);
 
   /// Larger than the other pages' art: the page has little text.
   static const double size = 300;
@@ -294,25 +299,85 @@ class GreetingArt extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) => _PlayOnce(
-    duration: const Duration(milliseconds: 2670),
-    size: size,
-    builder: (context, t) => ClipRect(
-      child: OverflowBox(
-        maxWidth: size * 1080 / 600,
-        maxHeight: size * 1920 / 600,
-        child: Lottie.asset(
-          asset,
-          controller: t.drive(Tween(begin: 0, end: holdAt)),
-          width: size * 1080 / 600,
-          height: size * 1920 / 600,
-          fit: BoxFit.fill,
-          delegates: LottieDelegates(values: colours),
-          errorBuilder: (context, error, stackTrace) => const SizedBox(),
+  State<GreetingArt> createState() => _GreetingArtState();
+}
+
+class _GreetingArtState extends State<GreetingArt>
+    with SingleTickerProviderStateMixin {
+  // The composition's progress (0..1 over its 120 frames).
+  late final AnimationController _progress = AnimationController(vsync: this);
+  Timer? _holding;
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _progress.value = GreetingArt.holdAt;
+    } else {
+      unawaited(_round());
+    }
+  }
+
+  /// One round: in, hold, away; then the next.
+  Future<void> _round() async {
+    try {
+      _progress.value = 0;
+      await _progress
+          .animateTo(GreetingArt.holdAt, duration: GreetingArt.comeIn)
+          .orCancel;
+      if (!mounted) return;
+      _holding = Timer(GreetingArt.hold, () async {
+        try {
+          await _progress
+              .animateTo(GreetingArt.exitAt, duration: GreetingArt.rollAway)
+              .orCancel;
+          if (mounted) unawaited(_round());
+        } on TickerCanceled {
+          // Disposed while rolling away.
+        }
+      });
+    } on TickerCanceled {
+      // Disposed while coming in.
+    }
+  }
+
+  @override
+  void dispose() {
+    _holding?.cancel();
+    _progress.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const size = GreetingArt.size;
+    return ExcludeSemantics(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: SizedBox.square(
+          dimension: size,
+          child: ClipRect(
+            child: OverflowBox(
+              maxWidth: size * 1080 / 600,
+              maxHeight: size * 1920 / 600,
+              child: Lottie.asset(
+                GreetingArt.asset,
+                controller: _progress,
+                width: size * 1080 / 600,
+                height: size * 1920 / 600,
+                fit: BoxFit.fill,
+                delegates: LottieDelegates(values: GreetingArt.colours),
+                errorBuilder: (context, error, stackTrace) => const SizedBox(),
+              ),
+            ),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 /// The advice page: a shield pops in and a tick draws across it.

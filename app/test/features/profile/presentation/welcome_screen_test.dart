@@ -137,12 +137,43 @@ void main() {
     expect(strongIn('Scan a food barcode'), ['A (best) to E']);
   });
 
-  testWidgets('the illustrations play once, then hold still', (tester) async {
+  double greeting(WidgetTester tester) => tester
+      .widget<Lottie>(
+        find.descendant(
+          of: find.byType(GreetingArt),
+          matching: find.byType(Lottie),
+        ),
+      )
+      .controller!
+      .value;
+
+  testWidgets('the greeting loops: in, a second on "hi.", away, again', (
+    tester,
+  ) async {
     await openFirstRun(tester);
-    // pumpAndSettle returning at all means no animation loops; the grade
-    // badges have all popped in.
-    expect(find.byType(GreetingArt), findsOneWidget);
+    // Settled on "hi.", nothing moving during the hold.
+    expect(greeting(tester), GreetingArt.holdAt);
     expect(tester.hasRunningAnimations, isFalse);
+
+    await tester.pump(GreetingArt.hold - const Duration(milliseconds: 100));
+    expect(greeting(tester), GreetingArt.holdAt);
+
+    // After the second: the ball rolls away...
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(greeting(tester), greaterThan(GreetingArt.holdAt));
+
+    // ...and comes in again, back on "hi.".
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(greeting(tester), lessThan(GreetingArt.holdAt));
+    await tester.pumpAndSettle();
+    expect(greeting(tester), GreetingArt.holdAt);
+  });
+
+  testWidgets('the other illustrations play once, then hold still', (
+    tester,
+  ) async {
+    await openFirstRun(tester);
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
     expect(find.byType(GradeScaleArt), findsOneWidget);
@@ -159,6 +190,12 @@ void main() {
         const FakeAccessibilityFeatures(disableAnimations: true);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     await tester.pumpQoutApp(database: database, start: StartScreen.welcome);
+    // The greeting shows "hi." and does not loop.
+    expect(greeting(tester), GreetingArt.holdAt);
+    await tester.pump(const Duration(seconds: 3));
+    expect(greeting(tester), GreetingArt.holdAt);
+    expect(tester.hasRunningAnimations, isFalse);
+
     await tester.tap(find.text('Skip'));
     await tester.pumpAndSettle();
     // The shield is already drawn: its animation stands at the end.
