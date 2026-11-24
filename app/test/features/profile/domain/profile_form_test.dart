@@ -22,7 +22,6 @@ void main() {
   test('a complete form gives the profile', () {
     final (:profile, :problems) = readProfileForm(
       _values(
-        sex: SexChoice.notGiven,
         weight: ' 61,5 ',
         allergens: {Allergen.lupin},
       ),
@@ -31,7 +30,7 @@ void main() {
     expect(
       profile,
       Profile(
-        sex: null,
+        sex: Sex.female,
         age: 30,
         heightCm: 165,
         weightKg: 61.5,
@@ -70,6 +69,24 @@ void main() {
     expect(readProfileForm(_values(weight: '301')).problems, {
       'weight': FormProblem.outOfRange,
     });
+  });
+
+  test('male or female only (T44c)', () {
+    expect(SexChoice.values, [SexChoice.male, SexChoice.female]);
+  });
+
+  test('a profile saved without a sex (before T44c): asked again', () {
+    final values = ProfileFormValues.of(
+      Profile(
+        sex: null,
+        age: 45,
+        heightCm: 178,
+        weightKg: 81.5,
+        activity: ActivityLevel.active,
+      ),
+    );
+    expect(values.sex, isNull);
+    expect(readProfileForm(values).problems, {'sex': FormProblem.missing});
   });
 
   test('pre-filled from a profile, and back', () {

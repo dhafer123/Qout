@@ -3,20 +3,20 @@ import 'package:qout/features/contribute/domain/draft_values.dart'
     show parseAmount;
 import 'package:qout/health/profile.dart';
 
-/// The sex question has a third answer: not given (decision H2).
-enum SexChoice { female, male, notGiven }
+/// The sex question: male or female (decision H2, revised in T44c).
+enum SexChoice { male, female }
 
 extension SexChoiceX on SexChoice {
-  Sex? get sex => switch (this) {
-    SexChoice.female => Sex.female,
+  Sex get sex => switch (this) {
     SexChoice.male => Sex.male,
-    SexChoice.notGiven => null,
+    SexChoice.female => Sex.female,
   };
 
-  static SexChoice of(Sex? sex) => switch (sex) {
-    Sex.female => SexChoice.female,
+  /// Null for a profile saved without it (before T44c): the form asks again.
+  static SexChoice? of(Sex? sex) => switch (sex) {
     Sex.male => SexChoice.male,
-    null => SexChoice.notGiven,
+    Sex.female => SexChoice.female,
+    null => null,
   };
 }
 

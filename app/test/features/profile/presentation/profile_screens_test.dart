@@ -87,7 +87,7 @@ void main() {
       await repository.save(_profile);
       await open(tester, AppRoutes.profile);
 
-      expect(find.text('Woman'), findsOneWidget);
+      expect(find.text('Female'), findsOneWidget);
       expect(find.text('22 years'), findsOneWidget);
       expect(find.text('165 cm'), findsOneWidget);
       expect(find.text('58 kg'), findsOneWidget);
@@ -155,7 +155,8 @@ void main() {
         ),
       );
       await open(tester, AppRoutes.profile);
-      expect(find.text('Prefer not to say'), findsOneWidget);
+      // Saved before T44c, without a sex.
+      expect(find.text('Not given'), findsOneWidget);
       expect(find.text('2008 kcal'), findsOneWidget);
       await tester.tap(find.text('Where these come from'));
       await tester.pumpAndSettle();
@@ -198,7 +199,7 @@ void main() {
       await open(tester, AppRoutes.profileEdit);
       await save(tester);
 
-      expect(find.text('Choose one, or "Prefer not to say".'), findsOneWidget);
+      expect(find.text('Choose one.'), findsOneWidget);
       expect(find.text('Required.'), findsNWidgets(3)); // age, height, weight
       expect(
         find.text('Choose the level closest to your usual day.'),
@@ -241,7 +242,7 @@ void main() {
       tester,
     ) async {
       await open(tester, AppRoutes.profileEdit);
-      await tester.tap(find.text('Man'));
+      await tester.tap(find.text('Male'));
       await tester.enterText(field('Age'), '45');
       await tester.enterText(field('Height'), '178');
       await tester.enterText(field('Weight'), '81,5');
@@ -282,7 +283,7 @@ void main() {
       );
       expect(
         tester
-            .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Woman'))
+            .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Female'))
             .selected,
         isTrue,
       );
@@ -306,7 +307,7 @@ void main() {
     ) async {
       await repository.save(_profile);
       await open(tester, AppRoutes.profileEdit);
-      await tester.enterText(field('First name (optional)'), '  Dhafer ');
+      await tester.enterText(field('First name'), '  Dhafer ');
       await tester.scrollUntilVisible(
         find.text('Save'),
         300,

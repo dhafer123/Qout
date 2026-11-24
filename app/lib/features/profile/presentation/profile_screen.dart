@@ -102,7 +102,7 @@ class _Header extends ConsumerWidget {
         ? 'Add your details below.'
         : [
             '${profile.age} years',
-            sexChoiceLabel(SexChoiceX.of(profile.sex)),
+            if (SexChoiceX.of(profile.sex) case final sex?) sexChoiceLabel(sex),
             activityTitle(profile.activity),
           ].join(' · ');
     return Padding(
@@ -344,7 +344,7 @@ class _About extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _Row('Sex', sexChoiceLabel(SexChoiceX.of(profile.sex))),
+          _Row('Sex', sexText(profile.sex)),
           _Row('Age', '${profile.age} years'),
           _Row('Height', '${formatAmount(profile.heightCm, decimals: 1)} cm'),
           _Row('Weight', '${formatAmount(profile.weightKg, decimals: 1)} kg'),

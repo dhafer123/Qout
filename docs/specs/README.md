@@ -240,7 +240,9 @@ Decided 2026-11-19 with the T38 plan:
   over. EFSA gives no adult values from 80 years (summary Table 1, footnote b), so from 80 the
   EU reference intakes are used (basis `reference`), with a note in the app.
 - **H2. Sex.** The equations are sex-specific: male, female, or not given; not given uses
-  the EU reference intakes.
+  the EU reference intakes. Revised 2026-11-24 (T44c): the form offers male or female only;
+  "not given" remains only for profiles saved before, which keep the reference intakes until
+  the profile is edited.
 - **H3. No pregnancy or breastfeeding in v1.** EFSA gives energy additions (Table 15), but
   advice for pregnancy goes beyond energy; the app says so instead of computing.
 - **H4. Body mass as entered; rounding.** Energy is computed for the body mass the user

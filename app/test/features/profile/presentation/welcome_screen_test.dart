@@ -168,7 +168,7 @@ void main() {
 
     await tester.tap(find.text('Set up my profile'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Woman'));
+    await tester.tap(find.text('Female'));
     await tester.enterText(find.widgetWithText(TextField, 'Age'), '22');
     await tester.enterText(find.widgetWithText(TextField, 'Height'), '165');
     await tester.enterText(find.widgetWithText(TextField, 'Weight'), '58');

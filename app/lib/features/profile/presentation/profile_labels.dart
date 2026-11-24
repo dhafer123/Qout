@@ -5,9 +5,14 @@ import 'package:qout/health/profile.dart';
 // Words for the profile feature, in one place.
 
 String sexChoiceLabel(SexChoice choice) => switch (choice) {
-  SexChoice.female => 'Woman',
-  SexChoice.male => 'Man',
-  SexChoice.notGiven => 'Prefer not to say',
+  SexChoice.male => 'Male',
+  SexChoice.female => 'Female',
+};
+
+/// A saved profile's sex; "Not given" for one saved before T44c without it.
+String sexText(Sex? sex) => switch (SexChoiceX.of(sex)) {
+  final choice? => sexChoiceLabel(choice),
+  null => 'Not given',
 };
 
 /// EFSA's names for the activity levels (EFSA 2013, §5.3.1.2).
@@ -53,7 +58,7 @@ String? formProblemText(String field, FormProblem? problem) => switch ((
   problem,
 )) {
   (_, null) => null,
-  ('sex', _) => 'Choose one, or "Prefer not to say".',
+  ('sex', _) => 'Choose one.',
   ('activity', _) => 'Choose the level closest to your usual day.',
   (_, FormProblem.missing) => 'Required.',
   (_, FormProblem.notANumber) => 'Enter a number.',

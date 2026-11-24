@@ -125,21 +125,12 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final palette = QoutPalette.of(context);
     const gutter = EdgeInsets.symmetric(horizontal: 16);
     return ListView(
       padding: const EdgeInsets.only(
         bottom: 24,
       ).clearOfNavigationBar(context),
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: Text(
-            'Qout uses this to work out your daily needs. It stays on this '
-            'phone and is never sent.',
-            style: textTheme.bodyMedium?.copyWith(color: palette.muted),
-          ),
-        ),
         const SectionLabel('About you'),
         Padding(
           padding: gutter,
@@ -150,8 +141,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
             autofillHints: const [AutofillHints.givenName],
             maxLength: maxFirstNameLength,
             decoration: const InputDecoration(
-              labelText: 'First name (optional)',
-              helperText: 'For the greeting on Today.',
+              labelText: 'First name',
               counterText: '',
             ),
           ),
@@ -213,7 +203,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
             padding: gutter,
             child: _ErrorText(error),
           ),
-        const SectionLabel('Allergies (optional)'),
+        const SectionLabel('Allergies'),
         Padding(
           padding: gutter,
           child: Wrap(
