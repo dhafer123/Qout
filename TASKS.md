@@ -16,6 +16,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Done 2026-11-24: T44a (softer colours), T44b (welcome page, greeting, shield), T44c (profile form, male/female), T44d (less text), T45a (new launcher icon), T45b (launch splash with loading dots). Supplied but unused: `Walking Orange.json`.
 - Done 2026-11-24: the tearful onion Dhafer supplied (background removed, cropped) replaces the cabbage (empty day) and the pumpkin (empty week); "No scans yet" shows only its clock icon; "everything sent" keeps the peas.
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
+- Decided 2026-11-26: Phase 5 hosting (T32) is postponed; next is **Phase 6, T47** (our own meal model for Quick add).
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
 
 ---
@@ -536,7 +537,7 @@ Asked for on 2026-11-24, with Dhafer's "Sign In Green" Lottie.
 ### T35 · Observability and hardening
 - [ ] Sentry (backend + app), structured logs, rate limiting on public endpoints, CORS for admin only, security headers, dependency scanning (Dependabot), nightly DB backup + restore test doc
 - Tests: **I** rate limit returns 429.
-
+  
 ### T36 · End-to-end pass
 - [ ] Flutter `integration_test` suite: scan (mocked scanner) → result; unknown → contribute → pending; offline history
 - [ ] Backend contract tests: app fixtures match current OpenAPI schemas
@@ -548,30 +549,45 @@ Asked for on 2026-11-24, with Dhafer's "Sign In Green" Lottie.
 
 ---
 
-## Phase 6 — Meal photos (version 2, after the release)
+## Phase 6 — Meal photos in Quick add (our own model, on the phone)
 
-Photograph a meal: the items are found and outlined, the user corrects them, and the meal is compared with their daily needs (T39) using the same sourced advice as T40. Weight from a photo is an estimate, so the user always confirms the items and grams. Decided 2026-11-19: Gemini vision first, measured before building on it; our own segmentation model (e.g. trained on FoodSeg103, licence to check, on the phone) only if the evaluation or cost calls for it. Meal analysis needs an account (each analysis is a paid model call); scanning stays anonymous.
+When the user doesn't know a meal's energy, Quick add lets them photograph it: our own segmentation model, running on the phone, finds and outlines the foods, guesses grams, and the nutrients come from a USDA table bundled in the app. One review screen shows the items with their grams and kcal; one tap on **Log** accepts them, and any item can be fixed or removed first. Each item is logged as a normal diary entry marked "from a photo", so Today, Diary and Progress work unchanged. No backend, no account, the photo never leaves the phone. Decided 2026-11-26 (replaces the 2026-11-19 Gemini-first plan, see the decisions log).
 
-### T41 · Meal trial and evaluation set
-- [ ] Evaluation set from a sample of **Nutrition5k** (Google, CC BY 4.0: dish photos with measured weight and calories per ingredient), fetched by a script into a git-ignored folder, ground truth as JSON
-- [ ] `scripts/eval_meals.py`: item recall and precision, gram error per item, energy error per dish; markdown report, model named (like T27/T28)
-- [ ] Run with Gemini vision (structured output: items with name, outline, grams, confidence); the report decides whether T42 builds on it or on our own model
-- Tests: **U** metric computation, ground truth loading.
+### T47 · ML project and data
+- [ ] `ml/`: its own uv project (Python 3.12; torch, torchvision, transformers, ai-edge-torch, ai-edge-litert), so the backend image stays small; ruff, mypy, pytest like the backend
+- [ ] Fetch scripts for **FoodSeg103** (training) and a **Nutrition5k** sample (grams), into a git-ignored folder; class list in the repo
+- [ ] Dataset loader with augmentation (scale, crop, flip, colour); per-class IoU and mIoU metric
+- [ ] CI job: lint and unit tests on CPU (no training)
+- Tests: **U** loader, augmentation keeps masks aligned, metric on hand-made masks.
 
-### T42 · Meal analysis backend
-- [ ] Food composition table: **USDA FoodData Central** (public domain) pinned in `docs/specs/`, imported into our DB; item names matched to its foods
-- [ ] `POST /v1/meals` (signed in; photo uploaded with T24's presigned URLs) → worker job (model call outside any transaction, deadline, grounding checks) → items with outline, grams, matched food and nutrients, meal totals; `GET /v1/meals/{id}`
-- [ ] Behind a feature flag; per-user limit; meal photos deleted after N days (T30b's cleanup); privacy policy updated (T33b's page)
-- [ ] Gemini paid tier before real users (free tier: 20 requests/day and data may be used by Google, see T28)
-- Tests: **U** matching, totals, output validation (mocked model); **I** job flow, limits, cleanup.
+### T48 · Train and evaluate
+- [ ] Train **SegFormer-B0** and a **DeepLabV3+ MobileNetV3** baseline at 512 px (RTX 3050, WSL, mixed precision); target set from the FoodSeg103 paper's published results before training
+- [ ] Report `docs/reports/meal-segmentation.md`: mIoU and per-class IoU on the test split, model size, both models compared; the winner is chosen for T49
+- Tests: **U** training helpers (config, checkpoint round trip, one step on a tiny batch).
 
-### T43 · Meal flow (app)
-- [ ] Consent before the first meal photo is sent (it goes to Google); camera → upload → polling → photo with the outlined items
-- [ ] Correction step: rename, remove or add items (search the composition table), adjust grams; totals update live
-- [ ] Result: energy and nutrients against the user's daily needs, sourced advice from T40; meals kept on the phone
-- Tests: **U** controller; **W** outlines, correction step, result; **E2E** photo → corrected meal with a fake API.
+### T49 · Export and parity
+- [ ] Export the chosen model to TFLite (fp16 or int8, whichever keeps accuracy); size and time per photo measured on Dhafer's phone (target under 1 s)
+- [ ] Model file on a GitHub Release with a pinned SHA-256; a script downloads it into the app's assets (git-ignored)
+- [ ] Golden images in `ml/golden/` with the masks the Python TFLite run gives; the phone must match them (like the scoring parity)
+- Tests: **U** export checks; parity in Python (PyTorch vs TFLite) and on the phone (T51).
 
-### T44 · Wider product import (optional)
+### T50 · Food table and grams
+- [ ] **USDA FoodData Central** (public domain) pinned in `docs/specs/`; class → USDA food mapping; a script generates the nutrient table bundled in the app
+- [ ] Grams from each item's area and class, fitted on Nutrition5k's measured dishes; error reported in the T48 report (no invented densities or portions)
+- [ ] Item and meal totals as pure Dart functions
+- Tests: **U** mapping complete for every class, generated table, gram estimate, totals.
+
+### T51 · Model in the app
+- [ ] `features/meal/`: `tflite_flutter` in an isolate; photo prepared like in training; class mask → separate regions → outlines; small regions dropped; nothing confident → no items
+- Tests: **U** preparation, regions and outlines; **I** golden images on the phone match `ml/golden/`.
+
+### T52 · Photo in Quick add
+- [ ] "Photograph meal" in the Quick add sheet (also from a meal's "+ Add"); `image_picker` camera
+- [ ] Review screen: photo with outlines, each item with ~grams and kcal, meal total; one tap on **Log**; tap an item to change its grams or food, remove it, or add a missed one; nothing found → type kcal as before
+- [ ] Each item logged as a diary entry (grams + values per 100 g) marked "from a photo", shown with "≈"; drift schema change with migration
+- Tests: **U** controller; **D** migration; **W** review screen, edit/remove/add, Log, fallback; **E2E** photo → logged items with a fake model.
+
+### T53 · Wider product import (optional)
 - [ ] The T15 bulk import keeps only products sold in Tunisia; import a wider set (e.g. by country list or scan popularity) so history and "better choices" (T22) are richer elsewhere. Barcodes from anywhere already work on demand (T14).
 - Tests: **I** import filter.
 
@@ -594,3 +610,4 @@ Photograph a meal: the items are found and outlined, the user corrects them, and
 - 2026-11-12 (T13): category from OFF's Nutri-Score 2023 classification only (`category_available` + `is_*` flags; flags are 1 or true); fruit/vegetable % and the beverage sweetener count from OFF's 2023 score components (they apply the olive-oil rule for fats), so the planned taxonomy-based sweetener fallback was dropped: a beverage without that component lacks the input (insufficient data). Basis = unit declared on the pack (`nutrition_data_per`; Q&A p. 12), category default only if undeclared. Quality heuristics (not scoring constants): kJ/kcal ratio 3.9–4.35 ± 20 kJ (EU 1169/2011 Annex XIV factors 4.0–4.25), salt vs sodium ± max(0.01 g, 5 %), sat fat ≤ fat, sugars ≤ carbohydrates. Local `.env` OFF_USER_AGENT placeholder replaced with the repo URL.
 - RESOLVED (T13b, decision 8: undeclared fibre counts as 0 points). Was: fibre is often not declared (it is optional on EU labels): 3 of the recorded products that OFF grades (cheese D, beef B, energy drink E) are incomplete for us only because fibre is missing, so the engine returns insufficient data (decision 5). The Q&A does not cover undeclared fibre; OFF estimates it from ingredients. Options: keep strict; treat undeclared fibre as 0 points; or use OFF's estimate. Decide before the lookup endpoint stores scores.
 - 2026-11-19 (healthy-eating shift): Qout is for people who want to eat healthily. Order: personal advice first (Phase 4b: T38 sources, T39 onboarding and profile, T40 "For you" on the product screen), then the release (Phase 5), then meal photos as version 2 (Phase 6: T41 trial on Nutrition5k, T42 backend, T43 app; T44 wider import optional). Not tied to Tunisian food. Decided: EFSA/Henry energy equations; needs only, no weight-loss targets; no health conditions in v1; profile on the phone only; Gemini vision first for meals, measured before building on it, own segmentation model only if the evaluation or cost calls for it; Gemini paid tier and consent before meal photos are sent; meal analysis needs an account, scanning stays anonymous.
+- 2026-11-26 (meal photos): our own segmentation model on the phone instead of Gemini vision (free tier: 20 requests/day, photos may be used by Google; paid tier per photo). The feature lives in Quick add: the app estimates, one tap on Log accepts, items can be fixed first. Old Phase 6 tasks (Gemini trial, meal backend, consent, meal account requirement) dropped; renumbered T47–T53 (the old numbers clashed with Phase 4c). Dataset and model licences: Dhafer checks them after the work is done. Hosting (T32) postponed. New packages approved: torch, torchvision, transformers, ai-edge-torch, ai-edge-litert (`ml/` only), tflite_flutter (app). Model file on a GitHub Release with a pinned checksum.
