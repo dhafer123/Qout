@@ -26,6 +26,8 @@ coverage.xml
 htmlcov/
 # Bulk import downloads (IMPORT_DOWNLOAD_DIR)
 backend/var/
+# ML datasets, downloads and checkpoints (QOUT_ML_DATA_DIR)
+ml/var/
 
 # ---------- Specification sources without a redistribution licence ----------
 # Kept locally only; links and SHA-256 in docs/specs/README.md ("Health advice").

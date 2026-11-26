@@ -1,0 +1,114 @@
+[project]
+name = "qout-ml"
+version = "0.1.0"
+description = "Qout meal model: data, training and export of the on-device food segmentation model"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "httpx>=0.28.1",
+    "pillow>=13.0.0",
+    "pyarrow>=26.0.1",
+]
+
+# PyTorch comes in two builds; pick exactly one:
+#   uv sync --extra cpu     CI and machines without an NVIDIA GPU
+#   uv sync --extra cu132   training on the GPU (CUDA 13.2 build)
+[project.optional-dependencies]
+cpu = [
+    "torch>=2.15.0",
+    "torchvision>=0.29.2",
+]
+cu132 = [
+    "torch>=2.15.0",
+    "torchvision>=0.29.2",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4.1",
+    "pytest>=9.2.0",
+    "pytest-cov>=7.1.0",
+    "respx>=0.23.1",
+    "ruff>=0.17.4",
+]
+
+[tool.uv]
+package = false
+conflicts = [[{ extra = "cpu" }, { extra = "cu132" }]]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu132", extra = "cu132" },
+]
+torchvision = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu132", extra = "cu132" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu132"
+url = "https://download.pytorch.org/whl/cu132"
+explicit = true
+
+# ---------------------------------------------------------------- ruff
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["var"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "B", "UP", "N", "S", "C4", "SIM", "RET", "PTH",
+    "RUF", "PT", "TID", "ARG", "PL",
+]
+ignore = [
+    "PLR2004", # magic values are fine in tests
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "PLR0913", "ARG001"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+# ---------------------------------------------------------------- mypy
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+
+# Neither ships type information (no py.typed).
+[[tool.mypy.overrides]]
+module = ["pyarrow", "pyarrow.*", "torchvision", "torchvision.*"]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------- pytest
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=qout_ml",
+    "--cov-report=term-missing:skip-covered",
+]
+filterwarnings = ["error"]
+
+# ---------------------------------------------------------------- coverage
+[tool.coverage.run]
+branch = true
+source = ["qout_ml"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "@overload",
+    "if __name__ == .__main__.:",
+]

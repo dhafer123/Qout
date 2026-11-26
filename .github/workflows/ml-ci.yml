@@ -1,0 +1,69 @@
+# ML CI: lint, type-check and unit-test the meal model project (ml/) on CPU.
+# No training and no dataset downloads here; tests build tiny data themselves.
+# Runs only when ml/ or this workflow changes.
+
+name: ML CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ml/**"
+      - ".github/workflows/ml-ci.yml"
+  pull_request:
+    paths:
+      - "ml/**"
+      - ".github/workflows/ml-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ml-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, type-check, test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: ml
+
+    env:
+      # Fail if uv.lock is out of date with pyproject.toml, for every uv command.
+      UV_LOCKED: "1"
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@v10.3.3
+        with:
+          version: "0.13.7"
+          working-directory: ml
+          enable-cache: true
+          cache-dependency-glob: ml/uv.lock
+
+      # The CPU build of PyTorch (the CUDA one is only for training on a GPU).
+      - name: Install dependencies
+        run: uv sync --extra cpu
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+      - name: Mypy (strict)
+        run: uv run mypy --strict qout_ml
+
+      # Coverage gate (fail_under) is configured in pyproject.toml.
+      - name: Pytest
+        run: uv run pytest

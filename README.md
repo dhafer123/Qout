@@ -30,6 +30,7 @@ Architecture decisions are recorded in [`docs/adr/`](docs/adr/), starting with
 ```
 backend/              FastAPI modular monolith (api, modules, core, worker)
 app/                  Flutter app (feature-first clean architecture)
+ml/                   Meal model: datasets, training and export of the on-device food segmentation model
 api/openapi.json      API contract: exported from the backend, the app's client is generated from it
 scoring-spec/golden/  Shared golden test cases for the Python and Dart scoring engines
 docs/specs/           Official scoring specifications (source of all thresholds)
