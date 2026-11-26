@@ -49,7 +49,7 @@ jobs:
           version: "0.13.7"
           working-directory: ml
           enable-cache: true
-          cache-dependency-glob: ml/uv.lock
+          cache-dependency-glob: uv.lock
 
       # The CPU build of PyTorch (the CUDA one is only for training on a GPU).
       - name: Install dependencies
