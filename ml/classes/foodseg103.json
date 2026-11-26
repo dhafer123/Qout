@@ -1,0 +1,423 @@
+{
+  "dataset": "FoodSeg103",
+  "source": "https://huggingface.co/datasets/EduardoPacheco/FoodSeg103 (dataset card, revision 34e1208e14bc3595d544fc8c3f3c6673253fd9ef); official repository: https://github.com/LARC-CMU-SMU/FoodSeg103-Benchmark-v1",
+  "ignore_index": 255,
+  "classes": [
+    {
+      "id": 0,
+      "name": "background"
+    },
+    {
+      "id": 1,
+      "name": "candy"
+    },
+    {
+      "id": 2,
+      "name": "egg tart"
+    },
+    {
+      "id": 3,
+      "name": "french fries"
+    },
+    {
+      "id": 4,
+      "name": "chocolate"
+    },
+    {
+      "id": 5,
+      "name": "biscuit"
+    },
+    {
+      "id": 6,
+      "name": "popcorn"
+    },
+    {
+      "id": 7,
+      "name": "pudding"
+    },
+    {
+      "id": 8,
+      "name": "ice cream"
+    },
+    {
+      "id": 9,
+      "name": "cheese butter"
+    },
+    {
+      "id": 10,
+      "name": "cake"
+    },
+    {
+      "id": 11,
+      "name": "wine"
+    },
+    {
+      "id": 12,
+      "name": "milkshake"
+    },
+    {
+      "id": 13,
+      "name": "coffee"
+    },
+    {
+      "id": 14,
+      "name": "juice"
+    },
+    {
+      "id": 15,
+      "name": "milk"
+    },
+    {
+      "id": 16,
+      "name": "tea"
+    },
+    {
+      "id": 17,
+      "name": "almond"
+    },
+    {
+      "id": 18,
+      "name": "red beans"
+    },
+    {
+      "id": 19,
+      "name": "cashew"
+    },
+    {
+      "id": 20,
+      "name": "dried cranberries"
+    },
+    {
+      "id": 21,
+      "name": "soy"
+    },
+    {
+      "id": 22,
+      "name": "walnut"
+    },
+    {
+      "id": 23,
+      "name": "peanut"
+    },
+    {
+      "id": 24,
+      "name": "egg"
+    },
+    {
+      "id": 25,
+      "name": "apple"
+    },
+    {
+      "id": 26,
+      "name": "date"
+    },
+    {
+      "id": 27,
+      "name": "apricot"
+    },
+    {
+      "id": 28,
+      "name": "avocado"
+    },
+    {
+      "id": 29,
+      "name": "banana"
+    },
+    {
+      "id": 30,
+      "name": "strawberry"
+    },
+    {
+      "id": 31,
+      "name": "cherry"
+    },
+    {
+      "id": 32,
+      "name": "blueberry"
+    },
+    {
+      "id": 33,
+      "name": "raspberry"
+    },
+    {
+      "id": 34,
+      "name": "mango"
+    },
+    {
+      "id": 35,
+      "name": "olives"
+    },
+    {
+      "id": 36,
+      "name": "peach"
+    },
+    {
+      "id": 37,
+      "name": "lemon"
+    },
+    {
+      "id": 38,
+      "name": "pear"
+    },
+    {
+      "id": 39,
+      "name": "fig"
+    },
+    {
+      "id": 40,
+      "name": "pineapple"
+    },
+    {
+      "id": 41,
+      "name": "grape"
+    },
+    {
+      "id": 42,
+      "name": "kiwi"
+    },
+    {
+      "id": 43,
+      "name": "melon"
+    },
+    {
+      "id": 44,
+      "name": "orange"
+    },
+    {
+      "id": 45,
+      "name": "watermelon"
+    },
+    {
+      "id": 46,
+      "name": "steak"
+    },
+    {
+      "id": 47,
+      "name": "pork"
+    },
+    {
+      "id": 48,
+      "name": "chicken duck"
+    },
+    {
+      "id": 49,
+      "name": "sausage"
+    },
+    {
+      "id": 50,
+      "name": "fried meat"
+    },
+    {
+      "id": 51,
+      "name": "lamb"
+    },
+    {
+      "id": 52,
+      "name": "sauce"
+    },
+    {
+      "id": 53,
+      "name": "crab"
+    },
+    {
+      "id": 54,
+      "name": "fish"
+    },
+    {
+      "id": 55,
+      "name": "shellfish"
+    },
+    {
+      "id": 56,
+      "name": "shrimp"
+    },
+    {
+      "id": 57,
+      "name": "soup"
+    },
+    {
+      "id": 58,
+      "name": "bread"
+    },
+    {
+      "id": 59,
+      "name": "corn"
+    },
+    {
+      "id": 60,
+      "name": "hamburg"
+    },
+    {
+      "id": 61,
+      "name": "pizza"
+    },
+    {
+      "id": 62,
+      "name": "hanamaki baozi"
+    },
+    {
+      "id": 63,
+      "name": "wonton dumplings"
+    },
+    {
+      "id": 64,
+      "name": "pasta"
+    },
+    {
+      "id": 65,
+      "name": "noodles"
+    },
+    {
+      "id": 66,
+      "name": "rice"
+    },
+    {
+      "id": 67,
+      "name": "pie"
+    },
+    {
+      "id": 68,
+      "name": "tofu"
+    },
+    {
+      "id": 69,
+      "name": "eggplant"
+    },
+    {
+      "id": 70,
+      "name": "potato"
+    },
+    {
+      "id": 71,
+      "name": "garlic"
+    },
+    {
+      "id": 72,
+      "name": "cauliflower"
+    },
+    {
+      "id": 73,
+      "name": "tomato"
+    },
+    {
+      "id": 74,
+      "name": "kelp"
+    },
+    {
+      "id": 75,
+      "name": "seaweed"
+    },
+    {
+      "id": 76,
+      "name": "spring onion"
+    },
+    {
+      "id": 77,
+      "name": "rape"
+    },
+    {
+      "id": 78,
+      "name": "ginger"
+    },
+    {
+      "id": 79,
+      "name": "okra"
+    },
+    {
+      "id": 80,
+      "name": "lettuce"
+    },
+    {
+      "id": 81,
+      "name": "pumpkin"
+    },
+    {
+      "id": 82,
+      "name": "cucumber"
+    },
+    {
+      "id": 83,
+      "name": "white radish"
+    },
+    {
+      "id": 84,
+      "name": "carrot"
+    },
+    {
+      "id": 85,
+      "name": "asparagus"
+    },
+    {
+      "id": 86,
+      "name": "bamboo shoots"
+    },
+    {
+      "id": 87,
+      "name": "broccoli"
+    },
+    {
+      "id": 88,
+      "name": "celery stick"
+    },
+    {
+      "id": 89,
+      "name": "cilantro mint"
+    },
+    {
+      "id": 90,
+      "name": "snow peas"
+    },
+    {
+      "id": 91,
+      "name": "cabbage"
+    },
+    {
+      "id": 92,
+      "name": "bean sprouts"
+    },
+    {
+      "id": 93,
+      "name": "onion"
+    },
+    {
+      "id": 94,
+      "name": "pepper"
+    },
+    {
+      "id": 95,
+      "name": "green beans"
+    },
+    {
+      "id": 96,
+      "name": "French beans"
+    },
+    {
+      "id": 97,
+      "name": "king oyster mushroom"
+    },
+    {
+      "id": 98,
+      "name": "shiitake"
+    },
+    {
+      "id": 99,
+      "name": "enoki mushroom"
+    },
+    {
+      "id": 100,
+      "name": "oyster mushroom"
+    },
+    {
+      "id": 101,
+      "name": "white button mushroom"
+    },
+    {
+      "id": 102,
+      "name": "salad"
+    },
+    {
+      "id": 103,
+      "name": "other ingredients"
+    }
+  ]
+}
