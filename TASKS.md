@@ -16,7 +16,7 @@ Legend: **U** = unit tests, **I** = integration tests, **W** = widget tests, **E
 - Done 2026-11-24: T44a (softer colours), T44b (welcome page, greeting, shield), T44c (profile form, male/female), T44d (less text), T45a (new launcher icon), T45b (launch splash with loading dots). Supplied but unused: `Walking Orange.json`.
 - Done 2026-11-24: the tearful onion Dhafer supplied (background removed, cropped) replaces the cabbage (empty day) and the pumpkin (empty week); "No scans yet" shows only its clock icon; "everything sent" keeps the peas.
 - Still to decide: localization (T31b item). Next roadmap task after that: Phase 5, T32 (CD to staging).
-- Decided 2026-11-26: Phase 5 hosting (T32) is postponed; next is **Phase 6, T47** (our own meal model for Quick add).
+- Decided 2026-11-26: Phase 5 hosting (T32) is postponed. Phase 6 (our own meal model for Quick add) is **left for v2 of the app**: T47 is done and `ml/` stays in the repo; T48 onwards wait. Next task: not chosen yet.
 - To run locally: `docker compose up -d` (in WSL), backend `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000` and the worker in WSL, then `adb reverse tcp:8000 tcp:8000` and `adb reverse tcp:9000 tcp:9000` and `flutter run --flavor dev --dart-define=API_BASE_URL=http://localhost:8000` (phone over USB, no Wi-Fi setup needed).
 
 ---
@@ -549,7 +549,10 @@ Asked for on 2026-11-24, with Dhafer's "Sign In Green" Lottie.
 
 ---
 
-## Phase 6 — Meal photos in Quick add (our own model, on the phone)
+## Phase 6 — Meal photos in Quick add (our own model, on the phone) — v2 of the app
+
+**Postponed to v2 (2026-11-26).** T47 is done (`ml/` and its CI stay); T48 onwards are not started. The local datasets and PyTorch environment can be deleted (see `ml/README.md` for where they live); `python -m qout_ml fetch ...` gets the same pinned files back. The T48 plan posted on 2026-11-26 (SegFormer-B0 from ADE20K weights and torchvision's DeepLabV3 MobileNetV3; a 10 % validation split; 384 vs 512 px trials, then one overnight run on the RTX 3050) is a starting point when v2 begins.
+
 
 When the user doesn't know a meal's energy, Quick add lets them photograph it: our own segmentation model, running on the phone, finds and outlines the foods, guesses grams, and the nutrients come from a USDA table bundled in the app. One review screen shows the items with their grams and kcal; one tap on **Log** accepts them, and any item can be fixed or removed first. Each item is logged as a normal diary entry marked "from a photo", so Today, Diary and Progress work unchanged. No backend, no account, the photo never leaves the phone. Decided 2026-11-26 (replaces the 2026-11-19 Gemini-first plan, see the decisions log).
 
@@ -614,3 +617,4 @@ When the user doesn't know a meal's energy, Quick add lets them photograph it: o
 - RESOLVED (T13b, decision 8: undeclared fibre counts as 0 points). Was: fibre is often not declared (it is optional on EU labels): 3 of the recorded products that OFF grades (cheese D, beef B, energy drink E) are incomplete for us only because fibre is missing, so the engine returns insufficient data (decision 5). The Q&A does not cover undeclared fibre; OFF estimates it from ingredients. Options: keep strict; treat undeclared fibre as 0 points; or use OFF's estimate. Decide before the lookup endpoint stores scores.
 - 2026-11-19 (healthy-eating shift): Qout is for people who want to eat healthily. Order: personal advice first (Phase 4b: T38 sources, T39 onboarding and profile, T40 "For you" on the product screen), then the release (Phase 5), then meal photos as version 2 (Phase 6: T41 trial on Nutrition5k, T42 backend, T43 app; T44 wider import optional). Not tied to Tunisian food. Decided: EFSA/Henry energy equations; needs only, no weight-loss targets; no health conditions in v1; profile on the phone only; Gemini vision first for meals, measured before building on it, own segmentation model only if the evaluation or cost calls for it; Gemini paid tier and consent before meal photos are sent; meal analysis needs an account, scanning stays anonymous.
 - 2026-11-26 (meal photos): our own segmentation model on the phone instead of Gemini vision (free tier: 20 requests/day, photos may be used by Google; paid tier per photo). The feature lives in Quick add: the app estimates, one tap on Log accepts, items can be fixed first. Old Phase 6 tasks (Gemini trial, meal backend, consent, meal account requirement) dropped; renumbered T47–T53 (the old numbers clashed with Phase 4c). Dataset and model licences: Dhafer checks them after the work is done. Hosting (T32) postponed. New packages approved: torch, torchvision, transformers, ai-edge-torch, ai-edge-litert (`ml/` only), tflite_flutter (app). Model file on a GitHub Release with a pinned checksum.
+- 2026-11-26 (meal photos, later): Dhafer left the meal model for v2 of the app. T47 kept as is (no code removed); the local datasets (~/qout-ml-data) and the PyTorch venv (~/.venvs/qout-ml) are left for Dhafer to delete. Next task to be chosen.
